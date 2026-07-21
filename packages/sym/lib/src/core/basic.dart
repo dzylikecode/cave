@@ -9,8 +9,73 @@ import 'sym.dart';
 
 abstract class Basic {
   final List<Basic> _args;
+
+  /// Returns a tuple of arguments of 'self'
+  ///
+  /// ## Examples
+  ///
+  /// ```dart
+  /// cot(x).args // (x,)
+  ///
+  /// cot(x).args[0] // x
+  ///
+  /// (x*y).args // (x, y)
+  ///
+  /// (x*y).args[1] // y
+  /// ```
   List<Basic> get args => _args;
 
+  /// The same as [args].  Derived classes which do not fix an
+  /// order on their arguments should override this method to
+  /// produce the sorted representation.
+  List<Basic> get sortedArgs => args;
+
+  /// Return from the atoms of self those which are free symbols.
+  ///
+  /// Not all free symbols are [Sym] (see examples)
+  ///
+  /// For most expressions, all symbols are free symbols. For some classes
+  /// this is not true. e.g. Integrals use Symbols for the dummy variables
+  /// which are bound variables, so Integral has a method to return all
+  /// symbols except those. Derivative keeps track of symbols with respect
+  /// to which it will perform a derivative; those are
+  /// bound variables, too, so it has its own free_symbols method.
+  ///
+  /// Any other method that uses bound variables should implement a
+  /// free_symbols method.
+  ///
+  /// ## Examples
+  ///
+  /// ```dart
+  /// (x + 1).free_symbols // {x}
+  ///
+  /// Integral(x, y).free_symbols // {x, y}
+  /// ```
+  ///
+  /// Not all free symbols are actually symbols:
+  ///
+  ///
+  /// ```dart
+  /// IndexedBase('F')[0].free_symbols // {F, F[0]}
+  /// ```
+  ///
+  /// The symbols of differentiation are not included unless they
+  /// appear in the expression being differentiated.
+  ///
+  /// ```dart
+  /// Derivative(x + y, y).free_symbols // {x, y}
+  ///
+  /// Derivative(x, y).free_symbols // {x}
+  ///
+  /// Derivative(x, (y, n)).free_symbols // {n, x}
+  /// ```
+  ///
+  /// If you want to know if a symbol is in the variables of the
+  /// Derivative you can do so as follows:
+  ///
+  /// ```dart
+  /// Derivative(x, y).has_free(y) // true
+  /// ```
   Set<Basic> get freeSymbols {
     final symbols = <Basic>{};
     for (final arg in args) {
@@ -89,18 +154,78 @@ abstract class Basic {
 
   bool get isNumber => false;
   bool get isDummy => false;
+  bool get isAtomic => false;
 
-
+  /// Compare two expressions and handle dummy symbols.
+  ///
+  /// ## Examples
+  ///
+  /// ```dart
+  /// final u = Dummy('u');
+  ///
+  /// (u**2 + 1).dummy_eq(x**2 + 1) // true
+  ///
+  /// // u != x
+  /// (u**2 + 1) == (x**2 + 1) // false
+  ///
+  /// (u**2 + y).dummy_eq(x**2 + y, x) // true
+  ///
+  /// (u**2 + y).dummy_eq(x**2 + y, y) // false
+  /// ```
+  ///
+  /// 由于多个dummy 需要指定规则了，这里只是处理了单个dummy的情况
   bool dummyEquals(Basic other, [Basic? symbol]) {
     final s = asDummy();
     final o = simplify(other).asDummy();
-    final dummySymbols = s.freeSymbols.map((e) => e.isDummy).toSet();
-    return false; // TODO: implement this method
+    final dummySymbols = s.freeSymbols.where((e) => e.isDummy).toSet();
+
+    if (dummySymbols.length != 1) {
+      return s == o;
+    }
+
+    final dummy = dummySymbols.first;
+
+    if (symbol == null) {
+      final symbols = o.freeSymbols;
+      if (symbols.length != 1) {
+        return s == o;
+      }
+      symbol = symbols.first;
+    }
+
+    final tmp = Dummy();
+
+    return s.xreplace({dummy: tmp}) == o.xreplace({symbol: tmp});
+  }
+
+  Basic xreplace(Map<Basic, Basic> rule) {
+    return this; // TODO: implement this method
+  }
+
+  Basic _xreplace(Map<Basic, Basic> rule) {
+    return this; // TODO: implement this method
   }
 
   Basic asDummy() {
     return this; // TODO: implement this method
   }
+}
 
+/// A parent class for atomic things. An atom is an expression with no subexpressions.
+/// 
+/// ## Examples
+/// 
+/// Symbol, Number, Rational, Integer, ...
+/// But not: Add, Mul, Pow, ...
+class Atom extends Basic {
+  Atom(super.args);
 
+  @override
+  bool get isAtomic => true;
+
+  @override
+  List<Basic> get sortedArgs => throw StateError(
+    'Atoms have no args. It might be necessary'
+    ' to make a check for Atoms in the calling code.',
+  );
 }
