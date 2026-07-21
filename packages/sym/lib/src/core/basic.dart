@@ -1,13 +1,9 @@
-/// Base class for all the objects in Sym
-///
-/// 移植自 sympy/core/basic.py
-library;
-
 import 'package:meta/meta.dart';
 import 'simplify.dart';
-import 'sym.dart';
+import 'symbol.dart';
 
-abstract class Basic {
+/// Base class for all the objects in Sym
+class Basic {
   final List<Basic> _args;
 
   /// Returns a tuple of arguments of 'self'
@@ -28,11 +24,12 @@ abstract class Basic {
   /// The same as [args].  Derived classes which do not fix an
   /// order on their arguments should override this method to
   /// produce the sorted representation.
+  @protected
   List<Basic> get sortedArgs => args;
 
   /// Return from the atoms of self those which are free symbols.
   ///
-  /// Not all free symbols are [Sym] (see examples)
+  /// Not all free symbols are [Symbol] (see examples)
   ///
   /// For most expressions, all symbols are free symbols. For some classes
   /// this is not true. e.g. Integrals use Symbols for the dummy variables
@@ -84,12 +81,12 @@ abstract class Basic {
     return symbols;
   }
 
-  Basic(List<Basic> args)
+  Basic([List<Basic> args = const []])
     : _args = List.unmodifiable(args); // eqs python's tuple
 
   /// Return a tuple of information about self that can be used to
   /// compute the hash. If a class defines additional attributes,
-  /// like [Sym.name], then this method should be updated
+  /// like [Symbol.name], then this method should be updated
   /// accordingly to return such relevant attributes.
   ///
   /// Defining more than [hashableContent] is necessary if [==] has
@@ -154,7 +151,7 @@ abstract class Basic {
 
   bool get isNumber => false;
   bool get isDummy => false;
-  bool get isAtomic => false;
+  bool get isAtom => false;
 
   /// Compare two expressions and handle dummy symbols.
   ///
@@ -209,6 +206,34 @@ abstract class Basic {
   Basic asDummy() {
     return this; // TODO: implement this method
   }
+
+  /// The top-level function in an expression.
+  /// 
+  /// The following should hold for all objects:
+  /// 
+  ///       x == x.func(x.args)
+  /// 
+  /// ## Examples
+  /// 
+  /// 
+  Basic func(List<Basic> args) => Basic(args);
+
+  /// Evaluate objects that are not evaluated by default like limits,
+  /// integrals, sums and products. All objects of this kind will be
+  /// evaluated recursively, unless the [deep] hint was set to [false].
+  /// 
+  /// ```dart
+  /// 2*Integral(x, x) // 2*Integral(x, x)
+  /// 
+  /// (2*Integral(x, x)).doit() // x**2
+  /// 
+  /// (2*Integral(x, x)).doit(deep=False) // 2*Integral(x, x)
+  /// ```
+  Basic doIt({bool deep = true}) {
+    if (deep == false) return this;
+    final args = this.args.map((e) => e.doIt()).toList();
+    return func(args);
+  }
 }
 
 /// A parent class for atomic things. An atom is an expression with no subexpressions.
@@ -218,13 +243,19 @@ abstract class Basic {
 /// Symbol, Number, Rational, Integer, ...
 /// But not: Add, Mul, Pow, ...
 class Atom extends Basic {
-  Atom(super.args);
+  Atom();
 
   @override
-  bool get isAtomic => true;
+  bool get isAtom => true;
 
   @override
   List<Basic> get sortedArgs => throw StateError(
+    'Atoms have no args. It might be necessary'
+    ' to make a check for Atoms in the calling code.',
+  );
+
+  @override
+  Atom func(List<Basic> args) => throw StateError(
     'Atoms have no args. It might be necessary'
     ' to make a check for Atoms in the calling code.',
   );

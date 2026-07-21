@@ -1,10 +1,27 @@
 import 'dart:math' as math;
 import 'basic.dart';
+import 'dart:core' hide Symbol;
 
-class Sym extends Basic {
+/// Represents string in SymPy.
+///
+/// ## Explanation
+///
+/// Previously, [Symbol] was used where string is needed in [args] of SymPy
+/// objects, e.g. denoting the name of the instance. However, since [Symbol]
+/// represents mathematical scalar, this class should be used instead.
+class Str extends Atom {
   final String name;
 
-  const Sym(this.name);
+  Str(this.name);
+
+  @override
+  List<Object> get hashableContent => [name];
+}
+
+class Symbol extends Basic {
+  final String name;
+
+  Symbol(this.name);
 
   @override
   List<Object> get hashableContent => [name];
@@ -25,14 +42,14 @@ class Sym extends Basic {
 /// ```dart
 /// print(Dummy()); // _Dummy_10
 /// ```
-class Dummy extends Sym {
+class Dummy extends Symbol {
   static int _count = 0;
   static final _pseudoRandomNumberGenerator = math.Random();
   static final _baseDummyIndex = _pseudoRandomNumberGenerator.nextInt(1 << 32);
 
   final int dummyIndex;
 
-  const Dummy([super.name = '']);
+  Dummy([super.name = '', this.dummyIndex = 0]);
 
   @override
   List<Object> get hashableContent => super.hashableContent..add(dummyIndex);
