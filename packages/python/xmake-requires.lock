@@ -1,0 +1,15 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    ["windows|x64"] = {
+        ["python 3.8.10#16fb575b"] = {
+            repo = {
+                branch = "master",
+                commit = "302bbd1b8e59927507a151cb21e4bd8733312ab0",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "3.8.10"
+        }
+    }
+}
