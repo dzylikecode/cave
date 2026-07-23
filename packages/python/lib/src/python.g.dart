@@ -5,15 +5,21 @@
 import 'dart:ffi' as ffi;
 
 @ffi.Native<
-  ffi.Pointer<_object> Function(ffi.Pointer<_object>, ffi.Pointer<ffi.Char>)
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)
 >()
-external ffi.Pointer<_object> PyObject_GetAttrString(
-  ffi.Pointer<_object> arg0,
+external ffi.Pointer<PyObject> PyObject_GetAttrString(
+  ffi.Pointer<PyObject> arg0,
   ffi.Pointer<ffi.Char> arg1,
 );
 
-@ffi.Native<ffi.Pointer<_object> Function(ffi.Pointer<ffi.Char>)>()
-external ffi.Pointer<_object> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
+@ffi.Native<ffi.Void Function(ffi.Pointer<PyObject>)>()
+external void Py_IncRef(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Void Function(ffi.Pointer<PyObject>)>()
+external void Py_DecRef(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<ffi.Char>)>()
+external ffi.Pointer<PyObject> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
 
 @ffi.Native<ffi.Int Function(PyStatus)>()
 external int PyStatus_Exception(PyStatus err);
@@ -52,38 +58,43 @@ external PyStatus Py_InitializeFromConfig(ffi.Pointer<PyConfig> config);
 @ffi.Native<ffi.Void Function(PyStatus)>()
 external void Py_ExitStatusException(PyStatus err);
 
-@ffi.Native<ffi.Pointer<_object> Function(ffi.Pointer<_object>)>()
-external ffi.Pointer<_object> PyImport_Import(ffi.Pointer<_object> name);
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyImport_Import(ffi.Pointer<PyObject> name);
 
 @ffi.Native<
-  ffi.Pointer<_object> Function(ffi.Pointer<_object>, ffi.Pointer<_object>)
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
 >()
-external ffi.Pointer<_object> PyObject_CallObject(
-  ffi.Pointer<_object> callable,
-  ffi.Pointer<_object> args,
+external ffi.Pointer<PyObject> PyObject_CallObject(
+  ffi.Pointer<PyObject> callable,
+  ffi.Pointer<PyObject> args,
 );
 
 @ffi.Native<
-  ffi.Pointer<_object> Function(
-    ffi.Pointer<_object>,
+  ffi.Pointer<PyObject> Function(
+    ffi.Pointer<PyObject>,
     ffi.Pointer<ffi.Char>,
     ffi.Pointer<ffi.Char>,
   )
 >()
-external ffi.Pointer<_object> PyObject_CallMethod(
-  ffi.Pointer<_object> obj,
+external ffi.Pointer<PyObject> PyObject_CallMethod(
+  ffi.Pointer<PyObject> obj,
   ffi.Pointer<ffi.Char> name,
   ffi.Pointer<ffi.Char> format,
 );
 
 final class _object extends ffi.Opaque {}
 
+typedef PyObject = _object;
+
 final class PyMethodDef extends ffi.Struct {
   external ffi.Pointer<ffi.Char> ml_name;
 
   external ffi.Pointer<
     ffi.NativeFunction<
-      ffi.Pointer<_object> Function(ffi.Pointer<_object>, ffi.Pointer<_object>)
+      ffi.Pointer<PyObject> Function(
+        ffi.Pointer<PyObject>,
+        ffi.Pointer<PyObject>,
+      )
     >
   >
   ml_meth;

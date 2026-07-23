@@ -39,7 +39,11 @@ void main() {
       'PyObject_GetAttrString',
       'PyObject_CallObject',
       'PyObject_CallMethod',
+      'Py_DecRef',
+      'Py_IncRef',
     }),
-    // typedefs: .includeAll,
+    typedefs: .includeSet({
+      'PyObject',
+    }),
   ).generate();
 }
