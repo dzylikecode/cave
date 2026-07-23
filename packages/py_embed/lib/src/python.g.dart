@@ -21,6 +21,42 @@ external void Py_DecRef(ffi.Pointer<PyObject> arg0);
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<ffi.Char>)>()
 external ffi.Pointer<PyObject> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
 
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.LongLong)>()
+external ffi.Pointer<PyObject> PyTuple_New(int size);
+
+@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+external int PyTuple_Size(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.LongLong)
+>()
+external ffi.Pointer<PyObject> PyTuple_GetItem(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+);
+
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+>()
+external int PyTuple_SetItem(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  ffi.Pointer<PyObject> arg2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(
+    ffi.Pointer<PyObject>,
+    ffi.LongLong,
+    ffi.LongLong,
+  )
+>()
+external ffi.Pointer<PyObject> PyTuple_GetSlice(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  int arg2,
+);
+
 @ffi.Native<ffi.Int Function(PyStatus)>()
 external int PyStatus_Exception(PyStatus err);
 

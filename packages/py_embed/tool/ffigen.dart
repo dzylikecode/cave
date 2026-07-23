@@ -41,6 +41,11 @@ void main() {
       'PyObject_CallMethod',
       'Py_DecRef',
       'Py_IncRef',
+      'PyTuple_New',
+      'PyTuple_Size',
+      'PyTuple_GetItem',
+      'PyTuple_SetItem',
+      'PyTuple_GetSlice',
     }),
     typedefs: .includeSet({
       'PyObject',
