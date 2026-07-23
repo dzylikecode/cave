@@ -23,36 +23,33 @@ class PyConfig {
 
   /// 由于 dart 无法表达 &config->executable 这种指针的指针类型
   /// 所以这里用一个替身来处理
-  Pointer<WChar> _setString(Pointer<WChar> oldValue, String newValue) {
-    final input = newValue.toNativeWChar();
-    final temp = ffi.calloc<Pointer<WChar>>();
-
-    // 让 PyConfig_SetString 负责释放原来的 Python-owned 字符串
-    temp.value = oldValue;
-    try {
-      g.PyConfig_SetString(ptr, temp, input).guard();
-      return temp.value;
-    } finally {
-      ffi.calloc.free(input);
-      ffi.calloc.free(temp);
-    }
-  }
+  Pointer<WChar> _setString(String value, Pointer<WChar> oldValue) =>
+      ffi.using((arena) {
+        // 让 PyConfig_SetString 负责释放原来的 Python-owned 字符串
+        final temp = arena<Pointer<WChar>>()..value = oldValue;
+        g.PyConfig_SetString(
+          ptr,
+          temp,
+          value.toNativeWChar(allocator: arena),
+        ).guard();
+        return temp.value;
+      });
 
   String get executable => ptr.ref.executable.toDartString();
   set executable(String path) =>
-      ptr.ref.executable = _setString(ptr.ref.executable, path);
+      ptr.ref.executable = _setString(path, ptr.ref.executable);
   // set executable(String path) => ptr.ref.executable = path.toNativeWChar();
 
   String get programName => ptr.ref.program_name.toDartString();
   set programName(String path) =>
-      ptr.ref.program_name = _setString(ptr.ref.program_name, path);
+      ptr.ref.program_name = _setString(path, ptr.ref.program_name);
   // set programName(String path) => ptr.ref.program_name = path.toNativeWChar();
 }
 
 extension on String {
-  Pointer<WChar> toNativeWChar() {
+  Pointer<WChar> toNativeWChar({Allocator allocator = ffi.malloc}) {
     final units = codeUnits;
-    final result = ffi.calloc<WChar>(units.length + 1);
+    final result = allocator<WChar>(units.length + 1);
     for (var i = 0; i < units.length; i++) {
       result[i] = units[i];
     }

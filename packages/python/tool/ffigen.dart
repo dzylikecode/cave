@@ -34,6 +34,11 @@ void main() {
       'Py_ExitStatusException',
       'Py_InitializeFromConfig',
       'PyRun_SimpleString',
+      'PyUnicode_FromString',
+      'PyImport_Import',
+      'PyObject_GetAttrString',
+      'PyObject_CallObject',
+      'PyObject_CallMethod',
     }),
     // typedefs: .includeAll,
   ).generate();

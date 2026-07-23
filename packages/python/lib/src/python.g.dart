@@ -4,6 +4,17 @@
 // ignore_for_file: type=lint, unused_import
 import 'dart:ffi' as ffi;
 
+@ffi.Native<
+  ffi.Pointer<_object> Function(ffi.Pointer<_object>, ffi.Pointer<ffi.Char>)
+>()
+external ffi.Pointer<_object> PyObject_GetAttrString(
+  ffi.Pointer<_object> arg0,
+  ffi.Pointer<ffi.Char> arg1,
+);
+
+@ffi.Native<ffi.Pointer<_object> Function(ffi.Pointer<ffi.Char>)>()
+external ffi.Pointer<_object> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
+
 @ffi.Native<ffi.Int Function(PyStatus)>()
 external int PyStatus_Exception(PyStatus err);
 
@@ -40,6 +51,30 @@ external PyStatus Py_InitializeFromConfig(ffi.Pointer<PyConfig> config);
 
 @ffi.Native<ffi.Void Function(PyStatus)>()
 external void Py_ExitStatusException(PyStatus err);
+
+@ffi.Native<ffi.Pointer<_object> Function(ffi.Pointer<_object>)>()
+external ffi.Pointer<_object> PyImport_Import(ffi.Pointer<_object> name);
+
+@ffi.Native<
+  ffi.Pointer<_object> Function(ffi.Pointer<_object>, ffi.Pointer<_object>)
+>()
+external ffi.Pointer<_object> PyObject_CallObject(
+  ffi.Pointer<_object> callable,
+  ffi.Pointer<_object> args,
+);
+
+@ffi.Native<
+  ffi.Pointer<_object> Function(
+    ffi.Pointer<_object>,
+    ffi.Pointer<ffi.Char>,
+    ffi.Pointer<ffi.Char>,
+  )
+>()
+external ffi.Pointer<_object> PyObject_CallMethod(
+  ffi.Pointer<_object> obj,
+  ffi.Pointer<ffi.Char> name,
+  ffi.Pointer<ffi.Char> format,
+);
 
 final class _object extends ffi.Opaque {}
 

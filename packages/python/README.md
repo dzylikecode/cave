@@ -52,6 +52,9 @@ dart run example/main.dart
 
 在虚拟环境中打开 code，也可以直接运行程序
 
+> setup.py 里的 name 是 distribution name，主要给 pip 和包管理系统使用；它不决定 Python 代码中的 import 名称
+
 ## TODO
 
 - [ ] linux
+- [ ] c 内存处理 https://github.com/dart-lang/native/issues/3450
