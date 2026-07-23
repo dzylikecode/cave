@@ -1,2 +1,6 @@
 .dart_tool/
 ref_code/
+.xmake
+build
+dist
+.venv
