@@ -24,4 +24,7 @@ class PyObject {
       ),
     ),
   );
+
+
+  // bool get isString => g.PyUnicode_Check(ptr) != 0;
 }

@@ -7,3 +7,6 @@ class PyClass:
 
     def has(self, attr: str) -> bool:
         return hasattr(self, attr)
+
+    def bye(self, name: str) -> str:
+        return f"Goodbye, {name}!"
