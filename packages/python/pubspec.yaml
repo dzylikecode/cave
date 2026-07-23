@@ -1,5 +1,5 @@
 name: python
-description: A starting point for Dart libraries or applications.
+description: Embed CPython in Dart applications using native FFI bindings to the Python C API.
 version: 0.0.1
 repository: https://github.com/my_org/my_repo
 
@@ -20,7 +20,8 @@ dependencies:
   code_assets: ^1.2.1
   ffi: ^2.2.0
   hooks: ^2.1.0
-  native_toolchain_xmake: 0.0.2
+  meta: ^1.19.0
+  native_toolchain_xmake: ^0.0.2
 
 dev_dependencies:
   ffigen: ^20.1.1
