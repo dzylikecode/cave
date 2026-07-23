@@ -1,14 +1,21 @@
 name: python
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+version: 0.0.1
+repository: https://github.com/my_org/my_repo
+
+platforms:
+  # web:
+  # android:
+  # ios:
+  # linux:
+  # macos:
+  windows:
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.12.0
 
 resolution: workspace
 
-# Add regular dependencies here.
 dependencies:
   code_assets: ^1.2.1
   ffi: ^2.2.0

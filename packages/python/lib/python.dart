@@ -1,8 +1,6 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// https://docs.python.org/3/extending/embedding.html
 library;
 
-export 'src/python_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/config.dart';
+export 'src/venv.dart';
+export 'src/vm.dart';
