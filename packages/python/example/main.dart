@@ -1,4 +1,4 @@
-import 'package:python/python.dart';
+import 'package:py_embed/py_embed.dart';
 
 void main() async {
   final python = Python();

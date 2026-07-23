@@ -1,7 +1,7 @@
-name: python
+name: py_embed
 description: Embed CPython in Dart applications using native FFI bindings to the Python C API.
 version: 0.0.1
-repository: https://github.com/my_org/my_repo
+repository: https://github.com/dzylikecode/cave/tree/main/packages/py_embed
 
 platforms:
   # web:
