@@ -18,8 +18,16 @@ external void Py_IncRef(ffi.Pointer<PyObject> arg0);
 @ffi.Native<ffi.Void Function(ffi.Pointer<PyObject>)>()
 external void Py_DecRef(ffi.Pointer<PyObject> arg0);
 
+@ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<ffi.Char> PyBytes_AsString(ffi.Pointer<PyObject> arg0);
+
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<ffi.Char>)>()
 external ffi.Pointer<PyObject> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyUnicode_AsUTF8String(
+  ffi.Pointer<PyObject> unicode,
+);
 
 @ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyTuple_New(int size);
@@ -289,24 +297,24 @@ external void Py_ExitStatusException(PyStatus err);
 external ffi.Pointer<PyObject> PyImport_Import(ffi.Pointer<PyObject> name);
 
 @ffi.Native<
+  ffi.Pointer<PyObject> Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external ffi.Pointer<PyObject> PyObject_Call(
+  ffi.Pointer<PyObject> callable,
+  ffi.Pointer<PyObject> args,
+  ffi.Pointer<PyObject> kwargs,
+);
+
+@ffi.Native<
   ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
 >()
 external ffi.Pointer<PyObject> PyObject_CallObject(
   ffi.Pointer<PyObject> callable,
   ffi.Pointer<PyObject> args,
-);
-
-@ffi.Native<
-  ffi.Pointer<PyObject> Function(
-    ffi.Pointer<PyObject>,
-    ffi.Pointer<ffi.Char>,
-    ffi.Pointer<ffi.Char>,
-  )
->()
-external ffi.Pointer<PyObject> PyObject_CallMethod(
-  ffi.Pointer<PyObject> obj,
-  ffi.Pointer<ffi.Char> name,
-  ffi.Pointer<ffi.Char> format,
 );
 
 typedef Py_ssize_t = ffi.LongLong;

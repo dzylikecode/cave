@@ -35,11 +35,8 @@ void main() {
       'Py_ExitStatusException',
       'Py_InitializeFromConfig',
       'PyRun_SimpleString',
-      'PyUnicode_FromString',
       'PyImport_Import',
       'PyObject_GetAttrString',
-      'PyObject_CallObject',
-      'PyObject_CallMethod',
       'Py_DecRef',
       'Py_IncRef',
       // tuple
@@ -80,6 +77,13 @@ void main() {
       'PyDict_GetItemString',
       'PyDict_SetItemString',
       'PyDict_DelItemString',
+      // function
+      'PyObject_Call',
+      'PyObject_CallObject',
+      // string
+      'PyUnicode_FromString',
+      'PyUnicode_AsUTF8String',
+      'PyBytes_AsString',
     }),
     // TODO: Py_ssize_t 需要处理一下
     typedefs: .includeSet({'PyObject', 'Py_ssize_t'}),

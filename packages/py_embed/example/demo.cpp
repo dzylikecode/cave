@@ -36,7 +36,7 @@ int main() {
   PyObject *instance = PyObject_CallObject(cls, args);
 
   Py_DECREF(args);
-
+// PyUnicode_AsUTF8String
   PyObject *result = PyObject_CallMethod(instance, "bye", "s", "hello");
 
   if (result) {

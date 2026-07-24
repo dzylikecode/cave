@@ -4,22 +4,34 @@ import 'package:meta/meta.dart';
 
 import 'python.g.dart' as g;
 
-sealed class PyObject {
+class PyObject {
   @internal
   Pointer<g.PyObject> ptr;
 
   PyObject(this.ptr);
   void dispose() => g.Py_DecRef(ptr);
 
-  PyDynamic get(String attr) => ffi.using(
-    (arena) => PyDynamic(
+  T get<T extends PyObject>(String attr) => ffi.using(
+    (arena) => PyObject(
       g.PyObject_GetAttrString(
         ptr,
         attr.toNativeUtf8(allocator: arena).cast<Char>(),
       ),
-    ),
+    ).cast(),
   );
 
+  T cast<T extends PyObject>() =>
+      switch (T) {
+            == PyTuple => PyTuple.fromPointer(ptr),
+            == PyList => PyList.fromPointer(ptr),
+            == PyDict => PyDict.fromPointer(ptr),
+            == PyString => PyString.fromPointer(ptr),
+            == PyModule => PyModule.fromPointer(ptr),
+            == PyFunction => PyFunction(ptr),
+            _ => this,
+          }
+          as T;
+          
   // bool get isString => g.PyUnicode_Check(ptr) != 0;
 }
 
@@ -39,7 +51,7 @@ class PyTuple extends PyObject {
 
   int setItem(int index, PyObject obj) =>
       g.PyTuple_SetItem(ptr, index, obj.ptr);
-  PyDynamic getItem(int index) => PyDynamic(g.PyTuple_GetItem(ptr, index));
+  PyObject getItem(int index) => PyObject(g.PyTuple_GetItem(ptr, index));
   PyTuple slice(int start, int end) =>
       .fromPointer(g.PyTuple_GetSlice(ptr, start, end));
 }
@@ -61,7 +73,7 @@ class PyList extends PyObject {
   int get length => g.PyList_Size(ptr);
 
   int setItem(int index, PyObject obj) => g.PyList_SetItem(ptr, index, obj.ptr);
-  PyDynamic getItem(int index) => PyDynamic(g.PyList_GetItem(ptr, index));
+  PyObject getItem(int index) => PyObject(g.PyList_GetItem(ptr, index));
   int insert(int index, PyObject obj) => g.PyList_Insert(ptr, index, obj.ptr);
   int append(PyObject obj) => g.PyList_Append(ptr, obj.ptr);
   PyList slice(int start, int end) =>
@@ -92,22 +104,22 @@ class PyDict extends PyObject {
 
   int setItem(PyObject key, PyObject value) =>
       g.PyDict_SetItem(ptr, key.ptr, value.ptr);
-  PyDynamic getItem(PyObject key) => PyDynamic(g.PyDict_GetItem(ptr, key.ptr));
-  PyDynamic getItemWithError(PyObject key) =>
-      PyDynamic(g.PyDict_GetItemWithError(ptr, key.ptr));
+  PyObject getItem(PyObject key) => PyObject(g.PyDict_GetItem(ptr, key.ptr));
+  PyObject getItemWithError(PyObject key) =>
+      PyObject(g.PyDict_GetItemWithError(ptr, key.ptr));
   int deleteItem(PyObject key) => g.PyDict_DelItem(ptr, key.ptr);
   void clear() => g.PyDict_Clear(ptr);
 
   // TODO: sync*
-  // 不过这个由于 ffi.using 需要谨慎处理 
-  List<({PyDynamic key, PyDynamic value})> get entries => ffi.using((arena) {
+  // 不过这个由于 ffi.using 需要谨慎处理
+  List<({PyObject key, PyObject value})> get entries => ffi.using((arena) {
     final position = arena<g.Py_ssize_t>()..value = 0;
     final key = arena<Pointer<g.PyObject>>();
     final value = arena<Pointer<g.PyObject>>();
-    final result = <({PyDynamic key, PyDynamic value})>[];
+    final result = <({PyObject key, PyObject value})>[];
 
     while (g.PyDict_Next(ptr, position, key, value) != 0) {
-      result.add((key: PyDynamic(key.value), value: PyDynamic(value.value)));
+      result.add((key: PyObject(key.value), value: PyObject(value.value)));
     }
     return result;
   });
@@ -123,8 +135,8 @@ class PyDict extends PyObject {
   int mergeFromSequence(PyObject sequence, {bool override = true}) =>
       g.PyDict_MergeFromSeq2(ptr, sequence.ptr, override ? 1 : 0);
 
-  PyDynamic getItemString(String key) => ffi.using(
-    (arena) => PyDynamic(
+  PyObject getItemString(String key) => ffi.using(
+    (arena) => PyObject(
       g.PyDict_GetItemString(
         ptr,
         key.toNativeUtf8(allocator: arena).cast<Char>(),
@@ -146,9 +158,7 @@ class PyDict extends PyObject {
   );
 }
 
-class PyDynamic extends PyObject {
-  PyDynamic(super.ptr);
-}
+
 
 /// [unicode](https://github.com/python/cpython/blob/main/Include/unicodeobject.h)
 class PyString extends PyObject {
@@ -159,6 +169,11 @@ class PyString extends PyObject {
       g.PyUnicode_FromString(s.toNativeUtf8(allocator: arena).cast<Char>()),
     ),
   );
+
+  String toDartString() => ffi.using((arena) {
+    final bytes = g.PyUnicode_AsUTF8String(ptr);
+    return g.PyBytes_AsString(bytes).cast<ffi.Utf8>().toDartString();
+  });
 }
 
 /// [import](https://github.com/python/cpython/blob/main/Include/import.h)
@@ -172,8 +187,11 @@ class PyModule extends PyObject {
 class PyFunction extends PyObject {
   PyFunction(super.ptr);
 
-  PyDynamic call(List<PyObject> args) => ffi.using(
-    (arena) =>
-        PyDynamic(g.PyObject_CallObject(ptr, PyTuple.fromList(args).ptr)),
-  );
+  T call<T extends PyObject>(PyTuple args, [PyDict? kwargs]) => ffi
+      .using(
+        (arena) => PyObject(
+          g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
+        ),
+      )
+      .cast<T>();
 }
