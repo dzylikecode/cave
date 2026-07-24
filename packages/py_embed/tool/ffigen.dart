@@ -4,6 +4,7 @@ import 'package:ffigen/ffigen.dart';
 void main() {
   final packageRoot = Platform.script.resolve('../');
   final outputFile = File.fromUri(packageRoot.resolve('lib/src/python.g.dart'));
+
   FfiGenerator(
     output: .new(dartFile: outputFile.uri),
     headers: .new(
@@ -80,6 +81,7 @@ void main() {
       'PyDict_SetItemString',
       'PyDict_DelItemString',
     }),
-    typedefs: .includeSet({'PyObject'}),
+    // TODO: Py_ssize_t 需要处理一下
+    typedefs: .includeSet({'PyObject', 'Py_ssize_t'}),
   ).generate();
 }

@@ -21,22 +21,20 @@ external void Py_DecRef(ffi.Pointer<PyObject> arg0);
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<ffi.Char>)>()
 external ffi.Pointer<PyObject> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
 
-@ffi.Native<ffi.Pointer<PyObject> Function(ffi.LongLong)>()
+@ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyTuple_New(int size);
 
-@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+@ffi.Native<Py_ssize_t Function(ffi.Pointer<PyObject>)>()
 external int PyTuple_Size(ffi.Pointer<PyObject> arg0);
 
-@ffi.Native<
-  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.LongLong)
->()
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyTuple_GetItem(
   ffi.Pointer<PyObject> arg0,
   int arg1,
 );
 
 @ffi.Native<
-  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+  ffi.Int Function(ffi.Pointer<PyObject>, Py_ssize_t, ffi.Pointer<PyObject>)
 >()
 external int PyTuple_SetItem(
   ffi.Pointer<PyObject> arg0,
@@ -45,11 +43,7 @@ external int PyTuple_SetItem(
 );
 
 @ffi.Native<
-  ffi.Pointer<PyObject> Function(
-    ffi.Pointer<PyObject>,
-    ffi.LongLong,
-    ffi.LongLong,
-  )
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, Py_ssize_t, Py_ssize_t)
 >()
 external ffi.Pointer<PyObject> PyTuple_GetSlice(
   ffi.Pointer<PyObject> arg0,
@@ -57,22 +51,20 @@ external ffi.Pointer<PyObject> PyTuple_GetSlice(
   int arg2,
 );
 
-@ffi.Native<ffi.Pointer<PyObject> Function(ffi.LongLong)>()
+@ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyList_New(int size);
 
-@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+@ffi.Native<Py_ssize_t Function(ffi.Pointer<PyObject>)>()
 external int PyList_Size(ffi.Pointer<PyObject> arg0);
 
-@ffi.Native<
-  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.LongLong)
->()
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyList_GetItem(
   ffi.Pointer<PyObject> arg0,
   int arg1,
 );
 
 @ffi.Native<
-  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+  ffi.Int Function(ffi.Pointer<PyObject>, Py_ssize_t, ffi.Pointer<PyObject>)
 >()
 external int PyList_SetItem(
   ffi.Pointer<PyObject> arg0,
@@ -81,7 +73,7 @@ external int PyList_SetItem(
 );
 
 @ffi.Native<
-  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+  ffi.Int Function(ffi.Pointer<PyObject>, Py_ssize_t, ffi.Pointer<PyObject>)
 >()
 external int PyList_Insert(
   ffi.Pointer<PyObject> arg0,
@@ -96,11 +88,7 @@ external int PyList_Append(
 );
 
 @ffi.Native<
-  ffi.Pointer<PyObject> Function(
-    ffi.Pointer<PyObject>,
-    ffi.LongLong,
-    ffi.LongLong,
-  )
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, Py_ssize_t, Py_ssize_t)
 >()
 external ffi.Pointer<PyObject> PyList_GetSlice(
   ffi.Pointer<PyObject> arg0,
@@ -111,8 +99,8 @@ external ffi.Pointer<PyObject> PyList_GetSlice(
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<PyObject>,
-    ffi.LongLong,
-    ffi.LongLong,
+    Py_ssize_t,
+    Py_ssize_t,
     ffi.Pointer<PyObject>,
   )
 >()
@@ -176,14 +164,14 @@ external void PyDict_Clear(ffi.Pointer<PyObject> mp);
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<PyObject>,
-    ffi.Pointer<ffi.LongLong>,
+    ffi.Pointer<Py_ssize_t>,
     ffi.Pointer<ffi.Pointer<PyObject>>,
     ffi.Pointer<ffi.Pointer<PyObject>>,
   )
 >()
 external int PyDict_Next(
   ffi.Pointer<PyObject> mp,
-  ffi.Pointer<ffi.LongLong> pos,
+  ffi.Pointer<Py_ssize_t> pos,
   ffi.Pointer<ffi.Pointer<PyObject>> key,
   ffi.Pointer<ffi.Pointer<PyObject>> value,
 );
@@ -197,7 +185,7 @@ external ffi.Pointer<PyObject> PyDict_Values(ffi.Pointer<PyObject> mp);
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
 external ffi.Pointer<PyObject> PyDict_Items(ffi.Pointer<PyObject> mp);
 
-@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+@ffi.Native<Py_ssize_t Function(ffi.Pointer<PyObject>)>()
 external int PyDict_Size(ffi.Pointer<PyObject> mp);
 
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
@@ -321,6 +309,8 @@ external ffi.Pointer<PyObject> PyObject_CallMethod(
   ffi.Pointer<ffi.Char> format,
 );
 
+typedef Py_ssize_t = ffi.LongLong;
+
 final class _object extends ffi.Opaque {}
 
 typedef PyObject = _object;
@@ -357,7 +347,7 @@ final class PyStatus extends ffi.Struct {
 }
 
 final class PyWideStringList extends ffi.Struct {
-  @ffi.LongLong()
+  @Py_ssize_t()
   external int length;
 
   external ffi.Pointer<ffi.Pointer<ffi.WChar>> items;

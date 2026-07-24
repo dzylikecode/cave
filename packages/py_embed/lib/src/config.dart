@@ -49,11 +49,11 @@ class PyConfig {
 @internal
 extension StringToWCharExt on String {
   Pointer<WChar> toNativeWChar({Allocator allocator = ffi.malloc}) {
+    // windows platform
     if (sizeOf<WChar>() == 2) {
-      // windows platform
       return toNativeUtf16(allocator: allocator).cast();
     }
-
+  
     // linux/mac platform
     final codePoints = runes.toList();
     final len = codePoints.length; // 会迭代，所以缓存一下
