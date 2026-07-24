@@ -98,6 +98,8 @@ class PyDict extends PyObject {
   int deleteItem(PyObject key) => g.PyDict_DelItem(ptr, key.ptr);
   void clear() => g.PyDict_Clear(ptr);
 
+  // TODO: sync*
+  // 不过这个由于 ffi.using 需要谨慎处理 
   List<({PyDynamic key, PyDynamic value})> get entries => ffi.using((arena) {
     final position = arena<g.Py_ssize_t>()..value = 0;
     final key = arena<Pointer<g.PyObject>>();
