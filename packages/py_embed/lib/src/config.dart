@@ -46,19 +46,30 @@ class PyConfig {
   // set programName(String path) => ptr.ref.program_name = path.toNativeWChar();
 }
 
-extension on String {
+@internal
+extension StringToWCharExt on String {
   Pointer<WChar> toNativeWChar({Allocator allocator = ffi.malloc}) {
-    final units = codeUnits;
-    final result = allocator<WChar>(units.length + 1);
-    for (var i = 0; i < units.length; i++) {
-      result[i] = units[i];
+    if (sizeOf<WChar>() == 2) {
+      // windows platform
+      return toNativeUtf16(allocator: allocator).cast();
     }
-    result[units.length] = 0;
-    return result;
+
+    // linux/mac platform
+    final codePoints = runes.toList();
+    final len = codePoints.length; // 会迭代，所以缓存一下
+
+    final result = allocator<Uint32>(len + 1);
+    final nativeString = result.asTypedList(len + 1);
+
+    nativeString.setRange(0, len, codePoints);
+    nativeString[len] = 0;
+
+    return result.cast();
   }
 }
 
-extension on Pointer<WChar> {
+@internal
+extension WCharExt on Pointer<WChar> {
   String toDartString() =>
       .fromCharCodes([for (var i = 0; this[i] != 0; i++) this[i]]);
 }
