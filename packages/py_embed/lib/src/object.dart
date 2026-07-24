@@ -23,6 +23,7 @@ sealed class PyObject {
   // bool get isString => g.PyUnicode_Check(ptr) != 0;
 }
 
+/// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)
 class PyTuple extends PyObject {
   PyTuple.fromPointer(super.ptr);
 
@@ -43,6 +44,7 @@ class PyTuple extends PyObject {
       PyDynamic(g.PyTuple_GetSlice(ptr, start, end));
 }
 
+/// [list](https://github.com/python/cpython/blob/main/Include/listobject.h)
 class PyList extends PyObject {
   PyList.fromPointer(super.ptr);
 
@@ -61,10 +63,26 @@ class PyList extends PyObject {
   int append(PyObject obj) => g.PyList_Append(ptr, obj.ptr);
 }
 
+/// [dict](https://github.com/python/cpython/blob/main/Include/dictobject.h)
+class PyDict extends PyObject {
+  PyDict.fromPointer(super.ptr);
+
+  factory PyDict() => ffi.using(
+        (arena) => .fromPointer(g.PyDict_New()),
+      );
+
+  int setItem(PyObject key, PyObject value) =>
+      g.PyDict_SetItem(ptr, key.ptr, value.ptr);
+  PyDynamic getItem(PyObject key) =>
+      PyDynamic(g.PyDict_GetItem(ptr, key.ptr));
+}
+
+
 class PyDynamic extends PyObject {
   PyDynamic(super.ptr);
 }
 
+/// [unicode](https://github.com/python/cpython/blob/main/Include/unicodeobject.h)
 class PyString extends PyObject {
   PyString.fromPointer(super.ptr);
 
@@ -75,6 +93,7 @@ class PyString extends PyObject {
   );
 }
 
+/// [import](https://github.com/python/cpython/blob/main/Include/import.h)
 class PyModule extends PyObject {
   PyModule.fromPointer(super.ptr);
 

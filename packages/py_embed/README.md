@@ -1,5 +1,7 @@
 # python
 
+ffi for [python c api](https://devguide.python.org/developer-workflow/c-api/index.html)
+
 ## python bridge
 
 对于这个[hello_world_need_python_home](example/hello_world_need_python_home.cpp)需要指定 python 的 home 才能运行
