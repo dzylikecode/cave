@@ -52,3 +52,11 @@ class PyTuple extends PyObject {
   PyObject slice(int start, int end) =>
       .fromPointer(g.PyTuple_GetSlice(ptr, start, end));
 }
+
+
+class PyDynamic extends PyObject {
+  PyDynamic.fromPointer(super.ptr) : super.fromPointer();
+
+  PyObject call(PyTuple args) =>
+      .fromPointer(g.PyObject_CallObject(ptr, args.ptr));
+}
