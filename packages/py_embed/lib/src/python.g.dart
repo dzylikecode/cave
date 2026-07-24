@@ -57,6 +57,209 @@ external ffi.Pointer<PyObject> PyTuple_GetSlice(
   int arg2,
 );
 
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.LongLong)>()
+external ffi.Pointer<PyObject> PyList_New(int size);
+
+@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+external int PyList_Size(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.LongLong)
+>()
+external ffi.Pointer<PyObject> PyList_GetItem(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+);
+
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+>()
+external int PyList_SetItem(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  ffi.Pointer<PyObject> arg2,
+);
+
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<PyObject>, ffi.LongLong, ffi.Pointer<PyObject>)
+>()
+external int PyList_Insert(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  ffi.Pointer<PyObject> arg2,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)>()
+external int PyList_Append(
+  ffi.Pointer<PyObject> arg0,
+  ffi.Pointer<PyObject> arg1,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(
+    ffi.Pointer<PyObject>,
+    ffi.LongLong,
+    ffi.LongLong,
+  )
+>()
+external ffi.Pointer<PyObject> PyList_GetSlice(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  int arg2,
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.LongLong,
+    ffi.LongLong,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external int PyList_SetSlice(
+  ffi.Pointer<PyObject> arg0,
+  int arg1,
+  int arg2,
+  ffi.Pointer<PyObject> arg3,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>)>()
+external int PyList_Sort(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>)>()
+external int PyList_Reverse(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyList_AsTuple(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Pointer<PyObject> Function()>()
+external ffi.Pointer<PyObject> PyDict_New();
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyDict_GetItem(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> key,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyDict_GetItemWithError(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> key,
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external int PyDict_SetItem(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> key,
+  ffi.Pointer<PyObject> item,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)>()
+external int PyDict_DelItem(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> key,
+);
+
+@ffi.Native<ffi.Void Function(ffi.Pointer<PyObject>)>()
+external void PyDict_Clear(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<ffi.LongLong>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+  )
+>()
+external int PyDict_Next(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<ffi.LongLong> pos,
+  ffi.Pointer<ffi.Pointer<PyObject>> key,
+  ffi.Pointer<ffi.Pointer<PyObject>> value,
+);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyDict_Keys(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyDict_Values(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyDict_Items(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<ffi.LongLong Function(ffi.Pointer<PyObject>)>()
+external int PyDict_Size(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyDict_Copy(ffi.Pointer<PyObject> mp);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)>()
+external int PyDict_Contains(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> key,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)>()
+external int PyDict_Update(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> other,
+);
+
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>, ffi.Int)
+>()
+external int PyDict_Merge(
+  ffi.Pointer<PyObject> mp,
+  ffi.Pointer<PyObject> other,
+  int override,
+);
+
+@ffi.Native<
+  ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>, ffi.Int)
+>()
+external int PyDict_MergeFromSeq2(
+  ffi.Pointer<PyObject> d,
+  ffi.Pointer<PyObject> seq2,
+  int override,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)
+>()
+external ffi.Pointer<PyObject> PyDict_GetItemString(
+  ffi.Pointer<PyObject> dp,
+  ffi.Pointer<ffi.Char> key,
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<ffi.Char>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external int PyDict_SetItemString(
+  ffi.Pointer<PyObject> dp,
+  ffi.Pointer<ffi.Char> key,
+  ffi.Pointer<PyObject> item,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)>()
+external int PyDict_DelItemString(
+  ffi.Pointer<PyObject> dp,
+  ffi.Pointer<ffi.Char> key,
+);
+
 @ffi.Native<ffi.Int Function(PyStatus)>()
 external int PyStatus_Exception(PyStatus err);
 

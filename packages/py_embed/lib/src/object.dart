@@ -4,27 +4,17 @@ import 'package:meta/meta.dart';
 
 import 'python.g.dart' as g;
 
-class PyObject {
+sealed class PyObject {
   @internal
   Pointer<g.PyObject> ptr;
 
-  PyObject.fromPointer(this.ptr);
+  PyObject(this.ptr);
   void dispose() => g.Py_DecRef(ptr);
 
-  factory PyObject.string(String s) => ffi.using(
-    (arena) => .fromPointer(
-      g.PyUnicode_FromString(s.toNativeUtf8(allocator: arena).cast<Char>()),
-    ),
-  );
-
-  factory PyObject.import(String s) => ffi.using(
-    (arena) => .fromPointer(g.PyImport_Import(PyObject.string(s).ptr)),
-  );
-
-  factory PyObject.get(PyObject obj, String attr) => ffi.using(
-    (arena) => .fromPointer(
+  PyDynamic get(String attr) => ffi.using(
+    (arena) => PyDynamic(
       g.PyObject_GetAttrString(
-        obj.ptr,
+        ptr,
         attr.toNativeUtf8(allocator: arena).cast<Char>(),
       ),
     ),
@@ -34,7 +24,7 @@ class PyObject {
 }
 
 class PyTuple extends PyObject {
-  PyTuple.fromPointer(super.ptr) : super.fromPointer();
+  PyTuple.fromPointer(super.ptr);
 
   factory PyTuple(int size) =>
       ffi.using((arena) => .fromPointer(g.PyTuple_New(size)));
@@ -48,15 +38,55 @@ class PyTuple extends PyObject {
 
   int setItem(int index, PyObject obj) =>
       g.PyTuple_SetItem(ptr, index, obj.ptr);
-  PyObject getItem(int index) => .fromPointer(g.PyTuple_GetItem(ptr, index));
-  PyObject slice(int start, int end) =>
-      .fromPointer(g.PyTuple_GetSlice(ptr, start, end));
+  PyDynamic getItem(int index) => PyDynamic(g.PyTuple_GetItem(ptr, index));
+  PyDynamic slice(int start, int end) =>
+      PyDynamic(g.PyTuple_GetSlice(ptr, start, end));
 }
 
+class PyList extends PyObject {
+  PyList.fromPointer(super.ptr);
+
+  factory PyList(int size) =>
+      ffi.using((arena) => .fromPointer(g.PyList_New(size)));
+  factory PyList.fromList(List<PyObject> list) {
+    final pyList = PyList(list.length);
+    for (var i = 0; i < list.length; i++) {
+      pyList.setItem(i, list[i]);
+    }
+    return pyList;
+  }
+
+  int setItem(int index, PyObject obj) => g.PyList_SetItem(ptr, index, obj.ptr);
+  PyDynamic getItem(int index) => PyDynamic(g.PyList_GetItem(ptr, index));
+  int append(PyObject obj) => g.PyList_Append(ptr, obj.ptr);
+}
 
 class PyDynamic extends PyObject {
-  PyDynamic.fromPointer(super.ptr) : super.fromPointer();
+  PyDynamic(super.ptr);
+}
 
-  PyObject call(PyTuple args) =>
-      .fromPointer(g.PyObject_CallObject(ptr, args.ptr));
+class PyString extends PyObject {
+  PyString.fromPointer(super.ptr);
+
+  factory PyString(String s) => ffi.using(
+    (arena) => .fromPointer(
+      g.PyUnicode_FromString(s.toNativeUtf8(allocator: arena).cast<Char>()),
+    ),
+  );
+}
+
+class PyModule extends PyObject {
+  PyModule.fromPointer(super.ptr);
+
+  factory PyModule(String name) =>
+      ffi.using((arena) => .fromPointer(g.PyImport_Import(PyString(name).ptr)));
+}
+
+class PyFunction extends PyObject {
+  PyFunction(super.ptr);
+
+  PyDynamic call(List<PyObject> args) => ffi.using(
+    (arena) =>
+        PyDynamic(g.PyObject_CallObject(ptr, PyTuple.fromList(args).ptr)),
+  );
 }
