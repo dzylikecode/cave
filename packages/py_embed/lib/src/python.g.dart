@@ -12,6 +12,12 @@ external ffi.Pointer<PyObject> PyObject_GetAttrString(
   ffi.Pointer<ffi.Char> arg1,
 );
 
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>)>()
+external int PyObject_IsTrue(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>)>()
+external int PyObject_Not(ffi.Pointer<PyObject> arg0);
+
 @ffi.Native<ffi.Void Function(ffi.Pointer<PyObject>)>()
 external void Py_IncRef(ffi.Pointer<PyObject> arg0);
 
@@ -28,6 +34,9 @@ external ffi.Pointer<PyObject> PyUnicode_FromString(ffi.Pointer<ffi.Char> u);
 external ffi.Pointer<PyObject> PyUnicode_AsUTF8String(
   ffi.Pointer<PyObject> unicode,
 );
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Long)>()
+external ffi.Pointer<PyObject> PyBool_FromLong(int arg0);
 
 @ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyTuple_New(int size);

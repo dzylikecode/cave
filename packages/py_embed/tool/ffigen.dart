@@ -84,6 +84,10 @@ void main() {
       'PyUnicode_FromString',
       'PyUnicode_AsUTF8String',
       'PyBytes_AsString',
+      // bool
+      'PyBool_FromLong',
+      'PyObject_IsTrue',
+      'PyObject_Not'
     }),
     // TODO: Py_ssize_t 需要处理一下
     typedefs: .includeSet({'PyObject', 'Py_ssize_t'}),

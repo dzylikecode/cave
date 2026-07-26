@@ -28,6 +28,7 @@ class PyObject {
             == PyString => PyString.fromPointer(ptr),
             == PyModule => PyModule.fromPointer(ptr),
             == PyFunction => PyFunction(ptr),
+            == PyBool => PyBool.fromPointer(ptr),
             _ => this,
           }
           as T;
@@ -194,4 +195,17 @@ class PyFunction extends PyObject {
         ),
       )
       .cast<T>();
+}
+
+class PyBool extends PyObject {
+  PyBool.fromPointer(super.ptr);
+
+  factory PyBool(bool value) =>
+      .fromPointer(g.PyBool_FromLong(value ? 1 : 0));
+}
+
+class PyInt extends PyObject {
+  PyInt.fromPointer(super.ptr);
+
+  // factory PyInt(int value) => .fromPointer(g.PyLong_FromLong(value));
 }
