@@ -27,17 +27,38 @@ class PyObject {
             == PyDict => PyDict.fromPointer(ptr),
             == PyString => PyString.fromPointer(ptr),
             == PyModule => PyModule.fromPointer(ptr),
-            == PyFunction => PyFunction(ptr),
             == PyBool => PyBool.fromPointer(ptr),
             == PyInt => PyInt.fromPointer(ptr),
             == PyDouble => PyDouble.fromPointer(ptr),
             _ => this,
           }
           as T;
-          
+
   // bool get isString => g.PyUnicode_Check(ptr) != 0;
   bool get isTrue => g.PyObject_IsTrue(ptr) != 0;
   bool get isFalse => g.PyObject_Not(ptr) != 0;
+
+  PyObject operator +(PyObject other) =>
+      PyObject(g.PyNumber_Add(ptr, other.ptr));
+  PyObject operator -() => PyObject(g.PyNumber_Negative(ptr));
+  PyObject operator -(PyObject other) =>
+      PyObject(g.PyNumber_Subtract(ptr, other.ptr));
+  PyObject operator *(PyObject other) =>
+      PyObject(g.PyNumber_Multiply(ptr, other.ptr));
+  PyObject operator /(PyObject other) =>
+      PyObject(g.PyNumber_TrueDivide(ptr, other.ptr));
+  PyObject operator ~/(PyObject other) =>
+      PyObject(g.PyNumber_FloorDivide(ptr, other.ptr));
+  PyObject operator %(PyObject other) =>
+      PyObject(g.PyNumber_Remainder(ptr, other.ptr));
+
+  T call<T extends PyObject>(PyTuple args, [PyDict? kwargs]) => ffi
+      .using(
+        (arena) => PyObject(
+          g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
+        ),
+      )
+      .cast<T>();
 }
 
 /// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)
@@ -163,8 +184,6 @@ class PyDict extends PyObject {
   );
 }
 
-
-
 /// [unicode](https://github.com/python/cpython/blob/main/Include/unicodeobject.h)
 class PyString extends PyObject {
   PyString.fromPointer(super.ptr);
@@ -189,23 +208,10 @@ class PyModule extends PyObject {
       ffi.using((arena) => .fromPointer(g.PyImport_Import(PyString(name).ptr)));
 }
 
-class PyFunction extends PyObject {
-  PyFunction(super.ptr);
-
-  T call<T extends PyObject>(PyTuple args, [PyDict? kwargs]) => ffi
-      .using(
-        (arena) => PyObject(
-          g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
-        ),
-      )
-      .cast<T>();
-}
-
 class PyBool extends PyObject {
   PyBool.fromPointer(super.ptr);
 
-  factory PyBool(bool value) =>
-      .fromPointer(g.PyBool_FromLong(value ? 1 : 0));
+  factory PyBool(bool value) => .fromPointer(g.PyBool_FromLong(value ? 1 : 0));
 
   bool get value => isTrue;
 }
@@ -220,8 +226,7 @@ class PyInt extends PyObject {
 class PyDouble extends PyObject {
   PyDouble.fromPointer(super.ptr);
 
-  factory PyDouble(double value) =>
-      .fromPointer(g.PyFloat_FromDouble(value));
+  factory PyDouble(double value) => .fromPointer(g.PyFloat_FromDouble(value));
 
   double get value => g.PyFloat_AsDouble(ptr);
 }
