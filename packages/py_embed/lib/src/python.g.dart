@@ -36,6 +36,12 @@ external ffi.Pointer<PyObject> PyUnicode_AsUTF8String(
 );
 
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Long)>()
+external ffi.Pointer<PyObject> PyLong_FromLong(int arg0);
+
+@ffi.Native<ffi.Long Function(ffi.Pointer<PyObject>)>()
+external int PyLong_AsLong(ffi.Pointer<PyObject> arg0);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Long)>()
 external ffi.Pointer<PyObject> PyBool_FromLong(int arg0);
 
 @ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()

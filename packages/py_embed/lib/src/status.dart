@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'package:ffi/ffi.dart' as ffi;
 
 import 'python.g.dart' as g;

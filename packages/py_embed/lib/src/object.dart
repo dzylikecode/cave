@@ -34,6 +34,8 @@ class PyObject {
           as T;
           
   // bool get isString => g.PyUnicode_Check(ptr) != 0;
+  bool get isTrue => g.PyObject_IsTrue(ptr) != 0;
+  bool get isFalse => g.PyObject_Not(ptr) != 0;
 }
 
 /// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)
@@ -171,7 +173,7 @@ class PyString extends PyObject {
     ),
   );
 
-  String toDartString() => ffi.using((arena) {
+  String get value => ffi.using((arena) {
     final bytes = g.PyUnicode_AsUTF8String(ptr);
     return g.PyBytes_AsString(bytes).cast<ffi.Utf8>().toDartString();
   });
@@ -202,10 +204,13 @@ class PyBool extends PyObject {
 
   factory PyBool(bool value) =>
       .fromPointer(g.PyBool_FromLong(value ? 1 : 0));
+
+  bool get value => isTrue;
 }
 
 class PyInt extends PyObject {
   PyInt.fromPointer(super.ptr);
 
-  // factory PyInt(int value) => .fromPointer(g.PyLong_FromLong(value));
+  factory PyInt(int value) => .fromPointer(g.PyLong_FromLong(value));
+  int get value => g.PyLong_AsLong(ptr);
 }

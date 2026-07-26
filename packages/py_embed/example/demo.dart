@@ -8,6 +8,6 @@ void main() async {
   final instance = cls(args);
   final PyFunction byeFunc = instance.get('bye');
   final PyString result = byeFunc(.fromList([PyString('world')]));
-  print(result.toDartString());
+  print(result.value);
   py.dispose();
 }

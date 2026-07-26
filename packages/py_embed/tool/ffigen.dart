@@ -87,7 +87,10 @@ void main() {
       // bool
       'PyBool_FromLong',
       'PyObject_IsTrue',
-      'PyObject_Not'
+      'PyObject_Not',
+      // int
+      'PyLong_FromLong',
+      'PyLong_AsLong',
     }),
     // TODO: Py_ssize_t 需要处理一下
     typedefs: .includeSet({'PyObject', 'Py_ssize_t'}),
