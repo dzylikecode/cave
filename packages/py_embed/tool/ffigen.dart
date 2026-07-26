@@ -91,6 +91,18 @@ void main() {
       // int
       'PyLong_FromLong',
       'PyLong_AsLong',
+      // double
+      'PyFloat_FromDouble',
+      'PyFloat_AsDouble',
+      // operators
+      'PyNumber_Add',
+      'PyNumber_Subtract',
+      'PyNumber_Multiply',
+      'PyNumber_TrueDivide',
+      'PyNumber_FloorDivide',
+      'PyNumber_Remainder',
+      'PyNumber_Power',
+      'PyNumber_Negative',
     }),
     // TODO: Py_ssize_t 需要处理一下
     typedefs: .includeSet({'PyObject', 'Py_ssize_t'}),

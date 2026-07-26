@@ -29,6 +29,8 @@ class PyObject {
             == PyModule => PyModule.fromPointer(ptr),
             == PyFunction => PyFunction(ptr),
             == PyBool => PyBool.fromPointer(ptr),
+            == PyInt => PyInt.fromPointer(ptr),
+            == PyDouble => PyDouble.fromPointer(ptr),
             _ => this,
           }
           as T;
@@ -213,4 +215,13 @@ class PyInt extends PyObject {
 
   factory PyInt(int value) => .fromPointer(g.PyLong_FromLong(value));
   int get value => g.PyLong_AsLong(ptr);
+}
+
+class PyDouble extends PyObject {
+  PyDouble.fromPointer(super.ptr);
+
+  factory PyDouble(double value) =>
+      .fromPointer(g.PyFloat_FromDouble(value));
+
+  double get value => g.PyFloat_AsDouble(ptr);
 }

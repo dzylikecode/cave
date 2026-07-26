@@ -44,6 +44,12 @@ external int PyLong_AsLong(ffi.Pointer<PyObject> arg0);
 @ffi.Native<ffi.Pointer<PyObject> Function(ffi.Long)>()
 external ffi.Pointer<PyObject> PyBool_FromLong(int arg0);
 
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Double)>()
+external ffi.Pointer<PyObject> PyFloat_FromDouble(double arg0);
+
+@ffi.Native<ffi.Double Function(ffi.Pointer<PyObject>)>()
+external double PyFloat_AsDouble(ffi.Pointer<PyObject> arg0);
+
 @ffi.Native<ffi.Pointer<PyObject> Function(Py_ssize_t)>()
 external ffi.Pointer<PyObject> PyTuple_New(int size);
 
@@ -331,6 +337,70 @@ external ffi.Pointer<PyObject> PyObject_CallObject(
   ffi.Pointer<PyObject> callable,
   ffi.Pointer<PyObject> args,
 );
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_Add(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_Subtract(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_Multiply(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_FloorDivide(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_TrueDivide(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyNumber_Remainder(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external ffi.Pointer<PyObject> PyNumber_Power(
+  ffi.Pointer<PyObject> o1,
+  ffi.Pointer<PyObject> o2,
+  ffi.Pointer<PyObject> o3,
+);
+
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyNumber_Negative(ffi.Pointer<PyObject> o);
 
 typedef Py_ssize_t = ffi.LongLong;
 
