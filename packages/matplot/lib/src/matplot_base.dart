@@ -1,6 +1,4 @@
-// TODO: Put public facing types in this file.
+import 'package:py_embed/py_embed.dart';
 
-/// Checks if you are awesome. Spoiler: you are.
-class Awesome {
-  bool get isAwesome => true;
-}
+final plt = PyModule('matplotlib.pyplot');
+

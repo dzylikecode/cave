@@ -11,13 +11,13 @@ class PyObject {
   PyObject(this.ptr);
   void dispose() => g.Py_DecRef(ptr);
 
-  T get<T extends PyObject>(String attr) => ffi.using(
+  PyObject get(String attr) => ffi.using(
     (arena) => PyObject(
       g.PyObject_GetAttrString(
         ptr,
         attr.toNativeUtf8(allocator: arena).cast<Char>(),
       ),
-    ).cast(),
+    ),
   );
 
   T cast<T extends PyObject>() =>
@@ -52,20 +52,18 @@ class PyObject {
   PyObject operator %(PyObject other) =>
       PyObject(g.PyNumber_Remainder(ptr, other.ptr));
 
-  T call<T extends PyObject>(PyTuple args, [PyDict? kwargs]) => ffi
-      .using(
-        (arena) => PyObject(
-          g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
-        ),
-      )
-      .cast<T>();
+  PyObject call(PyTuple args, [PyDict? kwargs]) => ffi.using(
+    (arena) => PyObject(
+      g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
+    ),
+  );
 }
 
 /// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)
 class PyTuple extends PyObject {
   PyTuple.fromPointer(super.ptr);
 
-  factory PyTuple(int size) =>
+  factory PyTuple([int size = 0]) =>
       ffi.using((arena) => .fromPointer(g.PyTuple_New(size)));
   factory PyTuple.fromList(List<PyObject> list) {
     final tuple = PyTuple(list.length);

@@ -1,6 +1,6 @@
-name: matplot
+name: num_py
 description: A starting point for Dart libraries or applications.
-version: 1.0.0
+version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
 environment:
@@ -8,10 +8,8 @@ environment:
 
 resolution: workspace
 
-# Add regular dependencies here.
 dependencies:
   py_embed: ^0.0.2
-  num_py: ^0.0.1
 
 dev_dependencies:
   lints: ^6.0.0

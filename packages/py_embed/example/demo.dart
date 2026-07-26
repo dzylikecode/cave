@@ -7,7 +7,7 @@ void main() async {
   final args = PyTuple.fromList([PyString('hello')]);
   final instance = cls(args);
   final byeFunc = instance.get('bye');
-  final PyString result = byeFunc(.fromList([PyString('world')]));
+  final PyString result = byeFunc(.fromList([PyString('world')])).cast();
   print(result.value);
   py.dispose();
 }
