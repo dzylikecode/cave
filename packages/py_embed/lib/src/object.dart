@@ -11,14 +11,23 @@ class PyObject {
   PyObject(this.ptr);
   void dispose() => g.Py_DecRef(ptr);
 
-  PyObject get(String attr) => ffi.using(
-    (arena) => PyObject(
-      g.PyObject_GetAttrString(
-        ptr,
-        attr.toNativeUtf8(allocator: arena).cast<Char>(),
-      ),
-    ),
-  );
+  PyObject get(String attr) => ffi.using((arena) {
+    final obj = g.PyObject_GetAttrString(
+      ptr,
+      attr.toNativeUtf8(allocator: arena).cast<Char>(),
+    );
+    if (obj == nullptr) {
+      throw StateError("Attribute '$attr' not found.");
+    }
+    return PyObject(obj);
+  });
+
+  // void set(PyObject key, PyObject value) {
+  //   final result = g.PyObject_SetItem(ptr, key.ptr, value.ptr);
+  //   if (result != 0) {
+  //     throw StateError('Failed to set Python object item.');
+  //   }
+  // }
 
   T cast<T extends PyObject>() =>
       switch (T) {

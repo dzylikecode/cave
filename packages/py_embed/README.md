@@ -1,10 +1,16 @@
-# python
+# py_embed
 
 ffi for [python c api](https://devguide.python.org/developer-workflow/c-api/index.html)
 
+## command
+
+```bash
+dart run py_embed:create
+```
+
 ## python bridge
 
-对于这个[hello_world_need_python_home](example/hello_world_need_python_home.cpp)需要指定 python 的 home 才能运行
+对于这个[need_home](example/need_home.cpp)需要指定 python 的 home 才能运行
 
 eg. windows powershell
 
@@ -55,6 +61,13 @@ dart run example/main.dart
 在虚拟环境中打开 code，也可以直接运行程序
 
 > setup.py 里的 name 是 distribution name，主要给 pip 和包管理系统使用；它不决定 Python 代码中的 import 名称
+
+## python 的所有权问题
+
+考虑闭包的典型情况，原来的调用丢失了，部分结果传递出来了，需要避免指针悬空。所以，所有权的问题是需要考虑的
+
+
+
 
 ## TODO
 

@@ -36,7 +36,10 @@ void main() {
       'Py_InitializeFromConfig',
       'PyRun_SimpleString',
       'PyImport_Import',
+      // object
       'PyObject_GetAttrString',
+      'PyObject_SetAttrString',
+      'PyObject_HasAttrString',
       'Py_DecRef',
       'Py_IncRef',
       // tuple
