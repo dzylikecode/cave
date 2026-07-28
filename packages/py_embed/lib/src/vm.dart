@@ -18,6 +18,7 @@ class Python {
       ..executable = venvPythonExe
       ..programName = venvPythonExe;
     python.initFromConfig(config);
+    config.dispose();
     return python;
   }
 

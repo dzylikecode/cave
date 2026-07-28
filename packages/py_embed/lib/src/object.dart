@@ -11,23 +11,38 @@ class PyObject {
   PyObject(this.ptr);
   void dispose() => g.Py_DecRef(ptr);
 
-  PyObject get(String attr) => ffi.using((arena) {
+  /// Get the [attribute] of a Python object by name.
+  ///
+  /// [attribute] must exist, otherwise a [StateError] will be thrown.
+  PyObject get(String attribute) => ffi.using((arena) {
     final obj = g.PyObject_GetAttrString(
       ptr,
-      attr.toNativeUtf8(allocator: arena).cast<Char>(),
+      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
     );
     if (obj == nullptr) {
-      throw StateError("Attribute '$attr' not found.");
+      throw StateError("Attribute '$attribute' not found.");
     }
     return PyObject(obj);
   });
 
-  // void set(PyObject key, PyObject value) {
-  //   final result = g.PyObject_SetItem(ptr, key.ptr, value.ptr);
-  //   if (result != 0) {
-  //     throw StateError('Failed to set Python object item.');
-  //   }
-  // }
+  void set(String attribute, PyObject value) => ffi.using((arena) {
+    final result = g.PyObject_SetAttrString(
+      ptr,
+      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
+      value.ptr,
+    );
+    if (result != 0) {
+      throw StateError("Failed to set attribute '$attribute'.");
+    }
+  });
+
+  bool has(String attribute) => ffi.using((arena) {
+    final result = g.PyObject_HasAttrString(
+      ptr,
+      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
+    );
+    return result != 0;
+  });
 
   T cast<T extends PyObject>() =>
       switch (T) {
@@ -60,6 +75,10 @@ class PyObject {
       PyObject(g.PyNumber_FloorDivide(ptr, other.ptr));
   PyObject operator %(PyObject other) =>
       PyObject(g.PyNumber_Remainder(ptr, other.ptr));
+  PyObject operator [](PyObject key) =>
+      PyObject(g.PyObject_GetItem(ptr, key.ptr));
+  void operator []=(PyObject key, PyObject value) =>
+      g.PyObject_SetItem(ptr, key.ptr, value.ptr);
 
   PyObject call(PyTuple args, [PyDict? kwargs]) => ffi.using(
     (arena) => PyObject(

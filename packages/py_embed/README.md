@@ -72,4 +72,3 @@ dart run example/main.dart
 ## TODO
 
 - [ ] linux
-- [ ] c 内存处理 https://github.com/dart-lang/native/issues/3450

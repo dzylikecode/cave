@@ -12,6 +12,25 @@ external ffi.Pointer<PyObject> PyObject_GetAttrString(
   ffi.Pointer<ffi.Char> arg1,
 );
 
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<ffi.Char>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external int PyObject_SetAttrString(
+  ffi.Pointer<PyObject> arg0,
+  ffi.Pointer<ffi.Char> arg1,
+  ffi.Pointer<PyObject> arg2,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)>()
+external int PyObject_HasAttrString(
+  ffi.Pointer<PyObject> arg0,
+  ffi.Pointer<ffi.Char> arg1,
+);
+
 @ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>)>()
 external int PyObject_IsTrue(ffi.Pointer<PyObject> arg0);
 
@@ -336,6 +355,39 @@ external ffi.Pointer<PyObject> PyObject_Call(
 external ffi.Pointer<PyObject> PyObject_CallObject(
   ffi.Pointer<PyObject> callable,
   ffi.Pointer<PyObject> args,
+);
+
+@ffi.Native<
+  ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)
+>()
+external ffi.Pointer<PyObject> PyObject_GetItem(
+  ffi.Pointer<PyObject> o,
+  ffi.Pointer<PyObject> key,
+);
+
+@ffi.Native<
+  ffi.Int Function(
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+    ffi.Pointer<PyObject>,
+  )
+>()
+external int PyObject_SetItem(
+  ffi.Pointer<PyObject> o,
+  ffi.Pointer<PyObject> key,
+  ffi.Pointer<PyObject> v,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)>()
+external int PyObject_DelItemString(
+  ffi.Pointer<PyObject> o,
+  ffi.Pointer<ffi.Char> key,
+);
+
+@ffi.Native<ffi.Int Function(ffi.Pointer<PyObject>, ffi.Pointer<PyObject>)>()
+external int PyObject_DelItem(
+  ffi.Pointer<PyObject> o,
+  ffi.Pointer<PyObject> key,
 );
 
 @ffi.Native<
