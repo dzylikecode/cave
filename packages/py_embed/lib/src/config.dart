@@ -78,11 +78,12 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   );
 
   Pointer<T> _ptr;
+
+  @internal
   Pointer<T> get ptr {
     if (_isDisposed) {
       throw StateError('$runtimeType has already been disposed');
     }
-
     return _ptr;
   }
 

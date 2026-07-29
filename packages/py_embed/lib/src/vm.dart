@@ -5,6 +5,7 @@ import 'python.g.dart' as g;
 import 'config.dart';
 import 'status.dart';
 
+/// 这个是进程级别的，所以不能在不同的 isolate 中重复调用
 class Python {
   Python();
   void init() => g.Py_Initialize();
