@@ -2,6 +2,77 @@
 
 ffi for [python c api](https://devguide.python.org/developer-workflow/c-api/index.html)
 
+用户心智认知最低作为最高约束
+
+```dart
+void main() {
+  final value = PyString('hello');
+  print(value.value);
+}
+```
+
+> [!NOTE]
+>
+> 假设当前有一个 python 虚拟环境
+
+- 不需要创建python
+- 不需要显示释放什么
+
+所有权模型也是化简的：创建 Dart `PyObject` 就可以直接使用；每个 Dart 对象独立持有一个 Python 引用。
+
+同时保持灵活性，可以显示指定 Python 环境
+
+```dart
+Future<void> main() async {
+  Python.configure(
+    executable: await getPyExecutableFromShell(),
+  );
+
+  final value = PyString('hello');
+  print(value.value);
+}
+```
+
+确定性释放资源
+
+```dart
+void main() {
+  final value = PyString('hello');
+
+  try {
+    print(value.value);
+  } finally {
+    value.dispose();
+  }
+}
+```
+
+明确地关闭 Python 解释器
+
+```dart
+void main() {
+  final value = PyString('hello');
+  print(value.value);
+
+  Python.shutdown();
+}
+```
+
+因而：
+
+1. 第一个 Python API 自动初始化默认解释器。
+2. 用户不需要创建或传递 runtime。
+3. 特殊配置必须在第一次 Python API 前通过 `Python.configure()` 提供。
+4. 每个 Dart `PyObject` 独立拥有一个 Python引用。
+5. borrowed reference 进入 Dart 后立即提升为 owned reference。
+6. steal reference 的差异由具体类型 API 内部隐藏。
+7. `dispose()` 幂等，并用于及时释放。
+8. Finalizer 只排队，不直接调用 Python。
+9. `Python.shutdown()` 是可选的确定性关闭能力。
+10. 未显式 shutdown 时，解释器存活到进程退出。
+
+
+
 ## command
 
 ```bash
@@ -66,7 +137,8 @@ dart run example/main.dart
 
 考虑闭包的典型情况，原来的调用丢失了，部分结果传递出来了，需要避免指针悬空。所以，所有权的问题是需要考虑的
 
-
+为减少心智负担，所有权的规则是：
+- 拿到 PyObject → Dart 拥有它
 
 
 ## TODO

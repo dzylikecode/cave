@@ -4,27 +4,27 @@ import 'python.g.dart' as g;
 
 /// TODO: 还没有处理多线程的情况
 final class PyRef {
-  Pointer<g.PyObject> ptr;
-  bool owns;
-  bool disposed = false;
+  Pointer<g.PyObject> _ptr;
 
-  PyRef.owned(this.ptr) : owns = true;
-  PyRef.borrowed(this.ptr) : owns = false;
+  /// 包装 new reference，不增加引用。
+  PyRef.owned(this._ptr);
 
-  PyRef newRef() {
-    g.Py_IncRef(ptr);
-    return .owned(ptr);
+  /// 将 borrowed reference 提升成 Dart 拥有的引用。
+  PyRef.borrowed(this._ptr) {
+    g.Py_IncRef(_ptr);
   }
 
-  Pointer<g.PyObject> steal() {
-    owns = false;
-    return ptr;
+  /// 给 Python 创建一个可以长期持有的新引用。
+  Pointer<g.PyObject> newReference() {
+    g.Py_IncRef(_ptr);
+    return _ptr;
   }
 
   void dispose() {
-    if (owns && !disposed && ptr != nullptr) {
-      g.Py_DecRef(ptr);
-      disposed = true;
-    }
+    if (_ptr == nullptr) return;
+
+    final ptr = _ptr;
+    _ptr = nullptr;
+    g.Py_DecRef(ptr);
   }
 }
