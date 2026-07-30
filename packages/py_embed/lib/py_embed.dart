@@ -3,5 +3,5 @@ library;
 
 export 'src/config.dart' hide StringToWCharExt, WCharExt;
 export 'src/venv.dart';
-export 'src/vm.dart';
+export 'src/vm.dart' show Python;
 export 'src/object.dart';

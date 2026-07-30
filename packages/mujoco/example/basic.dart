@@ -33,12 +33,10 @@ const MODEL_XML = """
 
 
 void main() async {
-  final py = Python.venv(await getPyExecutableFromShell());
   print('mujoco version: ${Mujoco.version}');
   final model = MjModel.fromXmlString(MODEL_XML);
   final data = MjData(model);
   mjForward(model, data);
   print('model: ${model.nq}, ${model.nv}, ${model.nu}');
   print('data: ${data.time}, ${data.qpos}, ${data.qvel}');
-  py.dispose();
 }

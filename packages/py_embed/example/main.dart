@@ -1,9 +1,6 @@
 import 'package:py_embed/py_embed.dart';
 
-void main() async {
-  final py = Python.venv(await getPyExecutableFromShell());
-
-  py.runSimpleString('print("Hello from Python!")');
-
-  py.dispose();
+void main() {
+  final value = PyString('hello');
+  print(value.value);
 }

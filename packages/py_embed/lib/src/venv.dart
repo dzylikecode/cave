@@ -40,4 +40,3 @@ String getPyPrefixFromShellSync([String pyExe = 'python']) =>
 
 String getPyExecutableFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.executable)', pyExe);
-

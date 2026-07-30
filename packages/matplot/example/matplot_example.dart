@@ -1,10 +1,7 @@
 import 'package:py_embed/py_embed.dart';
 import 'package:num_py/num_py.dart';
 
-
 void main() async {
-  final py = Python.venv(await getPyExecutableFromShell());
-
   // t = np.arange(0.0, 2.0, 0.01)
   final t = arange(
     PyTuple.fromList([PyDouble(0.0), PyDouble(2.0), PyDouble(0.01)]),
@@ -42,6 +39,4 @@ void main() async {
 
   // plt.show()
   plt.get('show')(PyTuple(0));
-
-  py.dispose();
 }

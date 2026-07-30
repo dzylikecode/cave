@@ -1,7 +1,7 @@
 import 'package:py_embed/py_embed.dart';
 
 void main() async {
-  final py = Python.venv(await getPyExecutableFromShell());
+  Python.configureVenv(await getPyExecutableFromShell());
   final module = PyModule('py_pkg');
   final cls = module.get('PyClass');
   final args = PyTuple.fromList([PyString('hello')]);
@@ -9,5 +9,5 @@ void main() async {
   final byeFunc = instance.get('bye');
   final PyString result = byeFunc(.fromList([PyString('world')])).cast();
   print(result.value);
-  py.dispose();
+  Python.shutdown();
 }
