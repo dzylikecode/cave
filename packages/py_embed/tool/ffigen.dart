@@ -35,12 +35,21 @@ void main() {
       'Py_ExitStatusException',
       'Py_InitializeFromConfig',
       'PyRun_SimpleString',
+      // errors
+      'PyErr_Occurred',
+      'PyErr_Clear',
+      'PyErr_Fetch',
+      'PyErr_NormalizeException',
+      'PyExceptionClass_Name',
       'PyImport_Import',
+
       /// ## object
       /// [object](https://github.com/python/cpython/blob/main/Include/object.h)
       'PyObject_GetAttrString',
       'PyObject_SetAttrString',
       'PyObject_HasAttrString',
+      'PyObject_Str',
+
       /// [operator[]=](https://github.com/python/cpython/blob/main/Include/abstract.h)
       'PyObject_GetItem',
       'PyObject_SetItem',

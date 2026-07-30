@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:meta/meta.dart';
 
+import 'exception.dart';
 import 'python.g.dart' as g;
 import 'vm.dart';
 
@@ -11,6 +12,8 @@ import 'vm.dart';
 /// compose it so every live Dart wrapper owns an independent Python reference.
 @internal
 final class PyRef implements Finalizable {
+  // 由于 Finalizer 调用不是按顺序的
+  // 为保证 runtime 最后，所有先注册到 runtime 里面
   static final Finalizer<PythonReferenceState> _finalizer = Finalizer(
     pythonRuntime.releaseLater,
   );
@@ -29,7 +32,7 @@ final class PyRef implements Finalizable {
   /// Promotes a borrowed reference to an independently owned Dart reference.
   factory PyRef.borrowed(Pointer<g.PyObject> pointer) {
     if (pointer == nullptr) {
-      throw StateError('A Python API returned a null object.');
+      throwPythonException(context: 'borrowing a Python object');
     }
     runPython(() => g.Py_IncRef(pointer));
     return ._(pointer);

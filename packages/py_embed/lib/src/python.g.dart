@@ -4,6 +4,9 @@
 // ignore_for_file: type=lint, unused_import
 import 'dart:ffi' as ffi;
 
+@ffi.Native<ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<PyObject> PyObject_Str(ffi.Pointer<PyObject> arg0);
+
 @ffi.Native<
   ffi.Pointer<PyObject> Function(ffi.Pointer<PyObject>, ffi.Pointer<ffi.Char>)
 >()
@@ -316,6 +319,43 @@ external PyStatus PyConfig_SetString(
   ffi.Pointer<PyConfig> config,
   ffi.Pointer<ffi.Pointer<ffi.WChar>> config_str,
   ffi.Pointer<ffi.WChar> str,
+);
+
+@ffi.Native<ffi.Pointer<PyObject> Function()>()
+external ffi.Pointer<PyObject> PyErr_Occurred();
+
+@ffi.Native<ffi.Void Function()>()
+external void PyErr_Clear();
+
+@ffi.Native<
+  ffi.Void Function(
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+  )
+>()
+external void PyErr_Fetch(
+  ffi.Pointer<ffi.Pointer<PyObject>> arg0,
+  ffi.Pointer<ffi.Pointer<PyObject>> arg1,
+  ffi.Pointer<ffi.Pointer<PyObject>> arg2,
+);
+
+@ffi.Native<
+  ffi.Void Function(
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+    ffi.Pointer<ffi.Pointer<PyObject>>,
+  )
+>()
+external void PyErr_NormalizeException(
+  ffi.Pointer<ffi.Pointer<PyObject>> arg0,
+  ffi.Pointer<ffi.Pointer<PyObject>> arg1,
+  ffi.Pointer<ffi.Pointer<PyObject>> arg2,
+);
+
+@ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<PyObject>)>()
+external ffi.Pointer<ffi.Char> PyExceptionClass_Name(
+  ffi.Pointer<PyObject> arg0,
 );
 
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Char>)>()

@@ -6,6 +6,7 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
 import 'config.dart';
+import 'exception.dart';
 import 'python.g.dart' as g;
 import 'status.dart';
 import 'venv.dart';
@@ -148,7 +149,9 @@ final class PythonRuntime {
 
     _executionDepth++;
     try {
-      return operation();
+      final result = operation();
+      checkPythonError();
+      return result;
     } finally {
       _executionDepth--;
       if (isOutermostCall) {
@@ -159,7 +162,7 @@ final class PythonRuntime {
 
   PythonReferenceState register(Pointer<g.PyObject> pointer) {
     if (pointer == nullptr) {
-      throw StateError('A Python API returned a null object.');
+      throwPythonException(context: 'creating a Dart Python object');
     }
     if (_state != .running) {
       throw StateError('Python is not running.');

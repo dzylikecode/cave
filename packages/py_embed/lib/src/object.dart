@@ -2,6 +2,7 @@ import 'dart:ffi';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
+import 'exception.dart';
 import 'gc.dart';
 import 'python.g.dart' as g;
 import 'vm.dart';
@@ -9,8 +10,8 @@ import 'vm.dart';
 class PyObject {
   final PyRef _ref;
 
-  PyObject.owned(Pointer<g.PyObject> ptr) : _ref = PyRef.owned(ptr);
-  PyObject.borrowed(Pointer<g.PyObject> ptr) : _ref = PyRef.borrowed(ptr);
+  PyObject.owned(Pointer<g.PyObject> ptr) : _ref = .owned(ptr);
+  PyObject.borrowed(Pointer<g.PyObject> ptr) : _ref = .borrowed(ptr);
 
   @internal
   Pointer<g.PyObject> get ptr => _ref.pointer;
@@ -29,9 +30,9 @@ class PyObject {
         attribute.toNativeUtf8(allocator: arena).cast<Char>(),
       );
       if (obj == nullptr) {
-        throw StateError("Attribute '$attribute' not found.");
+        throwPythonException(context: "getting attribute '$attribute'");
       }
-      return PyObject.owned(obj);
+      return .owned(obj);
     }),
   );
 
@@ -43,7 +44,7 @@ class PyObject {
         value.ptr,
       );
       if (result != 0) {
-        throw StateError("Failed to set attribute '$attribute'.");
+        throwPythonException(context: "setting attribute '$attribute'");
       }
     }),
   );
@@ -77,26 +78,25 @@ class PyObject {
   bool get isFalse => runPython(() => g.PyObject_Not(ptr) != 0);
 
   PyObject operator +(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_Add(ptr, other.ptr)));
-  PyObject operator -() =>
-      runPython(() => PyObject.owned(g.PyNumber_Negative(ptr)));
+      runPython(() => .owned(g.PyNumber_Add(ptr, other.ptr)));
+  PyObject operator -() => runPython(() => .owned(g.PyNumber_Negative(ptr)));
   PyObject operator -(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_Subtract(ptr, other.ptr)));
+      runPython(() => .owned(g.PyNumber_Subtract(ptr, other.ptr)));
   PyObject operator *(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_Multiply(ptr, other.ptr)));
+      runPython(() => .owned(g.PyNumber_Multiply(ptr, other.ptr)));
   PyObject operator /(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_TrueDivide(ptr, other.ptr)));
+      runPython(() => .owned(g.PyNumber_TrueDivide(ptr, other.ptr)));
   PyObject operator ~/(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_FloorDivide(ptr, other.ptr)));
+      runPython(() => .owned(g.PyNumber_FloorDivide(ptr, other.ptr)));
   PyObject operator %(PyObject other) =>
-      runPython(() => PyObject.owned(g.PyNumber_Remainder(ptr, other.ptr)));
+      runPython(() => .owned(g.PyNumber_Remainder(ptr, other.ptr)));
   PyObject operator [](PyObject key) =>
-      runPython(() => PyObject.owned(g.PyObject_GetItem(ptr, key.ptr)));
+      runPython(() => .owned(g.PyObject_GetItem(ptr, key.ptr)));
   void operator []=(PyObject key, PyObject value) =>
       runPython(() => g.PyObject_SetItem(ptr, key.ptr, value.ptr));
 
   PyObject call(PyTuple args, [PyDict? kwargs]) => runPython(
-    () => PyObject.owned(
+    () => .owned(
       g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
     ),
   );
@@ -120,9 +120,9 @@ class PyTuple extends PyObject {
   int setItem(int index, PyObject obj) =>
       runPython(() => g.PyTuple_SetItem(ptr, index, obj._ref.newReference()));
   PyObject getItem(int index) =>
-      runPython(() => PyObject.borrowed(g.PyTuple_GetItem(ptr, index)));
+      runPython(() => .borrowed(g.PyTuple_GetItem(ptr, index)));
   PyTuple slice(int start, int end) =>
-      runPython(() => PyTuple.fromPointer(g.PyTuple_GetSlice(ptr, start, end)));
+      runPython(() => .fromPointer(g.PyTuple_GetSlice(ptr, start, end)));
 }
 
 /// [list](https://github.com/python/cpython/blob/main/Include/listobject.h)
@@ -144,20 +144,19 @@ class PyList extends PyObject {
   int setItem(int index, PyObject obj) =>
       runPython(() => g.PyList_SetItem(ptr, index, obj._ref.newReference()));
   PyObject getItem(int index) =>
-      runPython(() => PyObject.borrowed(g.PyList_GetItem(ptr, index)));
+      runPython(() => .borrowed(g.PyList_GetItem(ptr, index)));
   int insert(int index, PyObject obj) =>
       runPython(() => g.PyList_Insert(ptr, index, obj.ptr));
   int append(PyObject obj) => runPython(() => g.PyList_Append(ptr, obj.ptr));
   PyList slice(int start, int end) =>
-      runPython(() => PyList.fromPointer(g.PyList_GetSlice(ptr, start, end)));
+      runPython(() => .fromPointer(g.PyList_GetSlice(ptr, start, end)));
   int setSlice(int start, int end, PyList items) =>
       runPython(() => g.PyList_SetSlice(ptr, start, end, items.ptr));
   int deleteSlice(int start, int end) =>
       runPython(() => g.PyList_SetSlice(ptr, start, end, nullptr));
   int sort() => runPython(() => g.PyList_Sort(ptr));
   int reverse() => runPython(() => g.PyList_Reverse(ptr));
-  PyTuple asTuple() =>
-      runPython(() => PyTuple.fromPointer(g.PyList_AsTuple(ptr)));
+  PyTuple asTuple() => runPython(() => .fromPointer(g.PyList_AsTuple(ptr)));
 }
 
 /// [dict](https://github.com/python/cpython/blob/main/Include/dictobject.h)
@@ -179,10 +178,9 @@ class PyDict extends PyObject {
   int setItem(PyObject key, PyObject value) =>
       runPython(() => g.PyDict_SetItem(ptr, key.ptr, value.ptr));
   PyObject getItem(PyObject key) =>
-      runPython(() => PyObject.borrowed(g.PyDict_GetItem(ptr, key.ptr)));
-  PyObject getItemWithError(PyObject key) => runPython(
-    () => PyObject.borrowed(g.PyDict_GetItemWithError(ptr, key.ptr)),
-  );
+      runPython(() => .borrowed(g.PyDict_GetItem(ptr, key.ptr)));
+  PyObject getItemWithError(PyObject key) =>
+      runPython(() => .borrowed(g.PyDict_GetItemWithError(ptr, key.ptr)));
   int deleteItem(PyObject key) =>
       runPython(() => g.PyDict_DelItem(ptr, key.ptr));
   void clear() => runPython(() => g.PyDict_Clear(ptr));
@@ -197,19 +195,16 @@ class PyDict extends PyObject {
       final result = <({PyObject key, PyObject value})>[];
 
       while (g.PyDict_Next(ptr, position, key, value) != 0) {
-        result.add((
-          key: PyObject.borrowed(key.value),
-          value: PyObject.borrowed(value.value),
-        ));
+        result.add((key: .borrowed(key.value), value: .borrowed(value.value)));
       }
       return result;
     }),
   );
 
-  PyList keys() => runPython(() => PyList.fromPointer(g.PyDict_Keys(ptr)));
-  PyList values() => runPython(() => PyList.fromPointer(g.PyDict_Values(ptr)));
-  PyList items() => runPython(() => PyList.fromPointer(g.PyDict_Items(ptr)));
-  PyDict copy() => runPython(() => PyDict.fromPointer(g.PyDict_Copy(ptr)));
+  PyList keys() => runPython(() => .fromPointer(g.PyDict_Keys(ptr)));
+  PyList values() => runPython(() => .fromPointer(g.PyDict_Values(ptr)));
+  PyList items() => runPython(() => .fromPointer(g.PyDict_Items(ptr)));
+  PyDict copy() => runPython(() => .fromPointer(g.PyDict_Copy(ptr)));
   int contains(PyObject key) =>
       runPython(() => g.PyDict_Contains(ptr, key.ptr));
   int update(PyObject other) =>
@@ -222,7 +217,7 @@ class PyDict extends PyObject {
 
   PyObject getItemString(String key) => runPython(
     () => ffi.using(
-      (arena) => PyObject.borrowed(
+      (arena) => .borrowed(
         g.PyDict_GetItemString(
           ptr,
           key.toNativeUtf8(allocator: arena).cast<Char>(),
@@ -265,7 +260,7 @@ class PyString extends PyObject {
   String get value => runPython(() {
     final bytes = g.PyUnicode_AsUTF8String(ptr);
     if (bytes == nullptr) {
-      throw StateError('Failed to convert Python string to UTF-8.');
+      throwPythonException(context: 'converting a Python string to UTF-8');
     }
     try {
       return g.PyBytes_AsString(bytes).cast<ffi.Utf8>().toDartString();
