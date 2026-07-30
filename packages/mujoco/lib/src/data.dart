@@ -1,38 +1,25 @@
-import 'package:py_embed/py_embed.dart';
-import 'package:meta/meta.dart';
-
+import 'array.dart';
+import 'backend/backend.dart';
+import 'backend/backend_factory.dart';
 import 'model.dart';
-import 'mujoco_base.dart';
 
-class MjData {
-  @internal
-  final PyObject m;
-  const MjData._(this.m);
+final class MjData {
+  final MjModel model;
 
-  factory MjData(MjModel model) {
-    final cls = pyLib.get('MjData');
-    final data = cls.call(.fromList([model.m]));
-    return ._(data);
-  }
+  final BackendData _handle;
 
-  double get time => m.get('time').cast<PyDouble>().value;
-  List<double> get qpos {
-    final array = m.get('qpos');
-    final list = array.get('tolist').call(PyTuple()).cast<PyList>();
+  MjData._(this.model, this._handle);
 
-    return .generate(
-      list.length,
-      (index) => list.getItem(index).cast<PyDouble>().value,
-    );
-  }
+  factory MjData(MjModel model) =>
+      ._(model, mujocoBackend.createData(modelHandle(model)));
 
-  List<double> get qvel {
-    final array = m.get('qvel');
-    final list = array.get('tolist').call(PyTuple()).cast<PyList>();
+  double get time => _handle.time;
+  MjDoubleArray get qpos => _handle.qpos;
+  MjDoubleArray get qvel => _handle.qvel;
+  MjDoubleArray get qacc => _handle.qacc;
+  MjDoubleArray get ctrl => _handle.ctrl;
 
-    return .generate(
-      list.length,
-      (index) => list.getItem(index).cast<PyDouble>().value,
-    );
-  }
+  void dispose() => _handle.dispose();
 }
+
+BackendData dataHandle(MjData data) => data._handle;

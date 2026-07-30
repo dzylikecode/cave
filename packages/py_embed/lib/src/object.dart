@@ -100,6 +100,40 @@ class PyObject {
       g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
     ),
   );
+
+  PyObject call0() =>
+      runPython(() => .owned(g.PyObject_CallObject(ptr, nullptr)));
+
+  PyObject call1(PyObject arg) {
+    final arguments = PyTuple.fromList([arg]);
+    try {
+      return call(arguments);
+    } finally {
+      arguments.dispose();
+    }
+  }
+
+  PyObject call2(PyObject first, PyObject second) {
+    final arguments = PyTuple.fromList([first, second]);
+    try {
+      return call(arguments);
+    } finally {
+      arguments.dispose();
+    }
+  }
+
+  PyObject callArgs(List<PyObject> args, [Map<String, PyObject>? kwargs]) {
+    final arguments = PyTuple.fromList(args);
+    final keywordArguments = kwargs == null
+        ? null
+        : PyDict.fromMap(kwargs.map((key, value) => MapEntry(PyString(key), value)));
+    try {
+      return call(arguments, keywordArguments);
+    } finally {
+      arguments.dispose();
+      keywordArguments?.dispose();
+    }
+  }
 }
 
 /// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)

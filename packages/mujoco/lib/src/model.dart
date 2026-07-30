@@ -1,22 +1,19 @@
-import 'package:py_embed/py_embed.dart';
-import 'package:meta/meta.dart';
+import 'backend/backend.dart';
+import 'backend/backend_factory.dart';
 
-import 'mujoco_base.dart';
+final class MjModel {
+  final BackendModel _handle;
 
-class MjModel {
-  @internal
-  final PyObject m;
+  MjModel._(this._handle);
 
-  const MjModel._(this.m);
+  factory MjModel.fromXmlString(String content) =>
+      MjModel._(mujocoBackend.createModelFromXmlString(content));
 
-  factory MjModel.fromXmlString(String content) {
-    final cls = pyLib.get('MjModel');
-    final clsFromString = cls.get('from_xml_string');
-    final model = clsFromString.call(.fromList([PyString(content)]));
-    return ._(model);
-  }
+  int get nq => _handle.nq;
+  int get nv => _handle.nv;
+  int get nu => _handle.nu;
 
-  int get nq => m.get('nq').cast<PyInt>().value;
-  int get nv => m.get('nv').cast<PyInt>().value;
-  int get nu => m.get('nu').cast<PyInt>().value;
+  void dispose() => _handle.dispose();
 }
+
+BackendModel modelHandle(MjModel model) => model._handle;

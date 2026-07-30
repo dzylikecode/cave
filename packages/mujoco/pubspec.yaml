@@ -9,7 +9,6 @@ environment:
 resolution: workspace
 
 dependencies:
-  meta: ^1.19.0
   py_embed: ^0.0.3
 
 dev_dependencies:

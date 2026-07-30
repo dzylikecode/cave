@@ -43,6 +43,9 @@ void main() {
   data.ctrl[0] = 0.1;
   for (var step = 0; step < 1000; step++) {
     mjStep(model, data);
+    if (step % 100 == 0) {
+      print('step: $step, time: ${data.time}, qpos: ${data.qpos.toList()}');
+    }
   }
   print('final: ${data.time}, ${data.qpos.toList()}');
 }

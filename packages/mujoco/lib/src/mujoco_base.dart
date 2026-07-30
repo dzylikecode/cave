@@ -1,15 +1,16 @@
-import 'package:py_embed/py_embed.dart';
-import 'package:meta/meta.dart';
-
-import 'model.dart';
+import 'backend/backend_factory.dart';
 import 'data.dart';
-
-@internal
-final pyLib = PyModule('mujoco');
+import 'model.dart';
 
 abstract final class Mujoco {
-  static final version = pyLib.get('__version__').cast<PyString>().value;
+  static String get version => mujocoBackend.version;
 }
 
 void mjForward(MjModel model, MjData data) =>
-    pyLib.get('mj_forward')(.fromList([model.m, data.m]));
+    mujocoBackend.forward(modelHandle(model), dataHandle(data));
+
+void mjStep(MjModel model, MjData data) =>
+    mujocoBackend.step(modelHandle(model), dataHandle(data));
+
+void mjResetData(MjModel model, MjData data) =>
+    mujocoBackend.resetData(modelHandle(model), dataHandle(data));
