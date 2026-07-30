@@ -77,6 +77,21 @@ class PyObject {
   bool get isTrue => runPython(() => g.PyObject_IsTrue(ptr) != 0);
   bool get isFalse => runPython(() => g.PyObject_Not(ptr) != 0);
 
+  int toInt() => runPython(() => g.PyLong_AsLong(ptr));
+  double toDouble() => runPython(() => g.PyFloat_AsDouble(ptr));
+  bool toBool() => runPython(() => g.PyObject_IsTrue(ptr) != 0);
+  String toDartString() => runPython(() {
+    final bytes = g.PyUnicode_AsUTF8String(ptr);
+    if (bytes == nullptr) {
+      throwPythonException(context: 'converting a Python string to UTF-8');
+    }
+    try {
+      return g.PyBytes_AsString(bytes).cast<ffi.Utf8>().toDartString();
+    } finally {
+      g.Py_DecRef(bytes);
+    }
+  });
+
   PyObject operator +(PyObject other) =>
       runPython(() => .owned(g.PyNumber_Add(ptr, other.ptr)));
   PyObject operator -() => runPython(() => .owned(g.PyNumber_Negative(ptr)));
@@ -124,14 +139,21 @@ class PyObject {
 
   PyObject callArgs(List<PyObject> args, [Map<String, PyObject>? kwargs]) {
     final arguments = PyTuple.fromList(args);
-    final keywordArguments = kwargs == null
-        ? null
-        : PyDict.fromMap(kwargs.map((key, value) => MapEntry(PyString(key), value)));
+    PyDict? keywordArguments;
+
     try {
+      if (kwargs != null) {
+        keywordArguments = PyDict();
+
+        for (final MapEntry(:key, :value) in kwargs.entries) {
+          keywordArguments.setItemString(key, value);
+        }
+      }
+
       return call(arguments, keywordArguments);
     } finally {
-      arguments.dispose();
       keywordArguments?.dispose();
+      arguments.dispose();
     }
   }
 }
@@ -291,17 +313,7 @@ class PyString extends PyObject {
     ),
   );
 
-  String get value => runPython(() {
-    final bytes = g.PyUnicode_AsUTF8String(ptr);
-    if (bytes == nullptr) {
-      throwPythonException(context: 'converting a Python string to UTF-8');
-    }
-    try {
-      return g.PyBytes_AsString(bytes).cast<ffi.Utf8>().toDartString();
-    } finally {
-      g.Py_DecRef(bytes);
-    }
-  });
+  String get value => toDartString();
 }
 
 /// [import](https://github.com/python/cpython/blob/main/Include/import.h)
@@ -335,7 +347,8 @@ class PyInt extends PyObject {
 
   factory PyInt(int value) =>
       runPython(() => .fromPointer(g.PyLong_FromLong(value)));
-  int get value => runPython(() => g.PyLong_AsLong(ptr));
+
+  int get value => toInt();
 }
 
 class PyDouble extends PyObject {
@@ -345,5 +358,5 @@ class PyDouble extends PyObject {
   factory PyDouble(double value) =>
       runPython(() => .fromPointer(g.PyFloat_FromDouble(value)));
 
-  double get value => runPython(() => g.PyFloat_AsDouble(ptr));
+  double get value => toDouble();
 }

@@ -22,7 +22,7 @@ final class PythonMujocoBackend implements MujocoBackend {
   BackendModel createModelFromXmlString(String xml) {
     final source = PyString(xml);
     try {
-      return PythonBackendModel(call1(_modelFromXmlString, source));
+      return PythonBackendModel(_modelFromXmlString.call1(source));
     } finally {
       source.dispose();
     }
@@ -32,7 +32,7 @@ final class PythonMujocoBackend implements MujocoBackend {
   BackendModel createModelFromXmlFile(String filePath) {
     final source = PyString(filePath);
     try {
-      return PythonBackendModel(call1(_modelFromXmlFile, source));
+      return PythonBackendModel(_modelFromXmlFile.call1(source));
     } finally {
       source.dispose();
     }
@@ -41,10 +41,7 @@ final class PythonMujocoBackend implements MujocoBackend {
   @override
   BackendData createData(BackendModel model) {
     final pythonModel = _requireModel(model);
-    return PythonBackendData(
-      pythonModel,
-      call1(_dataClass, pythonModel.object),
-    );
+    return PythonBackendData(pythonModel, _dataClass.call1(pythonModel.object));
   }
 
   @override
@@ -70,7 +67,7 @@ final class PythonMujocoBackend implements MujocoBackend {
       throw ArgumentError('MjData was created from a different MjModel.');
     }
 
-    final result = call2(callable, pythonModel.object, pythonData.object);
+    final result = callable.call2(pythonModel.object, pythonData.object);
     result.dispose();
   }
 

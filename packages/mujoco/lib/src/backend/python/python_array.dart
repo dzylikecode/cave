@@ -52,7 +52,7 @@ final class PythonMjDoubleArray implements MjDoubleArray {
 
   @override
   List<double> toList() =>
-      List<double>.generate(length, (index) => this[index], growable: false);
+      .generate(length, (index) => this[index], growable: false);
 
   @override
   void setAll(Iterable<double> values) {
