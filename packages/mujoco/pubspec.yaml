@@ -1,7 +1,7 @@
 name: mujoco
-description: A starting point for Dart libraries or applications.
+description: Dart bindings for MuJoCo physics engine.
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/dzylikecode/cave/tree/main/packages/mujoco
 
 environment:
   sdk: ^3.12.2
@@ -9,7 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  py_embed: ^0.0.3
+  py_embed: ^0.0.4
 
 dev_dependencies:
   lints: ^6.0.0
