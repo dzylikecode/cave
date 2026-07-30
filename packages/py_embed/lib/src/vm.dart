@@ -64,6 +64,7 @@ T runPython<T>(T Function() operation) => pythonRuntime.execute(operation);
 final class PythonRuntime {
   _PythonRuntimeState _state = .idle;
   String? _executable;
+  int _executionDepth = 0;
 
   final Set<PythonReferenceState> _references = {};
   final Queue<PythonReferenceState> _pendingReleases = Queue();
@@ -139,9 +140,21 @@ final class PythonRuntime {
   T execute<T>(T Function() operation) {
     ensureInitialized();
 
-    // This is the future boundary for acquiring/releasing the GIL.
-    _drainPendingReleases();
-    return operation();
+    final isOutermostCall = _executionDepth == 0;
+    if (isOutermostCall) {
+      // This is the future boundary for acquiring the GIL.
+      _drainPendingReleases();
+    }
+
+    _executionDepth++;
+    try {
+      return operation();
+    } finally {
+      _executionDepth--;
+      if (isOutermostCall) {
+        // This is the future boundary for releasing the GIL.
+      }
+    }
   }
 
   PythonReferenceState register(Pointer<g.PyObject> pointer) {
@@ -196,11 +209,18 @@ final class PythonRuntime {
   }
 
   void shutdown() {
-    _state = switch (_state) {
-      .idle || .configured => .closed,
-      .closed || .shuttingDown => _state,
-      .running => .shuttingDown,
-    };
+    if (_state == .idle || _state == .configured) {
+      _state = .closed;
+      return;
+    }
+    if (_state == .closed || _state == .shuttingDown) return;
+    if (_executionDepth != 0) {
+      throw StateError(
+        'Python cannot be shut down during an active Python API call.',
+      );
+    }
+
+    _state = .shuttingDown;
 
     _drainPendingReleases();
     for (final state in _references.toList(growable: false)) {

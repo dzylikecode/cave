@@ -22,35 +22,41 @@ class PyObject {
   /// Get the [attribute] of a Python object by name.
   ///
   /// [attribute] must exist, otherwise a [StateError] will be thrown.
-  PyObject get(String attribute) => ffi.using((arena) {
-    final obj = g.PyObject_GetAttrString(
-      ptr,
-      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
-    );
-    if (obj == nullptr) {
-      throw StateError("Attribute '$attribute' not found.");
-    }
-    return PyObject.owned(obj);
-  });
+  PyObject get(String attribute) => runPython(
+    () => ffi.using((arena) {
+      final obj = g.PyObject_GetAttrString(
+        ptr,
+        attribute.toNativeUtf8(allocator: arena).cast<Char>(),
+      );
+      if (obj == nullptr) {
+        throw StateError("Attribute '$attribute' not found.");
+      }
+      return PyObject.owned(obj);
+    }),
+  );
 
-  void set(String attribute, PyObject value) => ffi.using((arena) {
-    final result = g.PyObject_SetAttrString(
-      ptr,
-      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
-      value.ptr,
-    );
-    if (result != 0) {
-      throw StateError("Failed to set attribute '$attribute'.");
-    }
-  });
+  void set(String attribute, PyObject value) => runPython(
+    () => ffi.using((arena) {
+      final result = g.PyObject_SetAttrString(
+        ptr,
+        attribute.toNativeUtf8(allocator: arena).cast<Char>(),
+        value.ptr,
+      );
+      if (result != 0) {
+        throw StateError("Failed to set attribute '$attribute'.");
+      }
+    }),
+  );
 
-  bool has(String attribute) => ffi.using((arena) {
-    final result = g.PyObject_HasAttrString(
-      ptr,
-      attribute.toNativeUtf8(allocator: arena).cast<Char>(),
-    );
-    return result != 0;
-  });
+  bool has(String attribute) => runPython(
+    () => ffi.using((arena) {
+      final result = g.PyObject_HasAttrString(
+        ptr,
+        attribute.toNativeUtf8(allocator: arena).cast<Char>(),
+      );
+      return result != 0;
+    }),
+  );
 
   T cast<T extends PyObject>() =>
       switch (T) {
@@ -67,28 +73,30 @@ class PyObject {
           as T;
 
   // bool get isString => g.PyUnicode_Check(ptr) != 0;
-  bool get isTrue => g.PyObject_IsTrue(ptr) != 0;
-  bool get isFalse => g.PyObject_Not(ptr) != 0;
+  bool get isTrue => runPython(() => g.PyObject_IsTrue(ptr) != 0);
+  bool get isFalse => runPython(() => g.PyObject_Not(ptr) != 0);
 
-  PyObject operator +(PyObject other) => .owned(g.PyNumber_Add(ptr, other.ptr));
-  PyObject operator -() => PyObject.owned(g.PyNumber_Negative(ptr));
+  PyObject operator +(PyObject other) =>
+      runPython(() => PyObject.owned(g.PyNumber_Add(ptr, other.ptr)));
+  PyObject operator -() =>
+      runPython(() => PyObject.owned(g.PyNumber_Negative(ptr)));
   PyObject operator -(PyObject other) =>
-      .owned(g.PyNumber_Subtract(ptr, other.ptr));
+      runPython(() => PyObject.owned(g.PyNumber_Subtract(ptr, other.ptr)));
   PyObject operator *(PyObject other) =>
-      .owned(g.PyNumber_Multiply(ptr, other.ptr));
+      runPython(() => PyObject.owned(g.PyNumber_Multiply(ptr, other.ptr)));
   PyObject operator /(PyObject other) =>
-      .owned(g.PyNumber_TrueDivide(ptr, other.ptr));
+      runPython(() => PyObject.owned(g.PyNumber_TrueDivide(ptr, other.ptr)));
   PyObject operator ~/(PyObject other) =>
-      .owned(g.PyNumber_FloorDivide(ptr, other.ptr));
+      runPython(() => PyObject.owned(g.PyNumber_FloorDivide(ptr, other.ptr)));
   PyObject operator %(PyObject other) =>
-      .owned(g.PyNumber_Remainder(ptr, other.ptr));
+      runPython(() => PyObject.owned(g.PyNumber_Remainder(ptr, other.ptr)));
   PyObject operator [](PyObject key) =>
-      .owned(g.PyObject_GetItem(ptr, key.ptr));
+      runPython(() => PyObject.owned(g.PyObject_GetItem(ptr, key.ptr)));
   void operator []=(PyObject key, PyObject value) =>
-      g.PyObject_SetItem(ptr, key.ptr, value.ptr);
+      runPython(() => g.PyObject_SetItem(ptr, key.ptr, value.ptr));
 
-  PyObject call(PyTuple args, [PyDict? kwargs]) => ffi.using(
-    (arena) => PyObject.owned(
+  PyObject call(PyTuple args, [PyDict? kwargs]) => runPython(
+    () => PyObject.owned(
       g.PyObject_Call(ptr, args.ptr, kwargs == null ? nullptr : kwargs.ptr),
     ),
   );
@@ -110,11 +118,11 @@ class PyTuple extends PyObject {
   }
 
   int setItem(int index, PyObject obj) =>
-      g.PyTuple_SetItem(ptr, index, obj._ref.newReference());
+      runPython(() => g.PyTuple_SetItem(ptr, index, obj._ref.newReference()));
   PyObject getItem(int index) =>
-      PyObject.borrowed(g.PyTuple_GetItem(ptr, index));
+      runPython(() => PyObject.borrowed(g.PyTuple_GetItem(ptr, index)));
   PyTuple slice(int start, int end) =>
-      .fromPointer(g.PyTuple_GetSlice(ptr, start, end));
+      runPython(() => PyTuple.fromPointer(g.PyTuple_GetSlice(ptr, start, end)));
 }
 
 /// [list](https://github.com/python/cpython/blob/main/Include/listobject.h)
@@ -131,23 +139,25 @@ class PyList extends PyObject {
     return pyList;
   }
 
-  int get length => g.PyList_Size(ptr);
+  int get length => runPython(() => g.PyList_Size(ptr));
 
   int setItem(int index, PyObject obj) =>
-      g.PyList_SetItem(ptr, index, obj._ref.newReference());
+      runPython(() => g.PyList_SetItem(ptr, index, obj._ref.newReference()));
   PyObject getItem(int index) =>
-      PyObject.borrowed(g.PyList_GetItem(ptr, index));
-  int insert(int index, PyObject obj) => g.PyList_Insert(ptr, index, obj.ptr);
-  int append(PyObject obj) => g.PyList_Append(ptr, obj.ptr);
+      runPython(() => PyObject.borrowed(g.PyList_GetItem(ptr, index)));
+  int insert(int index, PyObject obj) =>
+      runPython(() => g.PyList_Insert(ptr, index, obj.ptr));
+  int append(PyObject obj) => runPython(() => g.PyList_Append(ptr, obj.ptr));
   PyList slice(int start, int end) =>
-      PyList.fromPointer(g.PyList_GetSlice(ptr, start, end));
+      runPython(() => PyList.fromPointer(g.PyList_GetSlice(ptr, start, end)));
   int setSlice(int start, int end, PyList items) =>
-      g.PyList_SetSlice(ptr, start, end, items.ptr);
+      runPython(() => g.PyList_SetSlice(ptr, start, end, items.ptr));
   int deleteSlice(int start, int end) =>
-      g.PyList_SetSlice(ptr, start, end, nullptr);
-  int sort() => g.PyList_Sort(ptr);
-  int reverse() => g.PyList_Reverse(ptr);
-  PyTuple asTuple() => .fromPointer(g.PyList_AsTuple(ptr));
+      runPython(() => g.PyList_SetSlice(ptr, start, end, nullptr));
+  int sort() => runPython(() => g.PyList_Sort(ptr));
+  int reverse() => runPython(() => g.PyList_Reverse(ptr));
+  PyTuple asTuple() =>
+      runPython(() => PyTuple.fromPointer(g.PyList_AsTuple(ptr)));
 }
 
 /// [dict](https://github.com/python/cpython/blob/main/Include/dictobject.h)
@@ -164,64 +174,77 @@ class PyDict extends PyObject {
     return dict;
   }
 
-  int get length => g.PyDict_Size(ptr);
+  int get length => runPython(() => g.PyDict_Size(ptr));
 
   int setItem(PyObject key, PyObject value) =>
-      g.PyDict_SetItem(ptr, key.ptr, value.ptr);
+      runPython(() => g.PyDict_SetItem(ptr, key.ptr, value.ptr));
   PyObject getItem(PyObject key) =>
-      PyObject.borrowed(g.PyDict_GetItem(ptr, key.ptr));
-  PyObject getItemWithError(PyObject key) =>
-      PyObject.borrowed(g.PyDict_GetItemWithError(ptr, key.ptr));
-  int deleteItem(PyObject key) => g.PyDict_DelItem(ptr, key.ptr);
-  void clear() => g.PyDict_Clear(ptr);
+      runPython(() => PyObject.borrowed(g.PyDict_GetItem(ptr, key.ptr)));
+  PyObject getItemWithError(PyObject key) => runPython(
+    () => PyObject.borrowed(g.PyDict_GetItemWithError(ptr, key.ptr)),
+  );
+  int deleteItem(PyObject key) =>
+      runPython(() => g.PyDict_DelItem(ptr, key.ptr));
+  void clear() => runPython(() => g.PyDict_Clear(ptr));
 
   // TODO: sync*
   // 不过这个由于 ffi.using 需要谨慎处理
-  List<({PyObject key, PyObject value})> get entries => ffi.using((arena) {
-    final position = arena<g.Py_ssize_t>()..value = 0;
-    final key = arena<Pointer<g.PyObject>>();
-    final value = arena<Pointer<g.PyObject>>();
-    final result = <({PyObject key, PyObject value})>[];
+  List<({PyObject key, PyObject value})> get entries => runPython(
+    () => ffi.using((arena) {
+      final position = arena<g.Py_ssize_t>()..value = 0;
+      final key = arena<Pointer<g.PyObject>>();
+      final value = arena<Pointer<g.PyObject>>();
+      final result = <({PyObject key, PyObject value})>[];
 
-    while (g.PyDict_Next(ptr, position, key, value) != 0) {
-      result.add((
-        key: PyObject.borrowed(key.value),
-        value: PyObject.borrowed(value.value),
-      ));
-    }
-    return result;
-  });
+      while (g.PyDict_Next(ptr, position, key, value) != 0) {
+        result.add((
+          key: PyObject.borrowed(key.value),
+          value: PyObject.borrowed(value.value),
+        ));
+      }
+      return result;
+    }),
+  );
 
-  PyList keys() => .fromPointer(g.PyDict_Keys(ptr));
-  PyList values() => .fromPointer(g.PyDict_Values(ptr));
-  PyList items() => .fromPointer(g.PyDict_Items(ptr));
-  PyDict copy() => .fromPointer(g.PyDict_Copy(ptr));
-  int contains(PyObject key) => g.PyDict_Contains(ptr, key.ptr);
-  int update(PyObject other) => g.PyDict_Update(ptr, other.ptr);
+  PyList keys() => runPython(() => PyList.fromPointer(g.PyDict_Keys(ptr)));
+  PyList values() => runPython(() => PyList.fromPointer(g.PyDict_Values(ptr)));
+  PyList items() => runPython(() => PyList.fromPointer(g.PyDict_Items(ptr)));
+  PyDict copy() => runPython(() => PyDict.fromPointer(g.PyDict_Copy(ptr)));
+  int contains(PyObject key) =>
+      runPython(() => g.PyDict_Contains(ptr, key.ptr));
+  int update(PyObject other) =>
+      runPython(() => g.PyDict_Update(ptr, other.ptr));
   int merge(PyObject other, {bool override = true}) =>
-      g.PyDict_Merge(ptr, other.ptr, override ? 1 : 0);
-  int mergeFromSequence(PyObject sequence, {bool override = true}) =>
-      g.PyDict_MergeFromSeq2(ptr, sequence.ptr, override ? 1 : 0);
+      runPython(() => g.PyDict_Merge(ptr, other.ptr, override ? 1 : 0));
+  int mergeFromSequence(PyObject sequence, {bool override = true}) => runPython(
+    () => g.PyDict_MergeFromSeq2(ptr, sequence.ptr, override ? 1 : 0),
+  );
 
-  PyObject getItemString(String key) => ffi.using(
-    (arena) => PyObject.borrowed(
-      g.PyDict_GetItemString(
-        ptr,
-        key.toNativeUtf8(allocator: arena).cast<Char>(),
+  PyObject getItemString(String key) => runPython(
+    () => ffi.using(
+      (arena) => PyObject.borrowed(
+        g.PyDict_GetItemString(
+          ptr,
+          key.toNativeUtf8(allocator: arena).cast<Char>(),
+        ),
       ),
     ),
   );
-  int setItemString(String key, PyObject value) => ffi.using(
-    (arena) => g.PyDict_SetItemString(
-      ptr,
-      key.toNativeUtf8(allocator: arena).cast<Char>(),
-      value.ptr,
+  int setItemString(String key, PyObject value) => runPython(
+    () => ffi.using(
+      (arena) => g.PyDict_SetItemString(
+        ptr,
+        key.toNativeUtf8(allocator: arena).cast<Char>(),
+        value.ptr,
+      ),
     ),
   );
-  int deleteItemString(String key) => ffi.using(
-    (arena) => g.PyDict_DelItemString(
-      ptr,
-      key.toNativeUtf8(allocator: arena).cast<Char>(),
+  int deleteItemString(String key) => runPython(
+    () => ffi.using(
+      (arena) => g.PyDict_DelItemString(
+        ptr,
+        key.toNativeUtf8(allocator: arena).cast<Char>(),
+      ),
     ),
   );
 }
@@ -283,7 +306,7 @@ class PyInt extends PyObject {
 
   factory PyInt(int value) =>
       runPython(() => .fromPointer(g.PyLong_FromLong(value)));
-  int get value => g.PyLong_AsLong(ptr);
+  int get value => runPython(() => g.PyLong_AsLong(ptr));
 }
 
 class PyDouble extends PyObject {
@@ -293,5 +316,5 @@ class PyDouble extends PyObject {
   factory PyDouble(double value) =>
       runPython(() => .fromPointer(g.PyFloat_FromDouble(value)));
 
-  double get value => g.PyFloat_AsDouble(ptr);
+  double get value => runPython(() => g.PyFloat_AsDouble(ptr));
 }

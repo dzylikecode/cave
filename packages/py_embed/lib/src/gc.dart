@@ -31,7 +31,7 @@ final class PyRef implements Finalizable {
     if (pointer == nullptr) {
       throw StateError('A Python API returned a null object.');
     }
-    g.Py_IncRef(pointer);
+    runPython(() => g.Py_IncRef(pointer));
     return ._(pointer);
   }
 
@@ -49,7 +49,7 @@ final class PyRef implements Finalizable {
   /// Creates a reference intended for an API that steals its argument.
   Pointer<g.PyObject> newReference() {
     final result = pointer;
-    g.Py_IncRef(result);
+    runPython(() => g.Py_IncRef(result));
     return result;
   }
 
