@@ -22,12 +22,7 @@ final class PythonMjDoubleArray implements MjDoubleArray {
     try {
       final item = _array[key];
       try {
-        final value = item.cast<PyDouble>();
-        try {
-          return value.value;
-        } finally {
-          value.dispose();
-        }
+        return item.toDouble();
       } finally {
         item.dispose();
       }
