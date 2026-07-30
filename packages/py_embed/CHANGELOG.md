@@ -6,3 +6,7 @@
 
 - interact with python object
 
+## 0.0.3
+
+- default python runtime
+- auto garbage collection

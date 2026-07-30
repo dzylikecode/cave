@@ -1,4 +1,4 @@
-/// Support for doing something awesome.
+/// [mujoco](https://github.com/google-deepmind/mujoco)
 ///
 /// More dartdocs go here.
 library;
