@@ -72,4 +72,8 @@ final class PythonMjDoubleArray implements MjDoubleArray {
   }
 
   void dispose() => _array.dispose();
+
+  /// show value when debugging
+  @override
+  String toString() => toList().toString();
 }
