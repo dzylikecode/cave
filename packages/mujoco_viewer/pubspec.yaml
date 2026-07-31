@@ -1,7 +1,7 @@
 name: mujoco_viewer
 description: Interactive viewer support for the Dart MuJoCo package.
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/dzylikecode/cave/tree/main/packages/mujoco_viewer
 
 environment:
   sdk: ^3.12.2
