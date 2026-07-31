@@ -1,7 +1,10 @@
+import 'package:py_embed/py_embed.dart';
 import 'package:test/test.dart';
 import 'package:torch_dart/torch.dart';
 
 void main() {
+  tearDownAll(Python.shutdown);
+
   test('creates and calculates tensors', () {
     final a = tensor([
       [1.0, 2.0],

@@ -1,3 +1,4 @@
+import 'package:py_embed/py_embed.dart';
 import 'package:torch_dart/torch.dart';
 
 void main() {
@@ -11,8 +12,6 @@ void main() {
     print('shape: ${output.shape}');
     print(output.toList());
   } finally {
-    output.dispose();
-    weights.dispose();
-    input.dispose();
+    Python.shutdown();
   }
 }

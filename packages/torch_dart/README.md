@@ -19,6 +19,7 @@ To select a particular Python executable, call `Python.configure` from
 ## Usage
 
 ```dart
+import 'package:py_embed/py_embed.dart';
 import 'package:torch_dart/torch.dart';
 
 void main() {
@@ -36,6 +37,7 @@ void main() {
     result.dispose();
     b.dispose();
     a.dispose();
+    Python.shutdown();
   }
 }
 ```
@@ -45,7 +47,9 @@ arithmetic, matrix multiplication, reshape, transpose, reductions, ReLU,
 conversion to Dart lists, and deterministic random seeds.
 
 Each operation creates a new tensor. Dispose tensors explicitly when they are
-no longer needed.
+no longer needed. Call `Python.shutdown()` once at application shutdown, after
+disposing every object from every Python-backed package. The embedded Python
+runtime cannot be restarted in the same process afterward.
 
 ## Architecture
 
