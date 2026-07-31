@@ -1,5 +1,5 @@
 import 'package:py_embed/py_embed.dart';
-import 'package:torch_dart/torch.dart';
+import 'package:torch_dart/torch_dart.dart';
 
 void main() {
   manualSeed(42);

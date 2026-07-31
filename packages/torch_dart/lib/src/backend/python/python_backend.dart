@@ -308,7 +308,7 @@ final class PythonBackendTensor implements BackendTensor {
   void dispose() => object.dispose();
 
   @override
-  String toString() => object.toDartString();
+  String toString() => object.str;
 }
 
 PyObject _call(PyObject object, String name) {
@@ -365,12 +365,7 @@ bool _readBool(PyObject object, String name) {
 String _readString(PyObject object, String name) {
   final value = object.get(name);
   try {
-    final stringValue = _call(value, '__str__');
-    try {
-      return stringValue.toDartString();
-    } finally {
-      stringValue.dispose();
-    }
+    return value.str;
   } finally {
     value.dispose();
   }

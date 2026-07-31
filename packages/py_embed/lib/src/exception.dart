@@ -54,7 +54,7 @@ Never throwPythonException({String? context}) {
     try {
       throw PythonException(
         type: _exceptionTypeName(type.value),
-        message: _objectString(value.value),
+        message: objectToDartString(value.value, suppressErrors: true),
         context: context,
       );
     } finally {
@@ -76,27 +76,44 @@ String _exceptionTypeName(Pointer<g.PyObject> type) {
   return name.cast<ffi.Utf8>().toDartString();
 }
 
-String _objectString(Pointer<g.PyObject> object) {
+/// Converts any Python object using `PyObject_Str`.
+///
+/// Exception formatting uses [suppressErrors] to avoid recursively throwing
+/// while an existing Python exception is being translated.
+@internal
+String objectToDartString(
+  Pointer<g.PyObject> object, {
+  bool suppressErrors = false,
+}) {
   if (object == nullptr) return '';
 
   final string = g.PyObject_Str(object);
   if (string == nullptr) {
+    if (!suppressErrors) {
+      throwPythonException(context: 'converting a Python object to string');
+    }
     g.PyErr_Clear();
-    return '<failed to format Python exception>';
+    return '<failed to format Python object>';
   }
 
   try {
     final bytes = g.PyUnicode_AsUTF8String(string);
     if (bytes == nullptr) {
+      if (!suppressErrors) {
+        throwPythonException(context: 'encoding a Python string as UTF-8');
+      }
       g.PyErr_Clear();
-      return '<failed to encode Python exception>';
+      return '<failed to encode Python object>';
     }
 
     try {
       final value = g.PyBytes_AsString(bytes);
       if (value == nullptr) {
+        if (!suppressErrors) {
+          throwPythonException(context: 'reading a Python string');
+        }
         g.PyErr_Clear();
-        return '<failed to read Python exception>';
+        return '<failed to read Python object>';
       }
       return value.cast<ffi.Utf8>().toDartString();
     } finally {

@@ -1,6 +1,6 @@
 import 'package:py_embed/py_embed.dart';
 import 'package:test/test.dart';
-import 'package:torch_dart/torch.dart';
+import 'package:torch_dart/torch_dart.dart';
 
 void main() {
   tearDownAll(Python.shutdown);
@@ -17,6 +17,7 @@ void main() {
     try {
       expect(a.shape, [2, 2]);
       expect(a.numel, 4);
+      expect(a.toString(), contains('tensor'));
       expect(result.toList(), [
         [5.0, 5.0],
         [9.0, 9.0],

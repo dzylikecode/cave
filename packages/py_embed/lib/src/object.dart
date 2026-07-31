@@ -80,6 +80,11 @@ class PyObject {
   int toInt() => runPython(() => g.PyLong_AsLong(ptr));
   double toDouble() => runPython(() => g.PyFloat_AsDouble(ptr));
   bool toBool() => runPython(() => g.PyObject_IsTrue(ptr) != 0);
+
+  /// Returns Python's `str(self)` for any Python object.
+  String get str => runPython(() => objectToDartString(ptr));
+
+  /// Converts this object to Dart text when it is already a Python `str`.
   String toDartString() => runPython(() {
     final bytes = g.PyUnicode_AsUTF8String(ptr);
     if (bytes == nullptr) {
