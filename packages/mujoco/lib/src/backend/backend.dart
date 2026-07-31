@@ -5,7 +5,7 @@ abstract interface class MujocoBackend {
 
   BackendModel createModelFromXmlString(String xml);
 
-  BackendModel createModelFromXmlFile(String path);
+  BackendModel createModelFromXmlPath(String path);
 
   BackendData createData(BackendModel model);
 

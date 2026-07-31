@@ -6,3 +6,5 @@ dist
 .venv
 *.egg-info
 __pycache__
+/assets/
+/example/

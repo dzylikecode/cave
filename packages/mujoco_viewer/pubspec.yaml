@@ -9,7 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  mujoco: ^0.0.1
+  mujoco: ^0.0.2
   py_embed: ^0.0.3
 
 dev_dependencies:

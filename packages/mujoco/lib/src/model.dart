@@ -7,7 +7,9 @@ final class MjModel {
   MjModel._(this._handle);
 
   factory MjModel.fromXmlString(String content) =>
-      MjModel._(mujocoBackend.createModelFromXmlString(content));
+      ._(mujocoBackend.createModelFromXmlString(content));
+  factory MjModel.fromXmlPath(String filePath) =>
+      ._(mujocoBackend.createModelFromXmlPath(filePath));
 
   int get nq => _handle.nq;
   int get nv => _handle.nv;

@@ -9,7 +9,7 @@ final class PythonMujocoBackend implements MujocoBackend {
 
   late final PyObject _modelClass = _module.get('MjModel');
   late final PyObject _modelFromXmlString = _modelClass.get('from_xml_string');
-  late final PyObject _modelFromXmlFile = _modelClass.get('from_xml_file');
+  late final PyObject _modelFromXmlPath = _modelClass.get('from_xml_path');
   late final PyObject _dataClass = _module.get('MjData');
   late final PyObject _forward = _module.get('mj_forward');
   late final PyObject _step = _module.get('mj_step');
@@ -29,10 +29,10 @@ final class PythonMujocoBackend implements MujocoBackend {
   }
 
   @override
-  BackendModel createModelFromXmlFile(String filePath) {
+  BackendModel createModelFromXmlPath(String filePath) {
     final source = PyString(filePath);
     try {
-      return PythonBackendModel(_modelFromXmlFile.call1(source));
+      return PythonBackendModel(_modelFromXmlPath.call1(source));
     } finally {
       source.dispose();
     }
