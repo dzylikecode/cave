@@ -43,4 +43,17 @@ void main() {
       values.dispose();
     }
   });
+
+  test('inference mode disables autograd for operations', () {
+    final input = ones([2], requiresGrad: true);
+    final output = torch.inferenceMode(() => input * input);
+
+    try {
+      expect(input.requiresGrad, isTrue);
+      expect(output.requiresGrad, isFalse);
+    } finally {
+      output.dispose();
+      input.dispose();
+    }
+  });
 }

@@ -46,6 +46,23 @@ The MVP includes tensor creation, shape/dtype/device metadata, element-wise
 arithmetic, matrix multiplication, reshape, transpose, reductions, ReLU,
 conversion to Dart lists, and deterministic random seeds.
 
+Inference mode and TorchScript modules use a namespaced API:
+
+```dart
+final module = torch.jit.load('model.pt', mapLocation: 'cpu')..eval();
+final input = randn([1, 3, 224, 224]);
+final output = torch.inferenceMode(() => module(input));
+
+try {
+  print(output.shape);
+} finally {
+  output.dispose();
+  input.dispose();
+  module.dispose();
+  Python.shutdown();
+}
+```
+
 Each operation creates a new tensor. Dispose tensors explicitly when they are
 no longer needed. Call `Python.shutdown()` once at application shutdown, after
 disposing every object from every Python-backed package. The embedded Python

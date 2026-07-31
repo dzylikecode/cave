@@ -16,7 +16,7 @@ final class PythonMujocoBackend implements MujocoBackend {
   late final _resetData = _module.get('mj_resetData');
 
   @override
-  late final String version = readStringAttribute(_module, '__version__');
+  late final version = readStringAttribute(_module, '__version__');
 
   @override
   BackendModel createModelFromXmlString(String xml) {

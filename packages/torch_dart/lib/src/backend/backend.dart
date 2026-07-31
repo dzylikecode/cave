@@ -13,6 +13,8 @@ abstract interface class TorchBackend {
     bool requiresGrad,
   });
   void manualSeed(int seed);
+  T inferenceMode<T>(T Function() action);
+  BackendScriptModule loadScriptModule(String path, {String? mapLocation});
 }
 
 abstract interface class BackendTensor {
@@ -35,5 +37,11 @@ abstract interface class BackendTensor {
   BackendTensor relu();
   Object toList();
   num item();
+  void dispose();
+}
+
+abstract interface class BackendScriptModule {
+  BackendTensor forward(List<BackendTensor> inputs);
+  void eval();
   void dispose();
 }

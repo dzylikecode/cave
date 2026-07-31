@@ -41,3 +41,5 @@ final class Tensor {
   @override
   String toString() => _handle.toString();
 }
+
+BackendTensor tensorHandle(Tensor tensor) => tensor._handle;

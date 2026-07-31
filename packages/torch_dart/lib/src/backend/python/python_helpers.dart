@@ -32,18 +32,22 @@ PyList intListToPython(List<int> values) {
   }
 }
 
-Object pythonToDart(PyObject value, int dimensions) {
+Object pythonToDart(
+  PyObject value,
+  int dimensions, {
+  required bool floatingPoint,
+}) {
   if (dimensions > 0) {
     final list = value.cast<PyList>();
     return List<Object>.generate(
       list.length,
-      (index) => pythonToDart(list.getItem(index), dimensions - 1),
+      (index) => pythonToDart(
+        list.getItem(index),
+        dimensions - 1,
+        floatingPoint: floatingPoint,
+      ),
       growable: false,
     );
   }
-  try {
-    return value.toInt();
-  } on PythonException {
-    return value.toDouble();
-  }
+  return floatingPoint ? value.toDouble() : value.toInt();
 }

@@ -12,9 +12,12 @@ final class PythonTorchBackend implements TorchBackend {
   late final _randn = _module.get('randn');
   late final _arange = _module.get('arange');
   late final _manualSeed = _module.get('manual_seed');
+  late final _inferenceMode = _module.get('inference_mode');
+  late final _jit = _module.get('jit');
+  late final _jitLoad = _jit.get('load');
 
   @override
-  late final String version = _readString(_module, '__version__');
+  late final version = _readString(_module, '__version__');
 
   @override
   BackendTensor tensor(
@@ -113,6 +116,79 @@ final class PythonTorchBackend implements TorchBackend {
       pySeed.dispose();
     }
   }
+
+  @override
+  T inferenceMode<T>(T Function() action) {
+    final context = _inferenceMode.call0();
+    try {
+      _call(context, '__enter__').dispose();
+      try {
+        return action();
+      } finally {
+        final exit = context.get('__exit__');
+        final sys = PyModule('sys');
+        try {
+          final excInfoObject = _call(sys, 'exc_info');
+          try {
+            final excInfo = excInfoObject.cast<PyTuple>();
+            exit.callArgs([
+              excInfo.getItem(0),
+              excInfo.getItem(1),
+              excInfo.getItem(2),
+            ]).dispose();
+          } finally {
+            excInfoObject.dispose();
+          }
+        } finally {
+          sys.dispose();
+          exit.dispose();
+        }
+      }
+    } finally {
+      context.dispose();
+    }
+  }
+
+  @override
+  BackendScriptModule loadScriptModule(String path, {String? mapLocation}) {
+    final pyPath = PyString(path);
+    final kwargs = <String, PyObject>{};
+    if (mapLocation != null) {
+      kwargs['map_location'] = PyString(mapLocation);
+    }
+    try {
+      return PythonBackendScriptModule(_jitLoad.callArgs([pyPath], kwargs));
+    } finally {
+      for (final value in kwargs.values) {
+        value.dispose();
+      }
+      pyPath.dispose();
+    }
+  }
+}
+
+final class PythonBackendScriptModule implements BackendScriptModule {
+  final PyObject object;
+
+  PythonBackendScriptModule(this.object);
+
+  @override
+  BackendTensor forward(List<BackendTensor> inputs) {
+    final pythonInputs = <PyObject>[];
+    for (final input in inputs) {
+      if (input is! PythonBackendTensor) {
+        throw ArgumentError.value(input, 'inputs', 'Backend mismatch');
+      }
+      pythonInputs.add(input.object);
+    }
+    return PythonBackendTensor(object.callArgs(pythonInputs));
+  }
+
+  @override
+  void eval() => _call(object, 'eval').dispose();
+
+  @override
+  void dispose() => object.dispose();
 }
 
 final class PythonBackendTensor implements BackendTensor {
@@ -202,7 +278,11 @@ final class PythonBackendTensor implements BackendTensor {
       try {
         final result = _call(cpu, 'tolist');
         try {
-          return pythonToDart(result, ndim);
+          return pythonToDart(
+            result,
+            ndim,
+            floatingPoint: _isFloatingPointDtype(dtype),
+          );
         } finally {
           result.dispose();
         }
@@ -218,11 +298,7 @@ final class PythonBackendTensor implements BackendTensor {
   num item() {
     final result = _call(object, 'item');
     try {
-      try {
-        return result.toInt();
-      } on PythonException {
-        return result.toDouble();
-      }
+      return _isFloatingPointDtype(dtype) ? result.toDouble() : result.toInt();
     } finally {
       result.dispose();
     }
@@ -265,6 +341,9 @@ int _callInt(PyObject object, String name) {
 PyObject _number(num value) =>
     value is int ? PyInt(value) : PyDouble(value.toDouble());
 
+bool _isFloatingPointDtype(String dtype) =>
+    dtype.contains('float') || dtype.contains('bfloat');
+
 int _readInt(PyObject object, String name) {
   final value = object.get(name);
   try {
@@ -286,7 +365,12 @@ bool _readBool(PyObject object, String name) {
 String _readString(PyObject object, String name) {
   final value = object.get(name);
   try {
-    return value.toDartString();
+    final stringValue = _call(value, '__str__');
+    try {
+      return stringValue.toDartString();
+    } finally {
+      stringValue.dispose();
+    }
   } finally {
     value.dispose();
   }
