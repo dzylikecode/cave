@@ -1,39 +1,58 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# torch_dart
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+A small Dart API for [PyTorch](https://pytorch.org/). The first backend uses
+`py_embed` and the official Python `torch` package. Public APIs do not expose
+Python objects, so a LibTorch or other native backend can be added later.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/tools/pub/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+## Setup
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Create and activate a Python environment, then install PyTorch:
 
-## Features
+```bash
+uv venv --seed
+pip install torch
+```
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+To select a particular Python executable, call `Python.configure` from
+`package:py_embed/py_embed.dart` before the first torch operation.
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
 ```dart
-const like = 'sample';
+import 'package:torch_dart/torch.dart';
+
+void main() {
+  final a = tensor([
+    [1.0, 2.0],
+    [3.0, 4.0],
+  ]);
+  final b = ones([2, 2]);
+  final result = (a + b).matmul(b);
+
+  try {
+    print(result.shape);
+    print(result.toList());
+  } finally {
+    result.dispose();
+    b.dispose();
+    a.dispose();
+  }
+}
 ```
 
-## Additional information
+The MVP includes tensor creation, shape/dtype/device metadata, element-wise
+arithmetic, matrix multiplication, reshape, transpose, reductions, ReLU,
+conversion to Dart lists, and deterministic random seeds.
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Each operation creates a new tensor. Dispose tensors explicitly when they are
+no longer needed.
+
+## Architecture
+
+```text
+Tensor / top-level factories
+            |
+       TorchBackend
+            |
+    PythonTorchBackend
+```

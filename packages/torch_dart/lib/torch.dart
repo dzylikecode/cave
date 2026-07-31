@@ -1,8 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// A small, backend-independent Dart API for PyTorch.
 library;
 
 export 'src/torch_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
