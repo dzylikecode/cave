@@ -5,15 +5,15 @@ import 'python_array.dart';
 import 'python_helpers.dart';
 
 final class PythonMujocoBackend implements MujocoBackend {
-  final PyModule _module = PyModule('mujoco');
+  final _module = PyModule('mujoco');
 
-  late final PyObject _modelClass = _module.get('MjModel');
-  late final PyObject _modelFromXmlString = _modelClass.get('from_xml_string');
-  late final PyObject _modelFromXmlPath = _modelClass.get('from_xml_path');
-  late final PyObject _dataClass = _module.get('MjData');
-  late final PyObject _forward = _module.get('mj_forward');
-  late final PyObject _step = _module.get('mj_step');
-  late final PyObject _resetData = _module.get('mj_resetData');
+  late final _modelClass = _module.get('MjModel');
+  late final _modelFromXmlString = _modelClass.get('from_xml_string');
+  late final _modelFromXmlPath = _modelClass.get('from_xml_path');
+  late final _dataClass = _module.get('MjData');
+  late final _forward = _module.get('mj_forward');
+  late final _step = _module.get('mj_step');
+  late final _resetData = _module.get('mj_resetData');
 
   @override
   late final String version = readStringAttribute(_module, '__version__');

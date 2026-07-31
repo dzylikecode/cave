@@ -4,14 +4,14 @@ import '../backend.dart';
 import 'python_helpers.dart';
 
 final class PythonTorchBackend implements TorchBackend {
-  final PyModule _module = PyModule('torch');
+  final _module = PyModule('torch');
 
-  late final PyObject _tensor = _module.get('tensor');
-  late final PyObject _zeros = _module.get('zeros');
-  late final PyObject _ones = _module.get('ones');
-  late final PyObject _randn = _module.get('randn');
-  late final PyObject _arange = _module.get('arange');
-  late final PyObject _manualSeed = _module.get('manual_seed');
+  late final _tensor = _module.get('tensor');
+  late final _zeros = _module.get('zeros');
+  late final _ones = _module.get('ones');
+  late final _randn = _module.get('randn');
+  late final _arange = _module.get('arange');
+  late final _manualSeed = _module.get('manual_seed');
 
   @override
   late final String version = _readString(_module, '__version__');
