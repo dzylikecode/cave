@@ -20,12 +20,16 @@ final class ScriptModule {
 
   ScriptModule.fromHandle(this._handle);
 
+  BackendScriptModule get backendHandle => _handle;
+
   /// Runs a module with one tensor argument.
   Tensor call(Tensor input) => forward([input]);
 
   /// Runs the module with positional tensor arguments.
   Tensor forward(List<Tensor> inputs) => .fromHandle(
-    _handle.forward(inputs.map(tensorHandle).toList(growable: false)),
+    _handle.forward(
+      inputs.map((input) => input.backendHandle).toList(growable: false),
+    ),
   );
 
   ScriptModule eval() {

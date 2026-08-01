@@ -9,6 +9,8 @@ final class Tensor {
 
   Tensor.fromHandle(this._handle);
 
+  BackendTensor get backendHandle => _handle;
+
   List<int> get shape => _handle.shape;
   int get ndim => _handle.ndim;
   int get numel => _handle.numel;
@@ -41,5 +43,3 @@ final class Tensor {
   @override
   String toString() => _handle.toString();
 }
-
-BackendTensor tensorHandle(Tensor tensor) => tensor._handle;
