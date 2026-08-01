@@ -11,7 +11,9 @@ final class MjData {
   MjData._(this.model, this._handle);
 
   factory MjData(MjModel model) =>
-      ._(model, mujocoBackend.createData(modelHandle(model)));
+      ._(model, mujocoBackend.createData(model.backendHandle));
+
+  BackendData get backendHandle => _handle;
 
   double get time => _handle.time;
   MjDoubleArray get qpos => _handle.qpos;
@@ -21,5 +23,3 @@ final class MjData {
 
   void dispose() => _handle.dispose();
 }
-
-BackendData dataHandle(MjData data) => data._handle;

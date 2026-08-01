@@ -11,11 +11,11 @@ final class MjModel {
   factory MjModel.fromXmlPath(String filePath) =>
       ._(mujocoBackend.createModelFromXmlPath(filePath));
 
+  BackendModel get backendHandle => _handle;
+
   int get nq => _handle.nq;
   int get nv => _handle.nv;
   int get nu => _handle.nu;
 
   void dispose() => _handle.dispose();
 }
-
-BackendModel modelHandle(MjModel model) => model._handle;

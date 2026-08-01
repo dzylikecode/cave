@@ -5,5 +5,6 @@ library;
 
 export 'src/mujoco_base.dart';
 export 'src/array.dart';
+export 'src/backend/backend.dart' show BackendData, BackendModel;
 export 'src/model.dart' show MjModel;
 export 'src/data.dart' show MjData;

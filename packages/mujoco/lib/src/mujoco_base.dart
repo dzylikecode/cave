@@ -7,10 +7,10 @@ abstract final class Mujoco {
 }
 
 void mjForward(MjModel model, MjData data) =>
-    mujocoBackend.forward(modelHandle(model), dataHandle(data));
+    mujocoBackend.forward(model.backendHandle, data.backendHandle);
 
 void mjStep(MjModel model, MjData data) =>
-    mujocoBackend.step(modelHandle(model), dataHandle(data));
+    mujocoBackend.step(model.backendHandle, data.backendHandle);
 
 void mjResetData(MjModel model, MjData data) =>
-    mujocoBackend.resetData(modelHandle(model), dataHandle(data));
+    mujocoBackend.resetData(model.backendHandle, data.backendHandle);
