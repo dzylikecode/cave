@@ -11,10 +11,6 @@ final class Torch {
   Jit get jit => const Jit();
 
   T inferenceMode<T>(T Function() action) => torchBackend.inferenceMode(action);
-
-  /// Python-compatible spelling of [inferenceMode].
-  // ignore: non_constant_identifier_names
-  T inference_mode<T>(T Function() action) => inferenceMode(action);
 }
 
 /// Version of the PyTorch package used by the active backend.
