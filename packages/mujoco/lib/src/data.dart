@@ -1,25 +1,17 @@
 import 'array.dart';
-import 'backend/backend.dart';
 import 'backend/backend_factory.dart';
 import 'model.dart';
 
-final class MjData {
-  final MjModel model;
+abstract interface class MjData {
+  factory MjData(MjModel model) => mujoco.createData(model);
 
-  final BackendData _handle;
+  MjModel get model;
 
-  MjData._(this.model, this._handle);
+  double get time;
+  MjDoubleArray get qpos;
+  MjDoubleArray get qvel;
+  MjDoubleArray get qacc;
+  MjDoubleArray get ctrl;
 
-  factory MjData(MjModel model) =>
-      ._(model, mujocoBackend.createData(model.backendHandle));
-
-  BackendData get backendHandle => _handle;
-
-  double get time => _handle.time;
-  MjDoubleArray get qpos => _handle.qpos;
-  MjDoubleArray get qvel => _handle.qvel;
-  MjDoubleArray get qacc => _handle.qacc;
-  MjDoubleArray get ctrl => _handle.ctrl;
-
-  void dispose() => _handle.dispose();
+  void dispose();
 }

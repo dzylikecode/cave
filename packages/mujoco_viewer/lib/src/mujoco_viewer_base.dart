@@ -1,6 +1,6 @@
 import 'package:mujoco/mujoco.dart';
 // ignore: implementation_imports
-import 'package:mujoco/src/backend/python/python_backend.dart';
+import 'package:mujoco/src/backend/python/backend.dart';
 import 'package:py_embed/py_embed.dart';
 
 final PyModule _viewerModule = PyModule('mujoco.viewer');
@@ -91,18 +91,16 @@ final class MujocoViewer {
   }
 }
 
-PythonBackendModel _requirePythonModel(MjModel model) {
-  final handle = model.backendHandle;
-  if (handle is! PythonBackendModel) {
+MjModelPython _requirePythonModel(MjModel model) {
+  if (model is! MjModelPython) {
     throw StateError('mujoco_viewer requires the Python MuJoCo backend.');
   }
-  return handle;
+  return model;
 }
 
-PythonBackendData _requirePythonData(MjData data) {
-  final handle = data.backendHandle;
-  if (handle is! PythonBackendData) {
+MjDataPython _requirePythonData(MjData data) {
+  if (data is! MjDataPython) {
     throw StateError('mujoco_viewer requires the Python MuJoCo backend.');
   }
-  return handle;
+  return data;
 }

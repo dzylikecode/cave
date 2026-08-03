@@ -1,35 +1,18 @@
-import '../array.dart';
+import '../data.dart';
+import '../model.dart';
 
-abstract interface class MujocoBackend {
+abstract interface class Mujoco {
   String get version;
 
-  BackendModel createModelFromXmlString(String xml);
+  MjModel createModelFromXmlString(String xml);
 
-  BackendModel createModelFromXmlPath(String path);
+  MjModel createModelFromXmlPath(String path);
 
-  BackendData createData(BackendModel model);
+  MjData createData(MjModel model);
 
-  void forward(BackendModel model, BackendData data);
+  void forward(MjModel model, MjData data);
 
-  void step(BackendModel model, BackendData data);
+  void step(MjModel model, MjData data);
 
-  void resetData(BackendModel model, BackendData data);
-}
-
-abstract interface class BackendModel {
-  int get nq;
-  int get nv;
-  int get nu;
-
-  void dispose();
-}
-
-abstract interface class BackendData {
-  double get time;
-  MjDoubleArray get qpos;
-  MjDoubleArray get qvel;
-  MjDoubleArray get qacc;
-  MjDoubleArray get ctrl;
-
-  void dispose();
+  void resetData(MjModel model, MjData data);
 }

@@ -1,16 +1,12 @@
-import 'backend/backend_factory.dart';
+import 'backend/backend.dart';
+import 'backend/backend_factory.dart' as backend;
 import 'data.dart';
 import 'model.dart';
 
-abstract final class Mujoco {
-  static String get version => mujocoBackend.version;
-}
+Mujoco get mujoco => backend.mujoco;
 
-void mjForward(MjModel model, MjData data) =>
-    mujocoBackend.forward(model.backendHandle, data.backendHandle);
+void mjForward(MjModel model, MjData data) => mujoco.forward(model, data);
 
-void mjStep(MjModel model, MjData data) =>
-    mujocoBackend.step(model.backendHandle, data.backendHandle);
+void mjStep(MjModel model, MjData data) => mujoco.step(model, data);
 
-void mjResetData(MjModel model, MjData data) =>
-    mujocoBackend.resetData(model.backendHandle, data.backendHandle);
+void mjResetData(MjModel model, MjData data) => mujoco.resetData(model, data);

@@ -1,10 +1,12 @@
 import 'package:py_embed/py_embed.dart';
 
+import '../../data.dart';
+import '../../model.dart';
 import '../backend.dart';
-import 'python_array.dart';
-import 'python_helpers.dart';
+import 'array.dart';
+import 'helpers.dart';
 
-final class PythonMujocoBackend implements MujocoBackend {
+final class MujocoPython implements Mujoco {
   final _module = PyModule('mujoco');
 
   late final _modelClass = _module.get('MjModel');
@@ -19,48 +21,48 @@ final class PythonMujocoBackend implements MujocoBackend {
   late final version = readStringAttribute(_module, '__version__');
 
   @override
-  BackendModel createModelFromXmlString(String xml) {
+  MjModel createModelFromXmlString(String xml) {
     final source = PyString(xml);
     try {
-      return PythonBackendModel(_modelFromXmlString.call1(source));
+      return MjModelPython(_modelFromXmlString.call1(source));
     } finally {
       source.dispose();
     }
   }
 
   @override
-  BackendModel createModelFromXmlPath(String filePath) {
+  MjModel createModelFromXmlPath(String filePath) {
     final source = PyString(filePath);
     try {
-      return PythonBackendModel(_modelFromXmlPath.call1(source));
+      return MjModelPython(_modelFromXmlPath.call1(source));
     } finally {
       source.dispose();
     }
   }
 
   @override
-  BackendData createData(BackendModel model) {
+  MjData createData(MjModel model) {
     final pythonModel = _requireModel(model);
-    return PythonBackendData(pythonModel, _dataClass.call1(pythonModel.object));
+    return MjDataPython(pythonModel, _dataClass.call1(pythonModel.object));
   }
 
   @override
-  void forward(BackendModel model, BackendData data) {
+  void forward(MjModel model, MjData data) {
     _callModelData(_forward, model, data);
   }
 
   @override
-  void step(BackendModel model, BackendData data) {
+  void step(MjModel model, MjData data) {
     _callModelData(_step, model, data);
   }
 
   @override
-  void resetData(BackendModel model, BackendData data) {
+  void resetData(MjModel model, MjData data) {
     _callModelData(_resetData, model, data);
   }
 
   /// 高频调用的时候释放，避免大量的 Python 对象占用内存
-  void _callModelData(PyObject callable, BackendModel model, BackendData data) {
+  void _callModelData(PyObject callable, MjModel model, MjData data) {
     final pythonModel = _requireModel(model);
     final pythonData = _requireData(data);
     if (!identical(pythonData.model, pythonModel)) {
@@ -71,25 +73,25 @@ final class PythonMujocoBackend implements MujocoBackend {
     result.dispose();
   }
 
-  PythonBackendModel _requireModel(BackendModel model) {
-    if (model is! PythonBackendModel) {
+  MjModelPython _requireModel(MjModel model) {
+    if (model is! MjModelPython) {
       throw ArgumentError.value(model, 'model', 'Backend mismatch');
     }
     return model;
   }
 
-  PythonBackendData _requireData(BackendData data) {
-    if (data is! PythonBackendData) {
+  MjDataPython _requireData(MjData data) {
+    if (data is! MjDataPython) {
       throw ArgumentError.value(data, 'data', 'Backend mismatch');
     }
     return data;
   }
 }
 
-final class PythonBackendModel implements BackendModel {
+final class MjModelPython implements MjModel {
   final PyObject object;
 
-  PythonBackendModel(this.object);
+  MjModelPython(this.object);
 
   @override
   late final int nq = readIntAttribute(object, 'nq');
@@ -104,35 +106,36 @@ final class PythonBackendModel implements BackendModel {
   void dispose() => object.dispose();
 }
 
-final class PythonBackendData implements BackendData {
-  final PythonBackendModel model;
+final class MjDataPython implements MjData {
+  @override
+  final MjModelPython model;
   final PyObject object;
 
-  PythonMjDoubleArray? _qpos;
-  PythonMjDoubleArray? _qvel;
-  PythonMjDoubleArray? _qacc;
-  PythonMjDoubleArray? _ctrl;
+  MjDoubleArrayPython? _qpos;
+  MjDoubleArrayPython? _qvel;
+  MjDoubleArrayPython? _qacc;
+  MjDoubleArrayPython? _ctrl;
 
-  PythonBackendData(this.model, this.object);
+  MjDataPython(this.model, this.object);
 
   @override
   double get time => readDoubleAttribute(object, 'time');
 
   @override
-  PythonMjDoubleArray get qpos =>
-      _qpos ??= PythonMjDoubleArray(object.get('qpos'), model.nq);
+  MjDoubleArrayPython get qpos =>
+      _qpos ??= MjDoubleArrayPython(object.get('qpos'), model.nq);
 
   @override
-  PythonMjDoubleArray get qvel =>
-      _qvel ??= PythonMjDoubleArray(object.get('qvel'), model.nv);
+  MjDoubleArrayPython get qvel =>
+      _qvel ??= MjDoubleArrayPython(object.get('qvel'), model.nv);
 
   @override
-  PythonMjDoubleArray get qacc =>
-      _qacc ??= PythonMjDoubleArray(object.get('qacc'), model.nv);
+  MjDoubleArrayPython get qacc =>
+      _qacc ??= MjDoubleArrayPython(object.get('qacc'), model.nv);
 
   @override
-  PythonMjDoubleArray get ctrl =>
-      _ctrl ??= PythonMjDoubleArray(object.get('ctrl'), model.nu);
+  MjDoubleArrayPython get ctrl =>
+      _ctrl ??= MjDoubleArrayPython(object.get('ctrl'), model.nu);
 
   @override
   void dispose() {

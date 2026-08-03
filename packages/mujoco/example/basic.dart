@@ -31,7 +31,7 @@ const MODEL_XML = """
 """;
 
 void main() {
-  print('mujoco version: ${Mujoco.version}');
+  print('mujoco version: ${mujoco.version}');
   final model = MjModel.fromXmlString(MODEL_XML);
   final data = MjData(model);
   data.qpos[0] = 0.4;

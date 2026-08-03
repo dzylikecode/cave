@@ -2,13 +2,13 @@ import 'package:py_embed/py_embed.dart';
 
 import '../../array.dart';
 
-final class PythonMjDoubleArray implements MjDoubleArray {
+final class MjDoubleArrayPython implements MjDoubleArray {
   final PyObject _array;
 
   @override
   final int length;
 
-  PythonMjDoubleArray(this._array, this.length);
+  MjDoubleArrayPython(this._array, this.length);
 
   void _checkIndex(int index) {
     RangeError.checkValidIndex(index, this, 'index', length);

@@ -1,8 +1,8 @@
 import 'backend.dart';
-import 'python/python_backend.dart';
+import 'python/backend.dart';
 
-MujocoBackend? _backend;
+Mujoco? _mujoco;
 
-MujocoBackend get mujocoBackend => _backend ??= createMujocoBackend();
+Mujoco get mujoco => _mujoco ??= createMujoco();
 
-MujocoBackend createMujocoBackend() => PythonMujocoBackend();
+Mujoco createMujoco() => MujocoPython();

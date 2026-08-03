@@ -39,8 +39,8 @@ void main() {
     data.qpos[0] = 0.4;
     data.ctrl[0] = 0.1;
 
-    mjForward(model, data);
-    mjStep(model, data);
+    mujoco.forward(model, data);
+    mujoco.step(model, data);
 
     print(data.qpos.toList());
   } finally {
@@ -59,9 +59,9 @@ independent Dart snapshot.
 ```text
 MjModel / MjData / MjDoubleArray
                  |
-          MujocoBackend
+              mujoco
                  |
-       PythonMujocoBackend
+     MjModelPython / MjDataPython
 ```
 
 The backend is created lazily by an internal factory. Backend implementation
