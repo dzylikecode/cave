@@ -1,9 +1,11 @@
 import 'package:py_embed/py_embed.dart';
 
+import '../../jit.dart';
+import '../../tensor.dart';
 import '../backend.dart';
-import 'python_helpers.dart';
+import 'helpers.dart';
 
-final class PythonTorchBackend implements TorchBackend {
+final class TorchPython implements Torch {
   final _module = PyModule('torch');
 
   late final _tensor = _module.get('tensor');
@@ -20,11 +22,10 @@ final class PythonTorchBackend implements TorchBackend {
   late final version = _readString(_module, '__version__');
 
   @override
-  BackendTensor tensor(
-    Object data, {
-    String? dtype,
-    bool requiresGrad = false,
-  }) {
+  Jit get jit => const Jit();
+
+  @override
+  Tensor tensor(Object data, {String? dtype, bool requiresGrad = false}) {
     final pyData = dartToPython(data);
     try {
       return _create(_tensor, [pyData], dtype, requiresGrad);
@@ -34,27 +35,18 @@ final class PythonTorchBackend implements TorchBackend {
   }
 
   @override
-  BackendTensor zeros(
-    List<int> shape, {
-    String? dtype,
-    bool requiresGrad = false,
-  }) => _shapeFactory(_zeros, shape, dtype, requiresGrad);
+  Tensor zeros(List<int> shape, {String? dtype, bool requiresGrad = false}) =>
+      _shapeFactory(_zeros, shape, dtype, requiresGrad);
 
   @override
-  BackendTensor ones(
-    List<int> shape, {
-    String? dtype,
-    bool requiresGrad = false,
-  }) => _shapeFactory(_ones, shape, dtype, requiresGrad);
+  Tensor ones(List<int> shape, {String? dtype, bool requiresGrad = false}) =>
+      _shapeFactory(_ones, shape, dtype, requiresGrad);
 
   @override
-  BackendTensor randn(
-    List<int> shape, {
-    String? dtype,
-    bool requiresGrad = false,
-  }) => _shapeFactory(_randn, shape, dtype, requiresGrad);
+  Tensor randn(List<int> shape, {String? dtype, bool requiresGrad = false}) =>
+      _shapeFactory(_randn, shape, dtype, requiresGrad);
 
-  BackendTensor _shapeFactory(
+  Tensor _shapeFactory(
     PyObject factory,
     List<int> shape,
     String? dtype,
@@ -69,7 +61,7 @@ final class PythonTorchBackend implements TorchBackend {
   }
 
   @override
-  BackendTensor arange(
+  Tensor arange(
     num start,
     num end,
     num step, {
@@ -88,7 +80,7 @@ final class PythonTorchBackend implements TorchBackend {
     }
   }
 
-  PythonBackendTensor _create(
+  TensorPython _create(
     PyObject factory,
     List<PyObject> args,
     String? dtype,
@@ -99,7 +91,7 @@ final class PythonTorchBackend implements TorchBackend {
       kwargs['dtype'] = _module.get(dtype);
     }
     try {
-      return PythonBackendTensor(factory.callArgs(args, kwargs));
+      return TensorPython(factory.callArgs(args, kwargs));
     } finally {
       for (final value in kwargs.values) {
         value.dispose();
@@ -150,14 +142,14 @@ final class PythonTorchBackend implements TorchBackend {
   }
 
   @override
-  BackendScriptModule loadScriptModule(String path, {String? mapLocation}) {
+  ScriptModule loadScriptModule(String path, {String? mapLocation}) {
     final pyPath = PyString(path);
     final kwargs = <String, PyObject>{};
     if (mapLocation != null) {
       kwargs['map_location'] = PyString(mapLocation);
     }
     try {
-      return PythonBackendScriptModule(_jitLoad.callArgs([pyPath], kwargs));
+      return ScriptModulePython(_jitLoad.callArgs([pyPath], kwargs));
     } finally {
       for (final value in kwargs.values) {
         value.dispose();
@@ -167,34 +159,40 @@ final class PythonTorchBackend implements TorchBackend {
   }
 }
 
-final class PythonBackendScriptModule implements BackendScriptModule {
+final class ScriptModulePython implements ScriptModule {
   final PyObject object;
 
-  PythonBackendScriptModule(this.object);
+  ScriptModulePython(this.object);
 
   @override
-  BackendTensor forward(List<BackendTensor> inputs) {
+  Tensor call(Tensor input) => forward([input]);
+
+  @override
+  Tensor forward(List<Tensor> inputs) {
     final pythonInputs = <PyObject>[];
     for (final input in inputs) {
-      if (input is! PythonBackendTensor) {
+      if (input is! TensorPython) {
         throw ArgumentError.value(input, 'inputs', 'Backend mismatch');
       }
       pythonInputs.add(input.object);
     }
-    return PythonBackendTensor(object.callArgs(pythonInputs));
+    return TensorPython(object.callArgs(pythonInputs));
   }
 
   @override
-  void eval() => _call(object, 'eval').dispose();
+  ScriptModule eval() {
+    _call(object, 'eval').dispose();
+    return this;
+  }
 
   @override
   void dispose() => object.dispose();
 }
 
-final class PythonBackendTensor implements BackendTensor {
+final class TensorPython implements Tensor {
   final PyObject object;
 
-  PythonBackendTensor(this.object);
+  TensorPython(this.object);
 
   @override
   late final int ndim = _readInt(object, 'ndim');
@@ -233,42 +231,49 @@ final class PythonBackendTensor implements BackendTensor {
   @override
   late final bool requiresGrad = _readBool(object, 'requires_grad');
 
-  PythonBackendTensor _binary(BackendTensor other, String method) {
-    if (other is! PythonBackendTensor) {
+  TensorPython _binary(Tensor other, String method) {
+    if (other is! TensorPython) {
       throw ArgumentError.value(other, 'other', 'Backend mismatch');
     }
-    return PythonBackendTensor(_call1(object, method, other.object));
+    return TensorPython(_call1(object, method, other.object));
   }
 
   @override
-  BackendTensor add(BackendTensor other) => _binary(other, 'add');
-  @override
-  BackendTensor subtract(BackendTensor other) => _binary(other, 'sub');
-  @override
-  BackendTensor multiply(BackendTensor other) => _binary(other, 'mul');
-  @override
-  BackendTensor divide(BackendTensor other) => _binary(other, 'div');
-  @override
-  BackendTensor matmul(BackendTensor other) => _binary(other, 'matmul');
+  Tensor operator +(Tensor other) => _binary(other, 'add');
 
   @override
-  BackendTensor reshape(List<int> shape) {
+  Tensor operator -(Tensor other) => _binary(other, 'sub');
+
+  @override
+  Tensor operator *(Tensor other) => _binary(other, 'mul');
+
+  @override
+  Tensor operator /(Tensor other) => _binary(other, 'div');
+
+  @override
+  Tensor matmul(Tensor other) => _binary(other, 'matmul');
+
+  @override
+  Tensor reshape(List<int> shape) {
     final pyShape = intListToPython(shape);
     try {
-      return PythonBackendTensor(_call1(object, 'reshape', pyShape));
+      return TensorPython(_call1(object, 'reshape', pyShape));
     } finally {
       pyShape.dispose();
     }
   }
 
   @override
-  BackendTensor transpose() => PythonBackendTensor(object.get('T'));
+  Tensor get transpose => TensorPython(object.get('T'));
+
   @override
-  BackendTensor sum() => PythonBackendTensor(_call(object, 'sum'));
+  Tensor sum() => TensorPython(_call(object, 'sum'));
+
   @override
-  BackendTensor mean() => PythonBackendTensor(_call(object, 'mean'));
+  Tensor mean() => TensorPython(_call(object, 'mean'));
+
   @override
-  BackendTensor relu() => PythonBackendTensor(_call(object, 'relu'));
+  Tensor relu() => TensorPython(_call(object, 'relu'));
 
   @override
   Object toList() {

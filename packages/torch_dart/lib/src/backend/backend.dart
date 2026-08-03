@@ -1,11 +1,16 @@
-abstract interface class TorchBackend {
+import '../jit.dart';
+import '../tensor.dart';
+
+abstract interface class Torch {
   String get version;
 
-  BackendTensor tensor(Object data, {String? dtype, bool requiresGrad});
-  BackendTensor zeros(List<int> shape, {String? dtype, bool requiresGrad});
-  BackendTensor ones(List<int> shape, {String? dtype, bool requiresGrad});
-  BackendTensor randn(List<int> shape, {String? dtype, bool requiresGrad});
-  BackendTensor arange(
+  Jit get jit;
+
+  Tensor tensor(Object data, {String? dtype, bool requiresGrad});
+  Tensor zeros(List<int> shape, {String? dtype, bool requiresGrad});
+  Tensor ones(List<int> shape, {String? dtype, bool requiresGrad});
+  Tensor randn(List<int> shape, {String? dtype, bool requiresGrad});
+  Tensor arange(
     num start,
     num end,
     num step, {
@@ -14,34 +19,5 @@ abstract interface class TorchBackend {
   });
   void manualSeed(int seed);
   T inferenceMode<T>(T Function() action);
-  BackendScriptModule loadScriptModule(String path, {String? mapLocation});
-}
-
-abstract interface class BackendTensor {
-  List<int> get shape;
-  int get ndim;
-  int get numel;
-  String get dtype;
-  String get device;
-  bool get requiresGrad;
-
-  BackendTensor add(BackendTensor other);
-  BackendTensor subtract(BackendTensor other);
-  BackendTensor multiply(BackendTensor other);
-  BackendTensor divide(BackendTensor other);
-  BackendTensor matmul(BackendTensor other);
-  BackendTensor reshape(List<int> shape);
-  BackendTensor transpose();
-  BackendTensor sum();
-  BackendTensor mean();
-  BackendTensor relu();
-  Object toList();
-  num item();
-  void dispose();
-}
-
-abstract interface class BackendScriptModule {
-  BackendTensor forward(List<BackendTensor> inputs);
-  void eval();
-  void dispose();
+  ScriptModule loadScriptModule(String path, {String? mapLocation});
 }

@@ -1,6 +1,8 @@
 import 'backend.dart';
-import 'python/python_backend.dart';
+import 'python/backend.dart';
 
-TorchBackend? _backend;
+Torch? _torch;
 
-TorchBackend get torchBackend => _backend ??= PythonTorchBackend();
+Torch get torch => _torch ??= createTorch();
+
+Torch createTorch() => TorchPython();

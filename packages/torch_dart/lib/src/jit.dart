@@ -1,5 +1,4 @@
-import 'backend/backend.dart';
-import 'backend/backend_factory.dart';
+import 'backend/backend_factory.dart' as backend;
 import 'tensor.dart';
 
 /// Entry point for TorchScript operations.
@@ -9,33 +8,19 @@ final class Jit {
   const Jit();
 
   /// Loads a module saved by `torch.jit.save`.
-  ScriptModule load(String path, {String? mapLocation}) => .fromHandle(
-    torchBackend.loadScriptModule(path, mapLocation: mapLocation),
-  );
+  ScriptModule load(String path, {String? mapLocation}) =>
+      backend.torch.loadScriptModule(path, mapLocation: mapLocation);
 }
 
 /// A loaded TorchScript module.
-final class ScriptModule {
-  final BackendScriptModule _handle;
-
-  ScriptModule.fromHandle(this._handle);
-
-  BackendScriptModule get backendHandle => _handle;
-
+abstract interface class ScriptModule {
   /// Runs a module with one tensor argument.
-  Tensor call(Tensor input) => forward([input]);
+  Tensor call(Tensor input);
 
   /// Runs the module with positional tensor arguments.
-  Tensor forward(List<Tensor> inputs) => .fromHandle(
-    _handle.forward(
-      inputs.map((input) => input.backendHandle).toList(growable: false),
-    ),
-  );
+  Tensor forward(List<Tensor> inputs);
 
-  ScriptModule eval() {
-    _handle.eval();
-    return this;
-  }
+  ScriptModule eval();
 
-  void dispose() => _handle.dispose();
+  void dispose();
 }

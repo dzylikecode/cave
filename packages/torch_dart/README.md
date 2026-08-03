@@ -73,7 +73,7 @@ runtime cannot be restarted in the same process afterward.
 ```text
 Tensor / top-level factories
             |
-       TorchBackend
+           torch
             |
-    PythonTorchBackend
+       TensorPython
 ```
