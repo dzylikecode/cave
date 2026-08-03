@@ -8,7 +8,7 @@ void main() {
   final output = input.matmul(weights).relu();
 
   try {
-    print('PyTorch $torchVersion');
+    print('PyTorch ${torch.version}');
     print('shape: ${output.shape}');
     print(output.toList());
   } finally {

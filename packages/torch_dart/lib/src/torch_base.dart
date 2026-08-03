@@ -5,9 +5,6 @@ import 'tensor.dart';
 /// Namespaced access mirroring Python's `torch` module.
 Torch get torch => backend.torch;
 
-/// Version of the PyTorch package used by the active backend.
-String get torchVersion => torch.version;
-
 Tensor tensor(Object data, {String? dtype, bool requiresGrad = false}) =>
     torch.tensor(data, dtype: dtype, requiresGrad: requiresGrad);
 
