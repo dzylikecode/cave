@@ -35,7 +35,7 @@ final class MjSensorPython implements MjSensor {
     try {
       final length = array.getInt('size');
       return MjDoubleArrayPython(array, length);
-    } catch (_) {
+    } catch (_) { // 不是 finally，所有权转移到 data 上面了
       array.dispose();
       rethrow;
     }

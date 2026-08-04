@@ -140,7 +140,7 @@ final class MjDataPython implements MjData {
 
   @override
   MjSensorPython sensor(String name) =>
-      _sensors[name] ??= MjSensorPython.fromData(object, name);
+      _sensors[name] ??= .fromData(object, name);
 
   @override
   void dispose() {
