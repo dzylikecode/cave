@@ -113,29 +113,7 @@ final class TorchPython implements Torch {
   T inferenceMode<T>(T Function() action) {
     final context = _inferenceMode.call0();
     try {
-      _call(context, '__enter__').dispose();
-      try {
-        return action();
-      } finally {
-        final exit = context.get('__exit__');
-        final sys = PyModule('sys');
-        try {
-          final excInfoObject = _call(sys, 'exc_info');
-          try {
-            final excInfo = excInfoObject.cast<PyTuple>();
-            exit.callArgs([
-              excInfo.getItem(0),
-              excInfo.getItem(1),
-              excInfo.getItem(2),
-            ]).dispose();
-          } finally {
-            excInfoObject.dispose();
-          }
-        } finally {
-          sys.dispose();
-          exit.dispose();
-        }
-      }
+      return context.withContext((_) => action());
     } finally {
       context.dispose();
     }

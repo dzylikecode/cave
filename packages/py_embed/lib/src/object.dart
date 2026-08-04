@@ -197,6 +197,61 @@ class PyObject {
       arguments.dispose();
     }
   }
+
+  /// Runs [action] inside this Python context manager.
+  ///
+  /// The value returned by `__enter__` is passed to [action] and remains valid
+  /// only for the duration of the callback. This object is not disposed by
+  /// this method; its owner remains responsible for disposing it.
+  ///
+  /// Dart exceptions, including translated [PythonException]s, are propagated
+  /// after `__exit__` is called. Because translated Python exceptions have
+  /// already crossed and cleared the Python error boundary, `__exit__` receives
+  /// `(None, None, None)` for them.
+  T withContext<T>(T Function(PyObject value) action) {
+    final enter = get('__enter__');
+    late final PyObject value;
+    try {
+      value = enter.call0();
+    } finally {
+      enter.dispose();
+    }
+
+    try {
+      return action(value);
+    } finally {
+      try {
+        final exit = get('__exit__');
+        try {
+          final sys = PyModule('sys');
+          try {
+            final excInfoFunction = sys.get('exc_info');
+            try {
+              final excInfoObject = excInfoFunction.call0();
+              try {
+                final excInfo = excInfoObject.cast<PyTuple>();
+                exit.callArgs([
+                  excInfo.getItem(0),
+                  excInfo.getItem(1),
+                  excInfo.getItem(2),
+                ]).dispose();
+              } finally {
+                excInfoObject.dispose();
+              }
+            } finally {
+              excInfoFunction.dispose();
+            }
+          } finally {
+            sys.dispose();
+          }
+        } finally {
+          exit.dispose();
+        }
+      } finally {
+        value.dispose();
+      }
+    }
+  }
 }
 
 /// [tuple](https://github.com/python/cpython/blob/main/Include/tupleobject.h)

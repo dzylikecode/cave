@@ -18,3 +18,7 @@
 ## 0.0.5
 
 - getInt, getDouble, getString, getBool helpers
+
+## 0.0.6
+
+- 支持 Python 的 `with` 语法

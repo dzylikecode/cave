@@ -112,7 +112,7 @@ void main() {
     mjStep(model, data);
     final obs0 = makeObservation(data, action, [0.0, 0.0, 0.0], phase);
     for (var i = 0; i < historyLength; i++) {
-      history.addLast(List<double>.of(obs0));
+      history.addLast(.of(obs0));
     }
     for (var step = 0; viewer.isRunning; step++) {
       mjStep(model, data);
