@@ -4,7 +4,7 @@ import '../../data.dart';
 import '../../model.dart';
 import '../backend.dart';
 import 'array.dart';
-import 'helpers.dart';
+import 'sensor.dart';
 
 final class MujocoPython implements Mujoco {
   final _module = PyModule('mujoco');
@@ -18,7 +18,7 @@ final class MujocoPython implements Mujoco {
   late final _resetData = _module.get('mj_resetData');
 
   @override
-  late final version = readStringAttribute(_module, '__version__');
+  late final version = _module.getString('__version__');
 
   @override
   MjModel createModelFromXmlString(String xml) {
@@ -94,13 +94,13 @@ final class MjModelPython implements MjModel {
   MjModelPython(this.object);
 
   @override
-  late final int nq = readIntAttribute(object, 'nq');
+  late final int nq = object.getInt('nq');
 
   @override
-  late final int nv = readIntAttribute(object, 'nv');
+  late final int nv = object.getInt('nv');
 
   @override
-  late final int nu = readIntAttribute(object, 'nu');
+  late final int nu = object.getInt('nu');
 
   @override
   void dispose() => object.dispose();
@@ -115,11 +115,12 @@ final class MjDataPython implements MjData {
   MjDoubleArrayPython? _qvel;
   MjDoubleArrayPython? _qacc;
   MjDoubleArrayPython? _ctrl;
+  final Map<String, MjSensorPython> _sensors = {};
 
   MjDataPython(this.model, this.object);
 
   @override
-  double get time => readDoubleAttribute(object, 'time');
+  double get time => object.getDouble('time');
 
   @override
   MjDoubleArrayPython get qpos =>
@@ -138,11 +139,19 @@ final class MjDataPython implements MjData {
       _ctrl ??= MjDoubleArrayPython(object.get('ctrl'), model.nu);
 
   @override
+  MjSensorPython sensor(String name) =>
+      _sensors[name] ??= MjSensorPython.fromData(object, name);
+
+  @override
   void dispose() {
     _qpos?.dispose();
     _qvel?.dispose();
     _qacc?.dispose();
     _ctrl?.dispose();
+    for (final sensor in _sensors.values) {
+      sensor.dispose();
+    }
+    _sensors.clear();
     object.dispose();
   }
 }

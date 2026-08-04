@@ -195,7 +195,7 @@ final class TensorPython implements Tensor {
   TensorPython(this.object);
 
   @override
-  late final int ndim = _readInt(object, 'ndim');
+  late final int ndim = object.getInt('ndim');
 
   @override
   late final List<int> shape = () {
@@ -229,7 +229,7 @@ final class TensorPython implements Tensor {
   late final String device = _readString(object, 'device');
 
   @override
-  late final bool requiresGrad = _readBool(object, 'requires_grad');
+  late final bool requiresGrad = object.getBool('requires_grad');
 
   TensorPython _binary(Tensor other, String method) {
     if (other is! TensorPython) {
@@ -348,24 +348,6 @@ PyObject _number(num value) =>
 
 bool _isFloatingPointDtype(String dtype) =>
     dtype.contains('float') || dtype.contains('bfloat');
-
-int _readInt(PyObject object, String name) {
-  final value = object.get(name);
-  try {
-    return value.toInt();
-  } finally {
-    value.dispose();
-  }
-}
-
-bool _readBool(PyObject object, String name) {
-  final value = object.get(name);
-  try {
-    return value.isTrue;
-  } finally {
-    value.dispose();
-  }
-}
 
 String _readString(PyObject object, String name) {
   final value = object.get(name);

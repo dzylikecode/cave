@@ -59,6 +59,42 @@ class PyObject {
     }),
   );
 
+  int getInt(String attribute) {
+    final obj = get(attribute);
+    try {
+      return obj.toInt();
+    } finally {
+      obj.dispose();
+    }
+  }
+
+  double getDouble(String attribute) {
+    final obj = get(attribute);
+    try {
+      return obj.toDouble();
+    } finally {
+      obj.dispose();
+    }
+  }
+
+  String getString(String attribute) {
+    final obj = get(attribute);
+    try {
+      return obj.toDartString();
+    } finally {
+      obj.dispose();
+    }
+  }
+
+  bool getBool(String attribute) {
+    final obj = get(attribute);
+    try {
+      return obj.toBool();
+    } finally {
+      obj.dispose();
+    }
+  }
+
   T cast<T extends PyObject>() =>
       switch (T) {
             == PyTuple => PyTuple.fromBorrowed(ptr),

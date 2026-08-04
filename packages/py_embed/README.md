@@ -144,3 +144,4 @@ dart run example/main.dart
 ## TODO
 
 - [ ] linux
+- [ ] code generator
