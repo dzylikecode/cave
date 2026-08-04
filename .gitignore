@@ -7,4 +7,3 @@ dist
 *.egg-info
 __pycache__
 /assets/
-/example/
