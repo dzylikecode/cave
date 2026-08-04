@@ -14,9 +14,7 @@ import 'vm.dart';
 final class PyRef implements Finalizable {
   // 由于 Finalizer 调用不是按顺序的
   // 为保证 runtime 最后，所有先注册到 runtime 里面
-  static final Finalizer<PythonReferenceState> _finalizer = Finalizer(
-    pythonRuntime.releaseLater,
-  );
+  static final _finalizer = Finalizer(pythonRuntime.releaseLater);
 
   final PythonReferenceState _state;
   final Object _detachToken = Object();
