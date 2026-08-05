@@ -36,6 +36,10 @@ Future<String> getPyExecutableFromShell([String pyExe = 'python']) =>
     runPyShell('import sys; print(sys.executable)', pyExe);
 Future<String> getPyBasePrefixFromShell([String pyExe = 'python']) =>
     runPyShell('import sys; print(sys.base_prefix)', pyExe);
+Future<String> getPyLibraryFromShell([String pyExe = 'python']) => runPyShell(
+  "import os, sysconfig; print(os.path.join(sysconfig.get_config_var('LIBDIR'), sysconfig.get_config_var('LDLIBRARY')))",
+  pyExe,
+);
 
 String getPyPrefixFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.prefix)', pyExe);
@@ -43,3 +47,7 @@ String getPyExecutableFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.executable)', pyExe);
 String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.base_prefix)', pyExe);
+String getPyLibraryFromShellSync([String pyExe = 'python']) => runPyShellSync(
+  "import os, sysconfig; print(os.path.join(sysconfig.get_config_var('LIBDIR'), sysconfig.get_config_var('LDLIBRARY')))",
+  pyExe,
+);

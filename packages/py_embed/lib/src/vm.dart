@@ -128,6 +128,7 @@ final class PythonRuntime {
   }
 
   void _initializeFromExecutable(String executable) {
+    _preloadPythonLibrary(executable);
     final config = PyConfig()
       ..executable = executable
       ..programName = executable;
@@ -136,6 +137,44 @@ final class PythonRuntime {
     } finally {
       config.dispose();
     }
+  }
+
+  /// CPython extension modules expect the interpreter C API to be visible to
+  /// subsequently loaded shared objects. Dart's bundled native assets are not
+  /// loaded with that visibility on Linux, so load the selected interpreter
+  /// explicitly before any Python API lookup.
+  void _preloadPythonLibrary(String executable) {
+    if (!Platform.isLinux) return;
+
+    final libraryPath = getPyLibraryFromShellSync(executable);
+    final libdl = DynamicLibrary.open('libdl.so.2');
+    final dlopen = libdl
+        .lookupFunction<
+          Pointer<Void> Function(Pointer<Char>, Int32),
+          Pointer<Void> Function(Pointer<Char>, int)
+        >('dlopen');
+    final dlerror = libdl
+        .lookupFunction<Pointer<Char> Function(), Pointer<Char> Function()>(
+          'dlerror',
+        );
+
+    ffi.using((arena) {
+      const rtldNow = 2;
+      const rtldGlobal = 0x100;
+      final handle = dlopen(
+        libraryPath.toNativeUtf8(allocator: arena).cast(),
+        rtldNow | rtldGlobal,
+      );
+      if (handle == nullptr) {
+        final error = dlerror();
+        final message = error == nullptr
+            ? 'Unknown dynamic-loader error.'
+            : error.cast<ffi.Utf8>().toDartString();
+        throw StateError(
+          'Could not load CPython library $libraryPath: $message',
+        );
+      }
+    });
   }
 
   T execute<T>(T Function() operation) {
