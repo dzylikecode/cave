@@ -221,10 +221,10 @@ packages:
     dependency: transitive
     description:
       name: native_toolchain_xmake
-      sha256: "006b488ff7319d5bc0d178c985628e13d1a3ef66097deae48c5accc66940f7e2"
+      sha256: dc5696cdc8f71728bba2a18dc635c52aeb1924aff02455bf39a4f33370995cb2
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.3"
   node_preamble:
     dependency: transitive
     description:
