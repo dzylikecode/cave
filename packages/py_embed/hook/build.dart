@@ -29,17 +29,22 @@ void main(List<String> args) async {
         .windows => 'python38',
         _ => 'python3.8',
       },
-      LookupInProcess(),
+      DynamicLoadingBundled(),
     );
 
-    final installedPath = p.join(basePrefix, 'lib', libName);
+    // final installedPath = p.join(basePrefix, 'lib', libName);
+
+    final installedPath = switch (input.config.code.targetOS) {
+      .windows => p.join(basePrefix, libName),
+      _ => p.join(basePrefix, 'lib', libName),
+    };
 
     output.assets.code.add(
       CodeAsset(
         package: input.packageName,
         name: 'src/python.g.dart',
         file: .file(installedPath),
-        linkMode: LookupInProcess(),
+        linkMode: DynamicLoadingBundled(),
       ),
     );
 
