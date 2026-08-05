@@ -14,7 +14,10 @@ void main(List<String> args) async {
     await xmakeBuilder.build(target: 'minimal');
     final installedPath = await xmakeBuilder.install(
       target: 'minimal',
-      libName: 'python38',
+      libName: switch (input.config.code.targetOS) {
+        .windows => 'python38',
+        _ => 'python3.8',
+      },
     );
 
     output.assets.code.add(
