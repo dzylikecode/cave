@@ -22,3 +22,7 @@
 ## 0.0.6
 
 - 支持 Python 的 `with` 语法
+
+## 0.1.0
+
+- remove xmake
