@@ -26,7 +26,6 @@ external Pointer<Void> _dlopen(Pointer<Char> file, int mode);
 @Native<Pointer<Char> Function()>(symbol: 'dlerror')
 external Pointer<Char> _dlerror();
 
-
 /// just ovride the default [DynamicLibrary.open]
 ///
 /// On Linux and other Unix-like platforms, loads the dynamic library into
@@ -44,17 +43,19 @@ DynamicLibrary openEx(String path) {
         path.toNativeUtf8(allocator: arena).cast(),
         _rtldNow | _rtldGlobal,
       );
-      if (handle != nullptr) return DynamicLibrary.process();
+      if (handle == nullptr) {
+        final error = _dlerror();
+        final detail = error == nullptr
+            ? 'unknown dynamic-loader error'
+            : error.cast<Utf8>().toDartString();
+        throw ArgumentError.value(
+          path,
+          'path',
+          'Failed to load library: $detail',
+        );
+      }
 
-      final error = _dlerror();
-      final detail = error == nullptr
-          ? 'unknown dynamic-loader error'
-          : error.cast<Utf8>().toDartString();
-      throw ArgumentError.value(
-        path,
-        'path',
-        'Failed to load library: $detail',
-      );
+      return DynamicLibrary.process();
     });
   }
 
