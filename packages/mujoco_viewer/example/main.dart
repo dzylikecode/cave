@@ -17,6 +17,8 @@ const modelXml = '''
 ''';
 
 void main() {
+  print('MuJoCo version: ${mujoco.version}');
+
   final model = MjModel.fromXmlString(modelXml);
   final data = MjData(model);
   final viewer = MujocoViewer.launchPassive(model, data);
