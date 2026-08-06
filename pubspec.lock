@@ -57,14 +57,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.4.2"
-  code_assets:
-    dependency: transitive
-    description:
-      name: code_assets
-      sha256: bf394f466ba9205f1812a0433b392d6af280f155f56651eda7c18cc32ed493b8
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.2.1"
   collection:
     dependency: transitive
     description:
@@ -145,14 +137,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.1.3"
-  hooks:
-    dependency: transitive
-    description:
-      name: hooks
-      sha256: "03a564c3704524ee0f7fc56fc621e8796cc2eb8c24d1f1a33b34979815b285c4"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.1.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -217,14 +201,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.0"
-  native_toolchain_xmake:
-    dependency: transitive
-    description:
-      name: native_toolchain_xmake
-      sha256: dc5696cdc8f71728bba2a18dc635c52aeb1924aff02455bf39a4f33370995cb2
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.0.3"
   node_preamble:
     dependency: transitive
     description:
@@ -273,14 +249,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.2.2"
-  record_use:
-    dependency: transitive
-    description:
-      name: record_use
-      sha256: af37186ff9ede46fa32f152526c48f46c5b3ad7d3d5a566140cb5df3dc4ed737
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "1.0.0"
   shelf:
     dependency: transitive
     description:
