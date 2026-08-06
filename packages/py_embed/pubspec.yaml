@@ -19,6 +19,7 @@ resolution: workspace
 dependencies:
   ffi: ^2.2.0
   meta: ^1.19.0
+  path: ^1.9.1
 
 dev_dependencies:
   ffigen: ^20.1.1

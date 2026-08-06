@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
+import 'python.g.dart';
 
 Future<String> runPyShell(String code, [String pyExe = 'python']) async {
   final result = await Process.run(pyExe, ['-c', code]);
@@ -59,12 +60,12 @@ String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
   );
 }
 
-(int, int, int) getPyVersionSync() {
-  final result = Process.runSync('python', ['--version']);
+(int, int, int) getPyVersionSync([String pyExe = 'python']) {
+  final result = Process.runSync(pyExe, ['--version']);
 
   if (result.exitCode != 0) {
     throw ProcessException(
-      'python',
+      pyExe,
       ['--version'],
       result.stderr.toString(),
       result.exitCode,
@@ -75,9 +76,9 @@ String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
   return extractVersion(output);
 }
 
-String getPyDllPathSync() {
-  final basePrefix = getPyBasePrefixFromShellSync();
-  final version = getPyVersionSync();
+String getPyDllPathFromVenvSync([String pyExe = 'python']) {
+  final basePrefix = getPyBasePrefixFromShellSync(pyExe);
+  final version = getPyVersionSync(pyExe);
   final path = () {
     if (Platform.isLinux) {
       return p.join(

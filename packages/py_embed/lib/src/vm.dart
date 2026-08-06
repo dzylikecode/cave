@@ -24,7 +24,7 @@ abstract final class Python {
 
   static void runSimpleString(String code) => runPython(
     () => ffi.using(
-      (arena) => g.PyRun_SimpleString(
+      (arena) => api.PyRun_SimpleString(
         code.toNativeUtf8(allocator: arena).cast<Char>(),
       ),
     ),
@@ -102,14 +102,12 @@ final class PythonRuntime {
   }
 
   void _initializeFromExecutable() {
-    final libraryPath = getPyDllPathSync();
-    loadHostDynamicLibrary(libraryPath);
     final executablePath = getPyExecutableFromShellSync();
     final config = PyConfig()
       ..executable = executablePath
       ..programName = executablePath;
     try {
-      g.Py_InitializeFromConfig(config.ptr).guard();
+      api.Py_InitializeFromConfig(config.ptr).guard();
     } finally {
       config.dispose();
     }
@@ -185,7 +183,7 @@ final class PythonRuntime {
 
     state.pointer = nullptr;
     state.queued = false;
-    g.Py_DecRef(pointer);
+    api.Py_DecRef(pointer);
   }
 
   void shutdown() {
@@ -208,7 +206,7 @@ final class PythonRuntime {
       _release(state);
     }
 
-    g.Py_Finalize();
+    api.Py_Finalize();
     _state = .closed;
   }
 }
