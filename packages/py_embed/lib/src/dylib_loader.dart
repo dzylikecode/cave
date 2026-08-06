@@ -37,7 +37,7 @@ DynamicLibrary openEx(String path) {
 
   // linux system
   if (Platform.isLinux || Platform.isAndroid || Platform.isFuchsia) {
-    using((arena) {
+    return using((arena) {
       _dlerror(); // Clear a previous dynamic-loader error.
       final handle = _dlopen(
         path.toNativeUtf8(allocator: arena).cast(),
