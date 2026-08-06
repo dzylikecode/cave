@@ -25,4 +25,4 @@
 
 ## 0.1.0
 
-- 之前犹豫在打包给 android
+- support Linux
