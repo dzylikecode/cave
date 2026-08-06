@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'exception.dart';
 import 'python.g.dart' as g;
 import 'vm.dart';
+import 'dylib_loader.dart';
 
 /// Owns exactly one reference to a Python object.
 ///
@@ -32,7 +33,7 @@ final class PyRef implements Finalizable {
     if (pointer == nullptr) {
       throwPythonException(context: 'borrowing a Python object');
     }
-    runPython(() => g.Py_IncRef(pointer));
+    runPython(() => api.Py_IncRef(pointer));
     return ._(pointer);
   }
 
@@ -50,7 +51,7 @@ final class PyRef implements Finalizable {
   /// Creates a reference intended for an API that steals its argument.
   Pointer<g.PyObject> newReference() {
     final result = pointer;
-    runPython(() => g.Py_IncRef(result));
+    runPython(() => api.Py_IncRef(result));
     return result;
   }
 

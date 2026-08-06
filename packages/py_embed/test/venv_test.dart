@@ -11,6 +11,6 @@ void main() {
   });
 
   test('get python dll path from shell', () {
-    expect(() => getPyDllPathSync(), returnsNormally);
+    expect(() => getPyDllPathFromVenvSync(), returnsNormally);
   });
 }

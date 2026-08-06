@@ -4,18 +4,19 @@ import 'package:meta/meta.dart';
 
 import 'python.g.dart' as g;
 import 'status.dart';
+import 'dylib_loader.dart';
 
 class PyConfig extends NativeResource<g.PyConfig> {
   PyConfig._(Pointer<g.PyConfig> ptr) : super(ptr, _releaseConfig);
 
   static void _releaseConfig(Pointer<g.PyConfig> ptr) {
-    g.PyConfig_Clear(ptr);
+    api.PyConfig_Clear(ptr);
     ffi.calloc.free(ptr);
   }
 
   factory PyConfig() {
     final ptr = ffi.calloc<g.PyConfig>();
-    g.PyConfig_InitPythonConfig(ptr);
+    api.PyConfig_InitPythonConfig(ptr);
     return ._(ptr);
   }
 
@@ -25,7 +26,7 @@ class PyConfig extends NativeResource<g.PyConfig> {
       ffi.using((arena) {
         // 让 PyConfig_SetString 负责释放原来的 Python-owned 字符串
         final temp = arena<Pointer<WChar>>()..value = oldValue;
-        g.PyConfig_SetString(
+        api.PyConfig_SetString(
           ptr,
           temp,
           value.toNativeWChar(allocator: arena),
