@@ -1,7 +1,6 @@
 import 'package:py_embed/py_embed.dart';
 
 void main() async {
-  Python.configureVenv(await getPyExecutableFromShell());
   final module = PyModule('py_pkg');
   final cls = module.get('PyClass');
   final args = PyTuple.fromList([PyString('hello')]);
