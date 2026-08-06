@@ -6,7 +6,7 @@ void main() {
   final outputFile = File.fromUri(packageRoot.resolve('lib/src/python.g.dart'));
 
   FfiGenerator(
-    output: .new(dartFile: outputFile.uri),
+    output: .new(dartFile: outputFile.uri, style: DynamicLibraryBindings()),
     headers: .new(
       entryPoints: [packageRoot.resolve('dist/include/Python.h')],
       // include: (header) => header.path.endsWith('Python.h'), // 只导出这个文件的接口

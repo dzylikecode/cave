@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
 import 'python.g.dart' as g;
+import 'dylib_loader.dart';
 
 /// A Python exception translated at the Python/Dart API boundary.
 final class PythonException implements Exception {
@@ -28,14 +29,14 @@ final class PythonException implements Exception {
 
 @internal
 void checkPythonError({String? context}) {
-  if (g.PyErr_Occurred() != nullptr) {
+  if (api.PyErr_Occurred() != nullptr) {
     throwPythonException(context: context);
   }
 }
 
 @internal
 Never throwPythonException({String? context}) {
-  if (g.PyErr_Occurred() == nullptr) {
+  if (api.PyErr_Occurred() == nullptr) {
     throw PythonException(
       type: 'UnknownPythonError',
       message: 'A Python API reported failure without setting an exception.',
@@ -48,8 +49,8 @@ Never throwPythonException({String? context}) {
     final value = arena<Pointer<g.PyObject>>()..value = nullptr;
     final traceback = arena<Pointer<g.PyObject>>()..value = nullptr;
 
-    g.PyErr_Fetch(type, value, traceback);
-    g.PyErr_NormalizeException(type, value, traceback);
+    api.PyErr_Fetch(type, value, traceback);
+    api.PyErr_NormalizeException(type, value, traceback);
 
     try {
       throw PythonException(
@@ -68,9 +69,9 @@ Never throwPythonException({String? context}) {
 String _exceptionTypeName(Pointer<g.PyObject> type) {
   if (type == nullptr) return 'UnknownPythonError';
 
-  final name = g.PyExceptionClass_Name(type);
+  final name = api.PyExceptionClass_Name(type);
   if (name == nullptr) {
-    g.PyErr_Clear();
+    api.PyErr_Clear();
     return 'UnknownPythonError';
   }
   return name.cast<ffi.Utf8>().toDartString();
@@ -87,43 +88,43 @@ String objectToDartString(
 }) {
   if (object == nullptr) return '';
 
-  final string = g.PyObject_Str(object);
+  final string = api.PyObject_Str(object);
   if (string == nullptr) {
     if (!suppressErrors) {
       throwPythonException(context: 'converting a Python object to string');
     }
-    g.PyErr_Clear();
+    api.PyErr_Clear();
     return '<failed to format Python object>';
   }
 
   try {
-    final bytes = g.PyUnicode_AsUTF8String(string);
+    final bytes = api.PyUnicode_AsUTF8String(string);
     if (bytes == nullptr) {
       if (!suppressErrors) {
         throwPythonException(context: 'encoding a Python string as UTF-8');
       }
-      g.PyErr_Clear();
+      api.PyErr_Clear();
       return '<failed to encode Python object>';
     }
 
     try {
-      final value = g.PyBytes_AsString(bytes);
+      final value = api.PyBytes_AsString(bytes);
       if (value == nullptr) {
         if (!suppressErrors) {
           throwPythonException(context: 'reading a Python string');
         }
-        g.PyErr_Clear();
+        api.PyErr_Clear();
         return '<failed to read Python object>';
       }
       return value.cast<ffi.Utf8>().toDartString();
     } finally {
-      g.Py_DecRef(bytes);
+      api.Py_DecRef(bytes);
     }
   } finally {
-    g.Py_DecRef(string);
+    api.Py_DecRef(string);
   }
 }
 
 void _xDecRef(Pointer<g.PyObject> pointer) {
-  if (pointer != nullptr) g.Py_DecRef(pointer);
+  if (pointer != nullptr) api.Py_DecRef(pointer);
 }

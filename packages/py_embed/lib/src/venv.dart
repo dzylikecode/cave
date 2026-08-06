@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
+import 'python.g.dart';
 
 Future<String> runPyShell(String code, [String pyExe = 'python']) async {
   final result = await Process.run(pyExe, ['-c', code]);
@@ -43,3 +46,60 @@ String getPyExecutableFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.executable)', pyExe);
 String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
     runPyShellSync('import sys; print(sys.base_prefix)', pyExe);
+
+@internal
+(int, int, int) extractVersion(String versionString) {
+  final version = RegExp(r'(\d+)\.(\d+)\.(\d+)').firstMatch(versionString);
+  if (version == null) {
+    throw FormatException('Invalid Python version string: $versionString');
+  }
+  return (
+    int.parse(version.group(1)!),
+    int.parse(version.group(2)!),
+    int.parse(version.group(3)!),
+  );
+}
+
+(int, int, int) getPyVersionSync([String pyExe = 'python']) {
+  final result = Process.runSync(pyExe, ['--version']);
+
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      pyExe,
+      ['--version'],
+      result.stderr.toString(),
+      result.exitCode,
+    );
+  }
+
+  final output = result.stdout.toString().trim();
+  return extractVersion(output);
+}
+
+String getPyDllPathFromVenvSync([String pyExe = 'python']) {
+  final basePrefix = getPyBasePrefixFromShellSync(pyExe);
+  final version = getPyVersionSync(pyExe);
+  final path = () {
+    if (Platform.isLinux) {
+      return p.join(
+        basePrefix,
+        'lib',
+        'libpython${version.$1}.${version.$2}.so',
+      );
+    } else if (Platform.isWindows) {
+      return p.join(basePrefix, 'python${version.$1}${version.$2}.dll');
+    }
+    // else if (Platform.isMacOS) {
+    //   return p.join(
+    //     basePrefix,
+    //     'lib',
+    //     'libpython${version.$1}.${version.$2}.dylib',
+    //   );
+    // }
+    throw Exception('Platform not implemented.');
+  }();
+  if (!File(path).existsSync()) {
+    throw Exception('Python shared library not found at $path');
+  }
+  return path;
+}

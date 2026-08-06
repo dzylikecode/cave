@@ -25,4 +25,4 @@
 
 ## 0.1.0
 
-- remove xmake
+- support Linux

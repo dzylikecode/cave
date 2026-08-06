@@ -1,11 +1,11 @@
 import 'dart:collection';
 import 'dart:ffi';
-import 'dart:io';
 
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
 import 'config.dart';
+import 'dylib_loader.dart';
 import 'exception.dart';
 import 'python.g.dart' as g;
 import 'status.dart';
@@ -18,15 +18,13 @@ import 'venv.dart';
 abstract final class Python {
   static bool get isInitialized => pythonRuntime.isInitialized;
 
-  static void configure({String? executable}) =>
-      pythonRuntime.configure(executable: executable);
+  // static void configure() => pythonRuntime.configure();
 
-  static void configureVenv(String executable) =>
-      configure(executable: executable);
+  // static void configureVenv(String executable) => configure();
 
   static void runSimpleString(String code) => runPython(
     () => ffi.using(
-      (arena) => g.PyRun_SimpleString(
+      (arena) => api.PyRun_SimpleString(
         code.toNativeUtf8(allocator: arena).cast<Char>(),
       ),
     ),
@@ -64,7 +62,6 @@ T runPython<T>(T Function() operation) => pythonRuntime.execute(operation);
 @internal
 final class PythonRuntime {
   _PythonRuntimeState _state = .idle;
-  String? _executable;
   int _executionDepth = 0;
 
   final Set<PythonReferenceState> _references = {};
@@ -74,11 +71,10 @@ final class PythonRuntime {
 
   bool get isInitialized => _state == .running;
 
-  void configure({String? executable}) {
+  void configure() {
     switch (_state) {
       case .idle:
       case .configured:
-        _executable = executable;
         _state = .configured;
       case .running:
         throw StateError(
@@ -93,11 +89,8 @@ final class PythonRuntime {
 
   void ensureInitialized() {
     switch (_state) {
-      case .idle:
-        _initializeFromExecutable(_resolveDefaultExecutable());
-        _state = .running;
-      case .configured:
-        _initializeFromExecutable(_executable ?? _resolveDefaultExecutable());
+      case .idle || .configured:
+        _initializeFromExecutable();
         _state = .running;
       case .running:
         return;
@@ -108,31 +101,13 @@ final class PythonRuntime {
     }
   }
 
-  String _resolveDefaultExecutable() {
-    final virtualEnvironment = Platform.environment['VIRTUAL_ENV'];
-    if (virtualEnvironment != null && virtualEnvironment.isNotEmpty) {
-      return Platform.isWindows
-          ? '$virtualEnvironment\\Scripts\\python.exe'
-          : '$virtualEnvironment/bin/python';
-    }
-
-    try {
-      return getPyExecutableFromShellSync();
-    } on ProcessException catch (error) {
-      throw StateError(
-        'No default Python environment could be resolved. Activate a Python '
-        'virtual environment or call Python.configure(executable: ...) before '
-        'the first Python API call.\n$error',
-      );
-    }
-  }
-
-  void _initializeFromExecutable(String executable) {
+  void _initializeFromExecutable() {
+    final executablePath = getPyExecutableFromShellSync();
     final config = PyConfig()
-      ..executable = executable
-      ..programName = executable;
+      ..executable = executablePath
+      ..programName = executablePath;
     try {
-      g.Py_InitializeFromConfig(config.ptr).guard();
+      api.Py_InitializeFromConfig(config.ptr).guard();
     } finally {
       config.dispose();
     }
@@ -208,7 +183,7 @@ final class PythonRuntime {
 
     state.pointer = nullptr;
     state.queued = false;
-    g.Py_DecRef(pointer);
+    api.Py_DecRef(pointer);
   }
 
   void shutdown() {
@@ -231,7 +206,7 @@ final class PythonRuntime {
       _release(state);
     }
 
-    g.Py_Finalize();
+    api.Py_Finalize();
     _state = .closed;
   }
 }
