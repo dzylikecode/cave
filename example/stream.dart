@@ -1,7 +1,7 @@
 import 'dart:async';
 
 void main() async {
-  final timeController = StreamController<Tick>.broadcast();
+  final timeController = StreamController<void>.broadcast();
   final engine = FakeEngine();
   final policy = FakePolicy();
 
@@ -13,23 +13,14 @@ void main() async {
   policy.start(engine.state);
 
   for (var i = 0; i < 10; i++) {
-    final tick = Tick(index: i, time: DateTime.now());
-    timeController.add(tick);
+    timeController.add(null);
     await Future.delayed(.zero);
   }
 }
 
-class Tick {
-  final int index;
-  final DateTime time;
-
-  const Tick({required this.index, required this.time});
-}
-
 class Observation {
-  final Tick tick;
   final int physicalState;
-  const Observation({required this.physicalState, required this.tick});
+  const Observation({required this.physicalState});
 }
 
 class FakeEngine {
@@ -39,13 +30,13 @@ class FakeEngine {
   String curAction = '';
   FakeEngine();
 
-  void start(Stream<Tick> ticks) {
-    ticks.listen((tick) {
+  void start(Stream<void> ticks) {
+    ticks.listen((_) {
       print(
-        'world time: ${tick.index}, engine tick: $steps, applied action: $curAction',
+        'engine tick: $steps, applied action: $curAction',
       );
-      stateController.add(Observation(tick: tick, physicalState: steps));
       steps++;
+      stateController.add(Observation(physicalState: steps));
     });
   }
 
