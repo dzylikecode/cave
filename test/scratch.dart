@@ -41,18 +41,46 @@ library;
 import 'dart:async';
 import 'package:test/test.dart';
 
-void main() {
+void main() async {
+  final engine = Engine();
+  final policy = Policy();
 
+  final timerController = StreamController<void>.broadcast();
+
+  policy.actions.listen((action) {
+    engine.apply(action.force);
+  });
+
+  engine.start(timerController.stream);
+  policy.start(engine.state);
+
+  engine.state.listen((state) {
+    print('engine state: $state');
+  });
+
+  policy.actions.listen((action) {
+    print('policy action: $action');
+  });
+
+
+  for (int i = 0; i < 5; i++) {
+    timerController.add(null);
+    await Future.delayed(.zero);
+  }
+
+  // engine.dispose();
+  // policy.dispose();
+  // timerController.close();
 }
 
 
 /// s(n)
-class Observation {
+class EngineState {
   final int state;
   final Force force;
-  const Observation({required this.state, required this.force});
+  const EngineState({required this.state, required this.force});
 
-  String toString() => 's($state)';
+  String toString() => 's($state) = f(a(${force.value}))';
 }
 
 /// a(n)
@@ -71,9 +99,9 @@ class Force {
 ///     |     |
 ///   后果    原因
 class Engine {
-  final stateController = StreamController<Observation>.broadcast();
-  Stream<Observation> get state => stateController.stream;
-  Observation get currentState => Observation(state: steps, force: curForce);
+  final stateController = StreamController<EngineState>.broadcast();
+  Stream<EngineState> get state => stateController.stream;
+  EngineState get currentState => EngineState(state: steps, force: curForce);
   int steps = 0;
   var curForce = Force(value: 0);
   Engine();
@@ -82,7 +110,7 @@ class Engine {
   void start(Stream<void> ticks) {
     _subscription = ticks.listen((_) {
       steps++; // s(n+1) = f(s(n), a(n))
-      stateController.add(Observation(state: steps, force: curForce));
+      stateController.add(EngineState(state: steps, force: curForce));
     });
   }
 
@@ -98,9 +126,11 @@ class Engine {
 
 
 class PolicyState {
-  final Observation observation;
+  final EngineState observation;
   final Force force;
   const PolicyState({required this.observation, required this.force});
+
+  String toString() => 'a(${force.value}) = pi(s(${observation.state}))';
 }
 
 
@@ -115,8 +145,8 @@ class Policy {
   Stream<PolicyState> get actions => actionController.stream;
   Policy();
 
-  StreamSubscription<Observation>? _subscription;
-  void start(Stream<Observation> observations) {
+  StreamSubscription<EngineState>? _subscription;
+  void start(Stream<EngineState> observations) {
     _subscription = observations.listen((obs) {
       // a(n) = pi(s(n))
       final force = Force(value: obs.state);
