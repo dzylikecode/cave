@@ -9,3 +9,8 @@
 ## 0.0.3
 
 - refact to factory pattern
+
+## 0.0.4
+
+- update py_embed to 0.1.0
+

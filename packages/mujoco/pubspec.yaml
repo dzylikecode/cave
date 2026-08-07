@@ -1,6 +1,6 @@
 name: mujoco
 description: Dart bindings for MuJoCo physics engine.
-version: 0.0.3
+version: 0.0.4
 repository: https://github.com/dzylikecode/cave/tree/main/packages/mujoco
 
 environment:

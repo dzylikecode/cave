@@ -15,16 +15,7 @@ uv venv --seed
 pip install mujoco
 ```
 
-`py_embed` resolves the active virtual environment automatically. A specific
-Python executable can also be selected before the first MuJoCo call:
-
-```dart
-import 'package:py_embed/py_embed.dart';
-
-void main() {
-  Python.configure(executable: r'C:\path\to\.venv\Scripts\python.exe');
-}
-```
+`py_embed` resolves the active virtual environment automatically.
 
 ## Usage
 

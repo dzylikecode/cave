@@ -2,21 +2,18 @@ import 'dart:async';
 
 void main() async {
   final timeController = StreamController<Tick>.broadcast();
-  final engine = FakeEngine(timeController);
-  final policy = FakePolicy(timeController);
+  final engine = FakeEngine();
+  final policy = FakePolicy();
 
   policy.actions.listen((action) {
-    engine.applyAction(action);
-  });
-  engine.sensors.listen((sensor) {
-    policy.updateSensor(sensor);
+    engine.applyAction(action.force);
   });
 
-  engine.start();
-  policy.start();
+  engine.start(timeController.stream);
+  policy.start(engine.state);
 
   for (var i = 0; i < 10; i++) {
-    final tick = Tick(i, Duration(milliseconds: i * 16));
+    final tick = Tick(index: i, time: DateTime.now());
     timeController.add(tick);
     await Future.delayed(.zero);
   }
@@ -24,52 +21,55 @@ void main() async {
 
 class Tick {
   final int index;
-  final Duration time;
+  final DateTime time;
 
-  const Tick(this.index, this.time);
+  const Tick({required this.index, required this.time});
+}
+
+class Observation {
+  final Tick tick;
+  final int physicalState;
+  const Observation({required this.physicalState, required this.tick});
 }
 
 class FakeEngine {
-  final StreamController<Tick> _timeController;
-  final sensorController = StreamController<int>.broadcast();
-  Stream<int> get sensors => sensorController.stream;
+  final stateController = StreamController<Observation>.broadcast();
+  Stream<Observation> get state => stateController.stream;
   int steps = 0;
-  int curAction = 0;
-  FakeEngine(this._timeController);
-  
+  String curAction = '';
+  FakeEngine();
 
-  void start() {
-    _timeController.stream.listen((tick) {
-      print('world time: ${tick.index}, engine tick: $steps, applied action: $curAction');
-      sensorController.add(curAction);
+  void start(Stream<Tick> ticks) {
+    ticks.listen((tick) {
+      print(
+        'world time: ${tick.index}, engine tick: $steps, applied action: $curAction',
+      );
+      stateController.add(Observation(tick: tick, physicalState: steps));
       steps++;
     });
   }
 
-  void applyAction(int action) {
+  void applyAction(String action) {
     curAction = action;
   }
-
 }
 
+class Action {
+  final Observation observation;
+  final String force;
+  const Action({required this.observation, required this.force});
+}
 
 class FakePolicy {
-  final StreamController<Tick> _timeController;
-  int steps = 0;
-  final actionController = StreamController<int>.broadcast();
-  Stream<int> get actions => actionController.stream;
-  int curSensor = 0;
-  FakePolicy(this._timeController);
+  final actionController = StreamController<Action>.broadcast();
+  Stream<Action> get actions => actionController.stream;
+  FakePolicy();
 
-  void start() {
-    _timeController.stream.listen((tick) {
-      print('world time: ${tick.index}, sensor: $curSensor, policy tick: $steps');
-      actionController.add(steps);
-      steps++;
+  void start(Stream<Observation> observation) {
+    observation.listen((obs) {
+      final force = 'force_${obs.physicalState}';
+      print('policy: ${obs.physicalState} -> $force');
+      actionController.add(Action(observation: obs, force: force));
     });
-  }
-
-  void updateSensor(int sensor) {
-    curSensor = sensor;
   }
 }
