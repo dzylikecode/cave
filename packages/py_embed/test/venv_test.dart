@@ -4,6 +4,7 @@ import 'package:py_embed/src/venv.dart';
 void main() {
   test('extract version', () {
     expect(extractVersion('Python 3.8.10'), (3, 8, 10));
+    expect(extractVersion('3.8.10'), (3, 8, 10));
   });
 
   test('get python version from shell', () {

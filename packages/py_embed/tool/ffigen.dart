@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'package:ffigen/ffigen.dart';
+import 'package:py_embed/src/venv.dart';
+
+const versions = ['3.8.10'];
 
 final structs = Structs.includeSet({
   'PyConfig',
@@ -107,23 +110,34 @@ final functions = Functions.includeSet({
   'PyNumber_Negative',
 });
 
-final typedefs = Typedefs.includeSet({
-  'Py_ssize_t',
-  'Py_hash_t',
-});
+// TODO: Py_ssize_t 需要处理一下 ???
+final typedefs = Typedefs.includeSet({'PyObject', 'Py_ssize_t'});
+
 
 void main() {
   final packageRoot = Platform.script.resolve('../');
   final outputFile = File.fromUri(packageRoot.resolve('lib/src/python.g.dart'));
 
+  for (final version in versions) {
+    generateBindings(version);
+  }
+}
+
+void generateBindings(String version) {
+  final v = extractVersion(version);
+  final packageRoot = Platform.script.resolve('../');
+  final outputFile = File.fromUri(
+    packageRoot.resolve('lib/src/python_${v.$1}_${v.$2}_${v.$3}.g.dart'),
+  );
+
   FfiGenerator(
     output: .new(dartFile: outputFile.uri, style: DynamicLibraryBindings()),
     headers: .new(
-      entryPoints: [packageRoot.resolve('dist/include/Python.h')],
+      entryPoints: [packageRoot.resolve('dist/$version/include/Python.h')],
       // include: (header) => header.path.endsWith('Python.h'), // 只导出这个文件的接口
       compilerOptions: [
         '-I',
-        packageRoot.resolve('dist/include').toFilePath(),
+        packageRoot.resolve('dist/$version/include').toFilePath(),
         if (Platform.isWindows) ...['-include', 'winsock2.h'],
         if (Platform.isLinux || Platform.isMacOS) ...['-include', 'sys/time.h'],
       ],
@@ -131,7 +145,6 @@ void main() {
     // macros: .includeAll,
     structs: structs,
     functions: functions,
-    // TODO: Py_ssize_t 需要处理一下
     typedefs: typedefs,
   ).generate();
 }
