@@ -115,17 +115,14 @@ final typedefs = Typedefs.includeSet({'PyObject', 'Py_ssize_t'});
 
 
 void main() {
-  final packageRoot = Platform.script.resolve('../');
-  final outputFile = File.fromUri(packageRoot.resolve('lib/src/python.g.dart'));
-
   for (final version in versions) {
-    generateBindings(version);
+    generateBindings(version, Platform.script.resolve('../'));
   }
 }
 
-void generateBindings(String version) {
+void generateBindings(String version, Uri packageRoot) {
   final v = extractVersion(version);
-  final packageRoot = Platform.script.resolve('../');
+  
   final outputFile = File.fromUri(
     packageRoot.resolve('lib/src/python_${v.$1}_${v.$2}_${v.$3}.g.dart'),
   );
