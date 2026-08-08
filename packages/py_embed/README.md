@@ -143,5 +143,7 @@ dart run example/main.dart
 
 ## TODO
 
-- [ ] linux
+- [x] [linux](https://github.com/dart-lang/native/issues/3524)
 - [ ] code generator
+- [ ] 可以针对不同的python版本进行适应，做到能够跨版本运行，基本思路就是导出多个版本的c api 根据当前版本进行绑定
+     - 写一个 tool 拉取不同分支的 include
