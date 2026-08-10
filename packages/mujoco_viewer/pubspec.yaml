@@ -1,6 +1,6 @@
 name: mujoco_viewer
 description: Interactive viewer support for the Dart MuJoCo package.
-version: 0.0.1
+version: 0.0.2
 repository: https://github.com/dzylikecode/cave/tree/main/packages/mujoco_viewer
 
 environment:
@@ -9,7 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
-  mujoco: ^0.0.2
+  mujoco: ^0.0.4
   py_embed: ^0.1.0
 
 dev_dependencies:
