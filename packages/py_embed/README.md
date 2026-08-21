@@ -140,6 +140,9 @@ dart run example/main.dart
 为减少心智负担，所有权的规则是：
 - 拿到 PyObject → Dart 拥有它
 
+## dev
+
+获取Python不同版本的借口（头文件）：[tool/fetch_header.dart](tool/fetch_header.dart)
 
 ## TODO
 

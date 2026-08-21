@@ -2,6 +2,32 @@
     __meta__ = {
         version = "1.0"
     },
+    ["macosx|arm64"] = {
+        ["ca-certificates#f56260b5"] = {
+            repo = {
+                branch = "master",
+                commit = "42f4d9c62b2e372a249cea1c6a3a33eacf035687",
+                url = "https://gitcode.com/xmake-io/xmake-repo.git"
+            },
+            version = "20250131"
+        },
+        ["openssl#f56260b5"] = {
+            repo = {
+                branch = "master",
+                commit = "42f4d9c62b2e372a249cea1c6a3a33eacf035687",
+                url = "https://gitcode.com/xmake-io/xmake-repo.git"
+            },
+            version = "1.1.1-w"
+        },
+        ["python 3.8.10#16fb575b"] = {
+            repo = {
+                branch = "master",
+                commit = "42f4d9c62b2e372a249cea1c6a3a33eacf035687",
+                url = "https://gitcode.com/xmake-io/xmake-repo.git"
+            },
+            version = "3.8.10"
+        }
+    },
     ["windows|x64"] = {
         ["python 3.8.10#16fb575b"] = {
             repo = {

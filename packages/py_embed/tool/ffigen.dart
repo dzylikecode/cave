@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:ffigen/ffigen.dart';
 import 'package:py_embed/src/venv.dart';
 
+void main() => generateAll();
+
 const versions = ['3.8.10'];
 
 final structs = Structs.includeSet({
@@ -113,13 +115,6 @@ final functions = Functions.includeSet({
 // TODO: Py_ssize_t 需要处理一下 ???
 final typedefs = Typedefs.includeSet({'PyObject', 'Py_ssize_t'});
 
-
-void main() {
-  for (final version in versions) {
-    generateBindings(version, Platform.script.resolve('../'));
-  }
-}
-
 void generateBindings(String version, Uri packageRoot) {
   final v = extractVersion(version);
   
@@ -136,7 +131,7 @@ void generateBindings(String version, Uri packageRoot) {
         '-I',
         packageRoot.resolve('dist/$version/include').toFilePath(),
         if (Platform.isWindows) ...['-include', 'winsock2.h'],
-        if (Platform.isLinux || Platform.isMacOS) ...['-include', 'sys/time.h'],
+        if (Platform.isLinux) ...['-include', 'sys/time.h'],
       ],
     ),
     // macros: .includeAll,
@@ -144,4 +139,10 @@ void generateBindings(String version, Uri packageRoot) {
     functions: functions,
     typedefs: typedefs,
   ).generate();
+}
+
+void generateAll() {
+  for (final version in versions) {
+    generateBindings(version, Platform.script.resolve('../'));
+  }
 }
