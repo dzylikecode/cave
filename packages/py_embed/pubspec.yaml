@@ -17,6 +17,8 @@ environment:
 resolution: workspace
 
 dependencies:
+  console_bars: ^1.2.1
+  dcli: ^10.0.0
   ffi: ^2.2.0
   meta: ^1.19.0
   path: ^1.9.1

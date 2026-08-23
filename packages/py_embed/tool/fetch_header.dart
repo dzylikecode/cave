@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:path/path.dart' as p;
+import 'package:console_bars/console_bars.dart';
 
 const versions = ['3.8.10'];
 
@@ -38,20 +39,35 @@ Future<void> _fetchHeaders({
   );
 
   if (!await archiveFile.exists()) {
-    stdout.writeln('Downloading $url');
-    await _download(url, archiveFile);
+    stdout.writeln('fetch $url to $archiveFile');
+    late FillingBar bar;
+    await _download(
+      url,
+      archiveFile,
+      onTotal: (total) {
+        bar = FillingBar(
+          desc: 'Downloading',
+          total: total,
+          percentage: true,
+          time: true,
+          width: stdout.hasTerminal ? null : 60,
+        );
+      },
+      onProgress: (downloaded) {
+        bar.update(downloaded);
+      },
+    );
   } else {
-    stdout.writeln('Using cached ${_relative(rootDir, archiveFile)}');
+    stdout.writeln('Using cached $archiveFile');
   }
 
   final extractDir = Directory(p.join(workDir.path, version));
-  if (await extractDir.exists()) {
-    await extractDir.delete(recursive: true);
-  }
-  await extractDir.create(recursive: true);
+  if (!await extractDir.exists()) {
+    await extractDir.create(recursive: true);
 
-  stdout.writeln('Extracting ${_relative(rootDir, archiveFile)}');
-  await _runTar(archiveFile, extractDir);
+    stdout.writeln('Extracting $archiveFile');
+    await _runTar(archiveFile, extractDir);
+  }
 
   final sourceRoot = Directory(p.join(extractDir.path, 'Python-$version'));
   final sourceInclude = Directory(p.join(sourceRoot.path, 'Include'));
@@ -72,14 +88,21 @@ Future<void> _fetchHeaders({
     await windowsPyConfig.copy(p.join(targetInclude.path, 'pyconfig.h'));
   }
 
-  stdout.writeln('Wrote ${_relative(rootDir, targetInclude)}');
+  stdout.writeln('Wrote $targetInclude');
 }
 
-Future<void> _download(Uri url, File output) async {
+Future<void> _download(
+  Uri url,
+  File output, {
+  void Function(int total)? onTotal,
+  void Function(int downloaded)? onProgress,
+}) async {
   final client = HttpClient();
+
   try {
     final request = await client.getUrl(url);
     final response = await request.close();
+
     if (response.statusCode != HttpStatus.ok) {
       throw HttpException(
         'Failed to download $url: HTTP ${response.statusCode}',
@@ -87,10 +110,22 @@ Future<void> _download(Uri url, File output) async {
       );
     }
 
+    final total = response.contentLength;
+    onTotal?.call(total);
+
+    var downloaded = 0;
+
     final tempFile = File('${output.path}.download');
     final sink = tempFile.openWrite();
+
     try {
-      await response.pipe(sink);
+      await response
+          .map((chunk) {
+            downloaded += chunk.length;
+            onProgress?.call(downloaded);
+            return chunk;
+          })
+          .pipe(sink);
     } finally {
       await sink.close();
     }
@@ -98,6 +133,7 @@ Future<void> _download(Uri url, File output) async {
     if (await output.exists()) {
       await output.delete();
     }
+
     await tempFile.rename(output.path);
   } finally {
     client.close(force: true);
