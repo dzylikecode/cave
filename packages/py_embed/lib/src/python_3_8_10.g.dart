@@ -1412,7 +1412,7 @@ class NativeLibrary {
       >();
 }
 
-typedef Py_ssize_t = ffi.LongLong;
+typedef Py_ssize_t = ffi.Long;
 
 final class _object extends ffi.Opaque {}
 
@@ -1555,9 +1555,6 @@ final class PyConfig extends ffi.Struct {
   external ffi.Pointer<ffi.WChar> stdio_encoding;
 
   external ffi.Pointer<ffi.WChar> stdio_errors;
-
-  @ffi.Int()
-  external int legacy_windows_stdio;
 
   external ffi.Pointer<ffi.WChar> check_hash_pycs_mode;
 

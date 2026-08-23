@@ -4,7 +4,7 @@ import 'package:py_embed/src/venv.dart';
 
 void main() => generateAll();
 
-const versions = ['3.8.10'];
+const versions = ['3.8.20'];
 
 final structs = Structs.includeSet({
   'PyConfig',
@@ -119,7 +119,7 @@ void generateBindings(String version, Uri packageRoot) {
   final v = extractVersion(version);
 
   final outputFile = File.fromUri(
-    packageRoot.resolve('lib/src/python_${v.$1}_${v.$2}_${v.$3}.g.dart'),
+    packageRoot.resolve('lib/src/binding/python_${v.$1}_${v.$2}_${v.$3}.g.dart'),
   );
 
   FfiGenerator(

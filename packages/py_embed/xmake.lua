@@ -2,7 +2,7 @@ set_policy("package.requires_lock", true)
 add_rules("mode.debug", "mode.release")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = "build/"})
 
-add_requires("python 3.8.10", {configs = {shared = true}})
+add_requires("python 3.8.20", {configs = {shared = true}})
 
 target("interface")
   set_kind("phony")

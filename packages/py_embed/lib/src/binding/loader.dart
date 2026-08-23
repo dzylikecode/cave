@@ -1,12 +1,11 @@
+/// issue: https://github.com/dart-lang/native/issues/3524
+/// 
 /// https://github.com/dart-lang/sdk/blob/1c34e92492708d1b36afcef9c49e7f48c7659511/tests/ffi/dylib_utils.dart#L49-L63
 
 import 'dart:ffi';
 import 'dart:io';
 
 import 'package:ffi/ffi.dart';
-
-import 'venv.dart';
-import 'python.g.dart' as g;
 
 /// On Android Arm.
 const _RTLD_GLOBAL_android_arm32 = 0x00002;
@@ -36,7 +35,7 @@ DynamicLibrary openEx(String path) {
   }
 
   // linux system
-  if (Platform.isLinux || Platform.isAndroid || Platform.isFuchsia || Platform.isMacOS) {
+  if (Platform.isLinux || Platform.isAndroid || Platform.isFuchsia) {
     return using((arena) {
       _dlerror(); // Clear a previous dynamic-loader error.
       final handle = _dlopen(
@@ -61,6 +60,3 @@ DynamicLibrary openEx(String path) {
 
   throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
 }
-
-final _dylib = openEx(getPyDllPathFromVenvSync());
-final api = g.NativeLibrary(_dylib);

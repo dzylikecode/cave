@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:console_bars/console_bars.dart';
 
-const versions = ['3.8.10'];
+const versions = ['3.8.20'];
 
 Future<void> main() async {
   final rootDir = Directory.fromUri(Platform.script.resolve('../'));

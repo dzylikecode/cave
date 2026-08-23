@@ -89,13 +89,13 @@ String getPyDllPathFromVenvSync([String pyExe = 'python']) {
     } else if (Platform.isWindows) {
       return p.join(basePrefix, 'python${version.$1}${version.$2}.dll');
     }
-    // else if (Platform.isMacOS) {
-    //   return p.join(
-    //     basePrefix,
-    //     'lib',
-    //     'libpython${version.$1}.${version.$2}.dylib',
-    //   );
-    // }
+    else if (Platform.isMacOS) {
+      return p.join(
+        basePrefix,
+        'lib',
+        'libpython${version.$1}.${version.$2}.dylib',
+      );
+    }
     throw Exception('Platform not implemented.');
   }();
   if (!File(path).existsSync()) {
