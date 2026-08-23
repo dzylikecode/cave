@@ -117,7 +117,7 @@ final typedefs = Typedefs.includeSet({'PyObject', 'Py_ssize_t'});
 
 void generateBindings(String version, Uri packageRoot) {
   final v = extractVersion(version);
-  
+
   final outputFile = File.fromUri(
     packageRoot.resolve('lib/src/python_${v.$1}_${v.$2}_${v.$3}.g.dart'),
   );
@@ -130,6 +130,7 @@ void generateBindings(String version, Uri packageRoot) {
       compilerOptions: [
         '-I',
         packageRoot.resolve('dist/$version/include').toFilePath(),
+        if (Platform.isMacOS) ...['-isysroot', _macosSdkPath()],
         if (Platform.isWindows) ...['-include', 'winsock2.h'],
         if (Platform.isLinux) ...['-include', 'sys/time.h'],
       ],
@@ -139,6 +140,25 @@ void generateBindings(String version, Uri packageRoot) {
     functions: functions,
     typedefs: typedefs,
   ).generate();
+}
+
+String _macosSdkPath() {
+  final result = Process.runSync('xcrun', ['--show-sdk-path']);
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      'xcrun',
+      ['--show-sdk-path'],
+      '${result.stdout}${result.stderr}',
+      result.exitCode,
+    );
+  }
+
+  final sdkPath = '${result.stdout}'.trim();
+  if (sdkPath.isEmpty) {
+    throw StateError('xcrun returned an empty macOS SDK path');
+  }
+
+  return sdkPath;
 }
 
 void generateAll() {
