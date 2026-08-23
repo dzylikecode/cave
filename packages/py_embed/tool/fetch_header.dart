@@ -83,12 +83,47 @@ Future<void> _fetchHeaders({
 
   await _copyDirectory(sourceInclude, targetInclude);
 
-  final windowsPyConfig = File(p.join(sourceRoot.path, 'PC', 'pyconfig.h'));
-  if (await windowsPyConfig.exists()) {
-    await windowsPyConfig.copy(p.join(targetInclude.path, 'pyconfig.h'));
-  }
+  final pyConfig = await _getPyConfig(sourceRoot);
+  await pyConfig.copy(p.join(targetInclude.path, 'pyconfig.h'));
 
   stdout.writeln('Wrote $targetInclude');
+}
+
+Future<File> _getPyConfig(Directory sourceRoot) async {
+  if (Platform.isWindows) {
+    return File(p.join(sourceRoot.path, 'PC', 'pyconfig.h'));
+  }
+
+  final pyConfig = File(p.join(sourceRoot.path, 'pyconfig.h'));
+  if (await pyConfig.exists()) {
+    stdout.writeln('Using generated ${pyConfig.path}');
+    return pyConfig;
+  }
+
+  final configure = File(p.join(sourceRoot.path, 'configure'));
+  if (!await configure.exists()) {
+    throw StateError('Missing configure script at ${configure.path}');
+  }
+
+  stdout.writeln('Generating ${pyConfig.path}');
+  final result = await Process.run(configure.path, [
+    '--enable-shared',
+  ], workingDirectory: sourceRoot.path);
+
+  if (result.exitCode != 0) {
+    throw ProcessException(
+      configure.path,
+      ['--enable-shared'],
+      '${result.stdout}${result.stderr}',
+      result.exitCode,
+    );
+  }
+
+  if (!await pyConfig.exists()) {
+    throw StateError('configure did not generate ${pyConfig.path}');
+  }
+
+  return pyConfig;
 }
 
 Future<void> _download(
