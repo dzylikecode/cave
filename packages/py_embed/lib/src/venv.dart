@@ -1,7 +1,7 @@
 import 'dart:io';
+
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
-import 'python.g.dart';
 
 Future<String> runPyShell(String code, [String pyExe = 'python']) async {
   final result = await Process.run(pyExe, ['-c', code]);
@@ -54,9 +54,9 @@ String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
     throw FormatException('Invalid Python version string: $versionString');
   }
   return (
-    int.parse(version.group(1)!),
-    int.parse(version.group(2)!),
-    int.parse(version.group(3)!),
+    .parse(version.group(1)!),
+    .parse(version.group(2)!),
+    .parse(version.group(3)!),
   );
 }
 
@@ -79,25 +79,23 @@ String getPyBasePrefixFromShellSync([String pyExe = 'python']) =>
 String getPyDllPathFromVenvSync([String pyExe = 'python']) {
   final basePrefix = getPyBasePrefixFromShellSync(pyExe);
   final version = getPyVersionSync(pyExe);
-  final path = () {
-    if (Platform.isLinux) {
-      return p.join(
-        basePrefix,
-        'lib',
-        'libpython${version.$1}.${version.$2}.so',
-      );
-    } else if (Platform.isWindows) {
-      return p.join(basePrefix, 'python${version.$1}${version.$2}.dll');
-    }
-    else if (Platform.isMacOS) {
-      return p.join(
-        basePrefix,
-        'lib',
-        'libpython${version.$1}.${version.$2}.dylib',
-      );
-    }
-    throw Exception('Platform not implemented.');
-  }();
+  final path = switch (true) {
+    _ when Platform.isLinux => p.join(
+      basePrefix,
+      'lib',
+      'libpython${version.$1}.${version.$2}.so',
+    ),
+    _ when Platform.isWindows => p.join(
+      basePrefix,
+      'python${version.$1}${version.$2}.dll',
+    ),
+    _ when Platform.isMacOS => p.join(
+      basePrefix,
+      'lib',
+      'libpython${version.$1}.${version.$2}.dylib',
+    ),
+    _ => throw UnsupportedError('Platform not implemented.'),
+  };
   if (!File(path).existsSync()) {
     throw Exception('Python shared library not found at $path');
   }

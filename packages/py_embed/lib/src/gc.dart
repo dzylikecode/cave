@@ -26,10 +26,10 @@ final class PyRef implements Finalizable {
   }
 
   /// Takes ownership of a new reference returned by the Python C API.
-  factory PyRef.owned(Pointer<g.PyObject> pointer) => ._(pointer);
+  factory owned(Pointer<g.PyObject> pointer) => ._(pointer);
 
   /// Promotes a borrowed reference to an independently owned Dart reference.
-  factory PyRef.borrowed(Pointer<g.PyObject> pointer) {
+  factory borrowed(Pointer<g.PyObject> pointer) {
     if (pointer == nullptr) {
       throwPythonException(context: 'borrowing a Python object');
     }

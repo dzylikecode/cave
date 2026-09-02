@@ -44,11 +44,8 @@ enum _PythonRuntimeState { idle, configured, running, shuttingDown, closed }
 /// This is separate from `PyRef` so the runtime can track native references
 /// without keeping their Dart wrappers alive.
 @internal
-final class PythonReferenceState {
-  Pointer<g.PyObject> pointer;
+final class PythonReferenceState(var Pointer<g.PyObject> pointer) {
   bool queued = false;
-
-  PythonReferenceState(this.pointer);
 
   bool get isDisposed => pointer == nullptr;
 }
@@ -60,14 +57,12 @@ final pythonRuntime = PythonRuntime._();
 T runPython<T>(T Function() operation) => pythonRuntime.execute(operation);
 
 @internal
-final class PythonRuntime {
+final class PythonRuntime._() {
   _PythonRuntimeState _state = .idle;
   int _executionDepth = 0;
 
   final Set<PythonReferenceState> _references = {};
   final Queue<PythonReferenceState> _pendingReleases = Queue();
-
-  PythonRuntime._();
 
   bool get isInitialized => _state == .running;
 

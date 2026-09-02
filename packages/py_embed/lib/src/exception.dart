@@ -7,17 +7,11 @@ import 'python.g.dart' as g;
 import 'dylib_loader.dart';
 
 /// A Python exception translated at the Python/Dart API boundary.
-final class PythonException implements Exception {
-  final String type;
-  final String message;
-  final String? context;
-
-  const PythonException({
-    required this.type,
-    required this.message,
-    this.context,
-  });
-
+final class const PythonException({
+  required final String type,
+  required final String message,
+  final String? context,
+}) implements Exception {
   @override
   String toString() {
     final description = message.isEmpty ? type : '$type: $message';
@@ -45,9 +39,9 @@ Never throwPythonException({String? context}) {
   }
 
   return ffi.using((arena) {
-    final type = arena<Pointer<g.PyObject>>()..value = nullptr;
-    final value = arena<Pointer<g.PyObject>>()..value = nullptr;
-    final traceback = arena<Pointer<g.PyObject>>()..value = nullptr;
+    final type = arena<Pointer<g.PyObject>>();
+    final value = arena<Pointer<g.PyObject>>();
+    final traceback = arena<Pointer<g.PyObject>>();
 
     api.PyErr_Fetch(type, value, traceback);
     api.PyErr_NormalizeException(type, value, traceback);

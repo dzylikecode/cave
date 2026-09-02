@@ -1,4 +1,5 @@
 import 'dart:ffi';
+
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
@@ -126,9 +127,7 @@ abstract class NativeResource<T extends NativeType> implements Finalizable {
   }
 }
 
-final class _FinalizerData {
-  final Pointer<Void> pointer;
-  final void Function(Pointer<Void>) release;
-
-  const _FinalizerData(this.pointer, this.release);
-}
+final class _FinalizerData(
+  final Pointer<Void> pointer,
+  final void Function(Pointer<Void>) release,
+);

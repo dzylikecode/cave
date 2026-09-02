@@ -1,5 +1,5 @@
 /// issue: https://github.com/dart-lang/native/issues/3524
-/// 
+///
 /// https://github.com/dart-lang/sdk/blob/1c34e92492708d1b36afcef9c49e7f48c7659511/tests/ffi/dylib_utils.dart#L49-L63
 
 import 'dart:ffi';
@@ -30,9 +30,7 @@ external Pointer<Char> _dlerror();
 /// On Linux and other Unix-like platforms, loads the dynamic library into
 /// the current process with global symbol visibility.
 DynamicLibrary openEx(String path) {
-  if (Platform.isWindows) {
-    return DynamicLibrary.open(path);
-  }
+  if (Platform.isWindows) return .open(path);
 
   // linux system
   if (Platform.isLinux || Platform.isAndroid || Platform.isFuchsia) {
@@ -54,7 +52,7 @@ DynamicLibrary openEx(String path) {
         );
       }
 
-      return DynamicLibrary.process();
+      return .process();
     });
   }
 
