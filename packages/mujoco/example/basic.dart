@@ -1,6 +1,6 @@
 import 'package:mujoco/mujoco.dart';
 
-const MODEL_XML = """
+const xml = """
 <mujoco model="basic_pendulum">
   <option timestep="0.002" gravity="0 0 -9.81"/>
 
@@ -31,18 +31,17 @@ const MODEL_XML = """
 """;
 
 void main() {
-  print('mujoco version: ${mujoco.version}');
-  final model = MjModel.fromXmlString(MODEL_XML);
+  Mujoco.useNativeApi = false;
+  final model = MjModel.from_xml_string(xml);
   final data = MjData(model);
-  data.qpos[0] = 0.4;
-  mjForward(model, data);
 
-  print('model: ${model.nq}, ${model.nv}, ${model.nu}');
-  print('data: ${data.time}, ${data.qpos.toList()}, ${data.qvel.toList()}');
+  print('model nq: ${model.nq}, nv: ${model.nv}, nu: ${model.nu}');
+  print('qpos.length: ${data.qpos.length}, qvel.length: ${data.qvel.length}, act.length: ${data.act.length}, ctrl.length: ${data.ctrl.length}');
 
-  data.ctrl[0] = 0.1;
-  for (var step = 0; step < 1000; step++) {
-    mjStep(model, data);
+  data.ctrl[0] = 1.0;
+
+  for (var i = 0; i < 1000; i++) {
+    mj_step(model, data);
+    // print('time: ${data.time}, qpos: ${data.qpos.toList()}, qvel: ${data.qvel.toList()}, ctrl: ${data.ctrl.toList()}');
   }
-  print('final: ${data.time}, ${data.qpos.toList()}');
 }

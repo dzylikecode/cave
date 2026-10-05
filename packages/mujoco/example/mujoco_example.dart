@@ -1,5 +1,7 @@
 import 'package:mujoco/mujoco.dart';
 
-void main() async {
-  print('mujoco version: ${mujoco.version}');
+void main() {
+  print('MuJoCo version: ${Mujoco.version}');
+  Mujoco.useNativeApi = true;
+  print('MuJoCo version: ${Mujoco.version}');
 }
