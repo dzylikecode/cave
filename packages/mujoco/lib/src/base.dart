@@ -5,7 +5,9 @@ import 'backend/native.dart';
 
 import 'package:meta/meta.dart';
 
+@internal
 final nativeApi = const NativeApi();
+@internal
 final pythonApi = PythonApi();
 
 BaseApi _api = pythonApi;

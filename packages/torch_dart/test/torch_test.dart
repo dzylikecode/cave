@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:torch_dart/torch_dart.dart';
 
 void main() {
-  tearDownAll(Python.shutdown);
+  tearDownAll(pyRuntime.dispose);
 
   test('creates and calculates tensors', () {
     final a = tensor([

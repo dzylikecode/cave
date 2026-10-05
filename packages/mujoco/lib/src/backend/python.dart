@@ -2,7 +2,7 @@
 import 'package:py_embed/py_embed.dart';
 import 'package:py_embed/debug.dart';
 
-import '../mujoco_base.dart';
+import '../base.dart';
 
 final class PythonApi() implements BaseApi {
   final _mujoco = PyModule('mujoco');
@@ -13,21 +13,21 @@ final class PythonApi() implements BaseApi {
   late final _MjModel = _mujoco.getAttr('MjModel');
   late final _MjModel_from_xml_string = _MjModel.getAttr('from_xml_string');
   @override
-  MjModel MjModel_from_xml_string(String xml) {
+  MjModelPython MjModel_from_xml_string(String xml) {
     final model = _MjModel_from_xml_string.callN([PyString(xml)]);
     return MjModelPython(model);
   }
 
   late final _MjModel_from_xml_path = _MjModel.getAttr('from_xml_path');
   @override
-  MjModel MjModel_from_xml_path(String path) {
+  MjModelPython MjModel_from_xml_path(String path) {
     final model = _MjModel_from_xml_path.callN([PyString(path)]);
     return MjModelPython(model);
   }
 
   late final _MjData = _mujoco.getAttr('MjData');
   @override
-  MjData MjData_new(covariant MjModelPython model) {
+  MjDataPython MjData_new(covariant MjModelPython model) {
     // dart format off
                                                   // 测试 ref 调用前后保持不变
                                                   final count = model.handle.ref.count;

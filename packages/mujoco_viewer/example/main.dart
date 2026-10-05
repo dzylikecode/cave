@@ -17,19 +17,20 @@ const modelXml = '''
 ''';
 
 void main() {
-  print('MuJoCo version: ${mujoco.version}');
+  print('MuJoCo version: ${Mujoco.version}');
 
-  final model = MjModel.fromXmlString(modelXml);
+  final model = MjModel.from_xml_string(modelXml);
   final data = MjData(model);
-  final viewer = MujocoViewer.launchPassive(model, data);
+  final viewer = MujocoViewer.launch_passive(model, data);
 
   try {
-    while (viewer.isRunning) {
-      mjStep(model, data);
+    while (viewer.is_running) {
+      mj_step(model, data);
       viewer.sync();
       sleep(const Duration(milliseconds: 2));
     }
   } finally {
+    viewer.close();
     viewer.dispose();
   }
 }

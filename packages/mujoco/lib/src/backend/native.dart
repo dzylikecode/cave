@@ -6,7 +6,7 @@ import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart' as ffi;
 
-import '../mujoco_base.dart';
+import '../base.dart';
 import 'native.g.dart' as g;
 
 final class const NativeApi() implements BaseApi {

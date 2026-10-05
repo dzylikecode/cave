@@ -16,27 +16,27 @@ void main() async {
   final plt = PyModule('matplotlib.pyplot');
 
   // fig, ax = plt.subplots()
-  final PyTuple result = plt.get('subplots').call(PyTuple()).cast();
-  final fig = result.getItem(0);
-  final ax = result.getItem(1);
+  final PyTuple result = .fromHandle(plt.getAttr('subplots').call0().ptr);
+  final fig = result[0];
+  final ax = result[1];
 
   // ax.plot(t, s)
-  ax.get('plot')(PyTuple.fromList([t, s]));
+  ax.getAttr('plot')(PyTuple.fromList([t, s]));
 
   // ax.set(...)
   final labels = PyDict()
-    ..setItemString('xlabel', PyString('time (s)'))
-    ..setItemString('ylabel', PyString('voltage (mV)'))
-    ..setItemString('title', PyString('About as simple as it gets, folks'));
+    ..setAttr('xlabel', PyString('time (s)'))
+    ..setAttr('ylabel', PyString('voltage (mV)'))
+    ..setAttr('title', PyString('About as simple as it gets, folks'));
 
-  ax.get('set')(PyTuple(0), labels);
+  ax.getAttr('set')(PyTuple(0), labels);
 
   // ax.grid()
-  ax.get('grid')(PyTuple(0));
+  ax.getAttr('grid')(PyTuple(0));
 
   // fig.savefig("test.png")
-  fig.get('savefig')(PyTuple.fromList([PyString('test.png')]));
+  fig.getAttr('savefig')(PyTuple.fromList([PyString('test.png')]));
 
   // plt.show()
-  plt.get('show')(PyTuple(0));
+  // plt.getAttr('show')(PyTuple(0));
 }

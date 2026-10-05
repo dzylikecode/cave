@@ -13,7 +13,7 @@ dependencies:
   code_assets: ^2.1.0
   hooks: ^2.2.0
   meta: ^1.19.0
-  py_embed: ^0.2.3
+  py_embed: ^0.3.0
   native_toolchain_xmake: 0.0.9
 
 dev_dependencies:

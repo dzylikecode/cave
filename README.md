@@ -18,3 +18,10 @@ C_{\mathrm{cross\text{-}platform}}(\ell).
 ```
 
 That's the balance between cpp and python.
+
+
+## udpate deps
+
+```bash
+dart pub upgrade --major-versions py_embed
+```
