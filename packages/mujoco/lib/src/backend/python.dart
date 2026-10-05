@@ -240,5 +240,5 @@ class _MjSensorDataSlicePython(
   }
 
   @override
-  List<double> toList() => List.generate(length, (index) => this[index]);
+  List<double> toList() => .generate(length, (index) => this[index]);
 }
