@@ -1,14 +1,15 @@
 name: torch_dart
-description: Dart bindings for PyTorch with a replaceable backend.
-version: 0.0.2
-repository: https://github.com/dzylikecode/cave/tree/main/packages/torch_dart
+description: Backend-independent Dart bindings for PyTorch.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
 
 environment:
-  sdk: ^3.12.0
+  sdk: ^3.13.5
 
 resolution: workspace
 
 dependencies:
+  meta: ^1.19.0
   py_embed: ^0.3.0
 
 dev_dependencies:

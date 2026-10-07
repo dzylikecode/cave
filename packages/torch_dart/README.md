@@ -1,79 +1,20 @@
 # torch_dart
 
-A small Dart API for [PyTorch](https://pytorch.org/). The first backend uses
-`py_embed` and the official Python `torch` package. Public APIs do not expose
-Python objects, so a LibTorch or other native backend can be added later.
+参考 MuJoCo 的 API 组织方式构建的 PyTorch Dart 绑定，目前仅包含最小骨架。
 
-## Setup
+- `lib/src/base.dart`：公共入口 `Torch` 和内部后端契约 `BaseApi`。
+- `lib/src/backend/python.dart`：通过 `py_embed` 实现的 `PythonApi`。
+- `lib/torch_dart.dart`：导出公共接口，隐藏后端实现细节。
 
-Create and activate a Python environment, then install PyTorch:
-
-```bash
-uv venv --seed
-pip install torch
-```
-
-To select a particular Python executable, call `Python.configure` from
-`package:py_embed/py_embed.dart` before the first torch operation.
-
-## Usage
+当前使用 Python 后端，首次访问时才导入 `torch`。运行示例需要
+`py_embed` 使用的 Python 环境已安装 PyTorch。
 
 ```dart
-import 'package:py_embed/py_embed.dart';
-import 'package:torch_dart/torch.dart';
+import 'package:torch_dart/torch_dart.dart';
 
 void main() {
-  final a = tensor([
-    [1.0, 2.0],
-    [3.0, 4.0],
-  ]);
-  final b = ones([2, 2]);
-  final result = (a + b).matmul(b);
-
-  try {
-    print(result.shape);
-    print(result.toList());
-  } finally {
-    result.dispose();
-    b.dispose();
-    a.dispose();
-    Python.shutdown();
-  }
+  print(Torch.version);
 }
 ```
 
-The MVP includes tensor creation, shape/dtype/device metadata, element-wise
-arithmetic, matrix multiplication, reshape, transpose, reductions, ReLU,
-conversion to Dart lists, and deterministic random seeds.
-
-Inference mode and TorchScript modules use a namespaced API:
-
-```dart
-final module = torch.jit.load('model.pt', mapLocation: 'cpu')..eval();
-final input = randn([1, 3, 224, 224]);
-final output = torch.inferenceMode(() => module(input));
-
-try {
-  print(output.shape);
-} finally {
-  output.dispose();
-  input.dispose();
-  module.dispose();
-  Python.shutdown();
-}
-```
-
-Each operation creates a new tensor. Dispose tensors explicitly when they are
-no longer needed. Call `Python.shutdown()` once at application shutdown, after
-disposing every object from every Python-backed package. The embedded Python
-runtime cannot be restarted in the same process afterward.
-
-## Architecture
-
-```text
-Tensor / top-level factories
-            |
-           torch
-            |
-       TensorPython
-```
+Tensor、创建函数、运算、模型加载和生命周期接口待讨论后逐步加入。

@@ -5,7 +5,7 @@ import 'dart:math' as math;
 import 'package:mujoco/mujoco.dart';
 import 'package:mujoco_viewer/mujoco_viewer.dart';
 import 'package:py_embed/py_embed.dart';
-import 'package:torch_dart/torch_dart.dart';
+import 'package:torch_dart/torch_dart.dart' as torch;
 
 const actionCount = 12;
 const historyLength = 21;
@@ -97,10 +97,10 @@ void main() {
     Platform.script.resolve('../assets/models/lite_yuhan.pt'),
   ).path;
 
-  final model = MjModel.fromXmlPath(modelPath);
+  final model = MjModel.from_xml_path(modelPath);
   final data = MjData(model);
   final policy = torch.jit.load(policyPath, mapLocation: 'cpu')..eval();
-  final viewer = MujocoViewer.launchPassive(model, data);
+  final viewer = MujocoViewer.launch_passive(model, data);
 
   var action = List<double>.filled(actionCount, 0);
   var filteredAction = List<double>.filled(actionCount, 0);
@@ -109,13 +109,13 @@ void main() {
 
   try {
     // init
-    mjStep(model, data);
+    mj_step(model, data);
     final obs0 = makeObservation(data, action, [0.0, 0.0, 0.0], phase);
     for (var i = 0; i < historyLength; i++) {
       history.addLast(.of(obs0));
     }
-    for (var step = 0; viewer.isRunning; step++) {
-      mjStep(model, data);
+    for (var step = 0; viewer.is_running; step++) {
+      mj_step(model, data);
       final command = commandAt(step);
 
       if (step % decimation == 0) {
@@ -128,10 +128,10 @@ void main() {
         history.removeFirst();
         history.addLast(obs);
 
-        final input = tensor([
+        final input = torch.tensor([
           history.expand((frame) => frame).toList(),
         ], dtype: 'float32');
-        final output = torch.inferenceMode(() => policy(input));
+        final output = torch.inference_mode(() => policy(input));
         try {
           final batch = output.toList() as List<dynamic>;
           final values = batch.first as List<dynamic>;
@@ -166,6 +166,6 @@ void main() {
       }
     }
   } finally {
-    Python.shutdown();
+    pyRuntime.dispose();
   }
 }
