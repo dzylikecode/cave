@@ -99,7 +99,7 @@ void main() {
 
   final model = MjModel.from_xml_path(modelPath);
   final data = MjData(model);
-  final policy = torch.jit.load(policyPath, mapLocation: 'cpu')..eval();
+  final policy = torch.jit.load(policyPath, map_location: 'cpu')..eval();
   final viewer = MujocoViewer.launch_passive(model, data);
 
   var action = List<double>.filled(actionCount, 0);

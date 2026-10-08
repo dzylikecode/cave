@@ -23,6 +23,8 @@ void main() async {
       await Future.delayed(.zero);
     }
   } finally {
+    model.dispose();
+    data.dispose();
     viewer.dispose();
   }
 }

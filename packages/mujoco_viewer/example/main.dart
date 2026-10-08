@@ -16,7 +16,7 @@ const modelXml = '''
 </mujoco>
 ''';
 
-void main() {
+void main() async {
   print('MuJoCo version: ${Mujoco.version}');
 
   final model = MjModel.from_xml_string(modelXml);
@@ -27,7 +27,7 @@ void main() {
     while (viewer.is_running) {
       mj_step(model, data);
       viewer.sync();
-      sleep(const Duration(milliseconds: 2));
+      await Future.delayed(const Duration(milliseconds: 2));
     }
   } finally {
     viewer.close();
