@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:mujoco/mujoco.dart';
 import 'package:mujoco_viewer/mujoco_viewer.dart';
 

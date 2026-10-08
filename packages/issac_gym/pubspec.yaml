@@ -1,7 +1,7 @@
 name: issac_gym
 description: Dart bindings for Isaac Gym.
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/dzylikecode/cave/tree/main/packages/issac_gym
 
 environment:
   sdk: ^3.13.0
