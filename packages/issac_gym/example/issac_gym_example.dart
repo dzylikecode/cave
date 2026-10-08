@@ -1,6 +1,3 @@
-import 'package:issac_gym/issac_gym.dart';
+import '1080_balls_of_solitude.dart' as balls;
 
-void main() {
-  var awesome = Awesome();
-  print('awesome: ${awesome.isAwesome}');
-}
+void main(List<String> arguments) => balls.main(arguments);

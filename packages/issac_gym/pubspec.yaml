@@ -1,5 +1,5 @@
 name: issac_gym
-description: A starting point for Dart libraries or applications.
+description: Dart bindings for Isaac Gym.
 version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
@@ -9,8 +9,11 @@ environment:
 resolution: workspace
 
 dependencies:
-  # path: ^1.9.0
+  meta: ^1.19.0
+  py_embed: ^0.3.0
+  vector_math: ^2.4.3
 
 dev_dependencies:
+  args: ^2.7.0
   lints: ^6.0.0
   test: ^1.25.6

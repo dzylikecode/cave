@@ -1,8 +1,4 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// Backend-independent Dart bindings for Isaac Gym.
 library;
 
-export 'src/base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/base.dart' hide api, BaseApi, pythonApi;
