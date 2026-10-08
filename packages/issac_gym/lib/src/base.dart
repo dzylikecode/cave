@@ -1,5 +1,6 @@
-// ignore_for_file: non_constant_identifier_names, constant_identifier_names
+// ignore_for_file: non_constant_identifier_names
 import 'package:meta/meta.dart';
+import 'package:vector_math/vector_math.dart' show Vector3, Quaternion;
 
 import 'backend/python.dart';
 
@@ -17,17 +18,12 @@ abstract interface class BaseApi {
 
 enum SimType { physx, flex }
 
-const SIM_PHYSX = SimType.physx;
-const SIM_FLEX = SimType.flex;
-
 enum MeshType { visualAndCollision }
-
-const MESH_VISUAL_AND_COLLISION = MeshType.visualAndCollision;
 
 enum KeyboardInput { r }
 
-const KEY_R = KeyboardInput.r;
-const STATE_ALL = 3;
+/// Select which rigid-body state components to read or restore.
+enum StateFlags { none, pos, vel, all }
 
 /// Dart configuration values are copied into Python when passed to Gym.
 /// Null fields preserve the SDK defaults.
@@ -59,19 +55,9 @@ class CameraProperties {}
 
 class AssetOptions {}
 
-class Vec3 {
-  double x, y, z;
-  Vec3(this.x, this.y, this.z);
-}
-
-class Quat {
-  double x, y, z, w;
-  Quat(this.x, this.y, this.z, this.w);
-}
-
 class Transform {
-  Vec3 p = Vec3(0, 0, 0);
-  Quat r = Quat(0, 0, 0, 1);
+  Vector3 p = Vector3.zero();
+  Quaternion r = Quaternion.identity();
 }
 
 /// Owned by Gym; release with destroy_sim. Its assets and environments then expire.
@@ -108,7 +94,7 @@ abstract interface class Gym {
   void add_ground(Sim sim, PlaneParams params);
   Viewer create_viewer(Sim sim, CameraProperties properties);
   Asset load_asset(Sim sim, String root, String file, AssetOptions options);
-  Env create_env(Sim sim, Vec3 lower, Vec3 upper, int num_per_row);
+  Env create_env(Sim sim, Vector3 lower, Vector3 upper, int num_per_row);
   int create_actor(
     Env env,
     Asset asset,
@@ -122,7 +108,7 @@ abstract interface class Gym {
     int actor,
     int body,
     MeshType mesh,
-    Vec3 color,
+    Vector3 color,
   );
   void subscribe_viewer_keyboard_event(
     Viewer viewer,
@@ -132,11 +118,15 @@ abstract interface class Gym {
   void viewer_camera_look_at(
     Viewer viewer,
     Env? env,
-    Vec3 position,
-    Vec3 target,
+    Vector3 position,
+    Vector3 target,
   );
-  RigidBodyStates get_sim_rigid_body_states(Sim sim, int flags);
-  bool set_sim_rigid_body_states(Sim sim, RigidBodyStates states, int flags);
+  RigidBodyStates get_sim_rigid_body_states(Sim sim, StateFlags flags);
+  bool set_sim_rigid_body_states(
+    Sim sim,
+    RigidBodyStates states,
+    StateFlags flags,
+  );
   bool query_viewer_has_closed(Viewer viewer);
   List<ActionEvent> query_viewer_action_events(Viewer viewer);
   void simulate(Sim sim);

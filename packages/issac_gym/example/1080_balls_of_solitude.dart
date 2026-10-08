@@ -54,8 +54,8 @@ void main(List<String> arguments) {
     );
   }
   final params = SimParams()..use_gpu_pipeline = false;
-  final type = args.flag('flex') ? SIM_FLEX : SIM_PHYSX;
-  if (type == SIM_FLEX) {
+  final type = args.flag('flex') ? SimType.flex : SimType.physx;
+  if (type == SimType.flex) {
     params.flex
       ..shape_collision_margin = 0.25
       ..num_outer_iterations = 4
@@ -86,7 +86,7 @@ void main(List<String> arguments) {
     gym.add_ground(sim, PlaneParams());
     if (!headless) {
       viewer = gym.create_viewer(sim, CameraProperties());
-      gym.subscribe_viewer_keyboard_event(viewer, KEY_R, 'reset');
+      gym.subscribe_viewer_keyboard_event(viewer, KeyboardInput.r, 'reset');
     }
     final asset = gym.load_asset(
       sim,
@@ -98,11 +98,11 @@ void main(List<String> arguments) {
     for (var i = 0; i < numEnvs; i++) {
       final env = gym.create_env(
         sim,
-        Vec3(-1.25, 0, -1.25),
-        Vec3(1.25, 1.25, 1.25),
+        Vector3(-1.25, 0, -1.25),
+        Vector3(1.25, 1.25, 1.25),
         sqrt(numEnvs).floor(),
       );
-      final color = Vec3(
+      final color = Vector3(
         0.5 + 0.5 * random.nextDouble(),
         0.5 + 0.5 * random.nextDouble(),
         0.5 + 0.5 * random.nextDouble(),
@@ -114,7 +114,7 @@ void main(List<String> arguments) {
       for (var n = 4; n > 0; n--) {
         for (var j = 0; j < n; j++) {
           for (var k = 0; k < n; k++) {
-            pose.p = Vec3(
+            pose.p = Vector3(
               minCoord + k * spacing,
               1.5 + y,
               minCoord + j * spacing,
@@ -131,7 +131,7 @@ void main(List<String> arguments) {
               env,
               actor,
               0,
-              MESH_VISUAL_AND_COLLISION,
+              MeshType.visualAndCollision,
               color,
             );
           }
@@ -141,9 +141,14 @@ void main(List<String> arguments) {
       }
     }
     if (viewer != null) {
-      gym.viewer_camera_look_at(viewer, null, Vec3(20, 5, 20), Vec3(0, 1, 0));
+      gym.viewer_camera_look_at(
+        viewer,
+        null,
+        Vector3(20, 5, 20),
+        Vector3(0, 1, 0),
+      );
     }
-    final states = gym.get_sim_rigid_body_states(sim, STATE_ALL);
+    final states = gym.get_sim_rigid_body_states(sim, StateFlags.all);
     try {
       initialState = states.copy();
     } finally {
@@ -158,7 +163,11 @@ void main(List<String> arguments) {
       if (viewer != null) {
         for (final event in gym.query_viewer_action_events(viewer)) {
           if (event.action == 'reset' && event.value > 0) {
-            if (!gym.set_sim_rigid_body_states(sim, initialState, STATE_ALL)) {
+            if (!gym.set_sim_rigid_body_states(
+              sim,
+              initialState,
+              StateFlags.all,
+            )) {
               throw StateError('Failed to restore initial state');
             }
           }

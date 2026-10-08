@@ -1,5 +1,6 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:py_embed/py_embed.dart';
+import 'package:vector_math/vector_math.dart' show Vector3, Quaternion;
 
 import '../base.dart';
 
@@ -24,11 +25,20 @@ final class PythonApi implements BaseApi {
       int v => PyInt(v),
       double v => PyDouble(v),
       String v => PyString(v),
-      SimType v => gymapi.getAttr(v == SIM_PHYSX ? 'SIM_PHYSX' : 'SIM_FLEX'),
+      SimType v => gymapi.getAttr(switch (v) {
+        SimType.physx => 'SIM_PHYSX',
+        SimType.flex => 'SIM_FLEX',
+      }),
+      StateFlags v => gymapi.getAttr(switch (v) {
+        StateFlags.none => 'STATE_NONE',
+        StateFlags.pos => 'STATE_POS',
+        StateFlags.vel => 'STATE_VEL',
+        StateFlags.all => 'STATE_ALL',
+      }),
       MeshType _ => gymapi.getAttr('MESH_VISUAL_AND_COLLISION'),
       KeyboardInput _ => gymapi.getAttr('KEY_R'),
-      Vec3 v => construct('Vec3', [v.x, v.y, v.z]),
-      Quat v => construct('Quat', [v.x, v.y, v.z, v.w]),
+      Vector3 v => construct('Vec3', [v.x, v.y, v.z]),
+      Quaternion v => construct('Quat', [v.x, v.y, v.z, v.w]),
       Transform v => config('Transform', {'p': v.p, 'r': v.r}),
       PlaneParams _ => construct('PlaneParams', []),
       CameraProperties _ => construct('CameraProperties', []),
@@ -246,8 +256,8 @@ final class GymPython extends PythonHandle implements Gym {
   @override
   Env create_env(
     covariant SimPython sim,
-    Vec3 lower,
-    Vec3 upper,
+    Vector3 lower,
+    Vector3 upper,
     int num_per_row,
   ) {
     if (num_per_row <= 0) throw ArgumentError.value(num_per_row, 'num_per_row');
@@ -288,7 +298,7 @@ final class GymPython extends PythonHandle implements Gym {
   @override
   RigidBodyStates get_sim_rigid_body_states(
     covariant SimPython sim,
-    int flags,
+    StateFlags flags,
   ) {
     final states = RigidBodyStatesPython(
       requiredResult('get_sim_rigid_body_states', [sim, flags]),
@@ -358,7 +368,7 @@ final class GymPython extends PythonHandle implements Gym {
     int actor,
     int body,
     MeshType mesh,
-    Vec3 color,
+    Vector3 color,
   ) => invoke('set_rigid_body_color', [
     env,
     actor,
@@ -380,8 +390,8 @@ final class GymPython extends PythonHandle implements Gym {
   void viewer_camera_look_at(
     Viewer viewer,
     Env? env,
-    Vec3 position,
-    Vec3 target,
+    Vector3 position,
+    Vector3 target,
   ) => invoke('viewer_camera_look_at', [
     viewer,
     env,
@@ -389,12 +399,15 @@ final class GymPython extends PythonHandle implements Gym {
     target,
   ]).ref.discrement();
   @override
-  bool set_sim_rigid_body_states(Sim sim, RigidBodyStates states, int flags) =>
-      invoke('set_sim_rigid_body_states', [
-        sim,
-        states,
-        flags,
-      ]).using((v) => v.asBool());
+  bool set_sim_rigid_body_states(
+    Sim sim,
+    RigidBodyStates states,
+    StateFlags flags,
+  ) => invoke('set_sim_rigid_body_states', [
+    sim,
+    states,
+    flags,
+  ]).using((v) => v.asBool());
   @override
   bool query_viewer_has_closed(Viewer viewer) =>
       invoke('query_viewer_has_closed', [viewer]).using((v) => v.asBool());

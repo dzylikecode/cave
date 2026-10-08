@@ -26,7 +26,7 @@ void main() {
       final sim = gym.create_sim(
         0,
         -1,
-        SIM_PHYSX,
+        SimType.physx,
         SimParams()..use_gpu_pipeline = false,
       );
       RigidBodyStates? snapshot;
@@ -39,16 +39,21 @@ void main() {
           'urdf/ball.urdf',
           AssetOptions(),
         );
-        final env = gym.create_env(sim, Vec3(-1, 0, -1), Vec3(1, 1, 1), 1);
+        final env = gym.create_env(
+          sim,
+          Vector3(-1, 0, -1),
+          Vector3(1, 1, 1),
+          1,
+        );
         gym.create_actor(
           env,
           asset,
-          Transform()..p = Vec3(0, 5, 0),
+          Transform()..p = Vector3(0, 5, 0),
           null,
           0,
           0,
         );
-        final original = gym.get_sim_rigid_body_states(sim, STATE_ALL);
+        final original = gym.get_sim_rigid_body_states(sim, StateFlags.all);
         expect(original.length, 1);
         snapshot = original.copy();
         original.dispose();
@@ -57,14 +62,17 @@ void main() {
           gym.simulate(sim);
           gym.fetch_results(sim, true);
         }
-        final moved = gym.get_sim_rigid_body_states(sim, STATE_ALL);
+        final moved = gym.get_sim_rigid_body_states(sim, StateFlags.all);
         try {
           expect(sameStates(snapshot, moved), isFalse);
         } finally {
           moved.dispose();
         }
-        expect(gym.set_sim_rigid_body_states(sim, snapshot, STATE_ALL), isTrue);
-        final reset = gym.get_sim_rigid_body_states(sim, STATE_ALL);
+        expect(
+          gym.set_sim_rigid_body_states(sim, snapshot, StateFlags.all),
+          isTrue,
+        );
+        final reset = gym.get_sim_rigid_body_states(sim, StateFlags.all);
         try {
           expect(sameStates(snapshot, reset), isTrue);
         } finally {
