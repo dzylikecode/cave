@@ -29,14 +29,22 @@ class MujocoViewerPython(
   final MjDataPython data,
 ) implements MujocoViewer {
   @override
-  bool get is_running =>
-      handle.getAttr('is_running').using((m) => m.call0()).asBool();
+  bool get is_running => Py.using((scope) {
+    final method = scope(handle.getAttr('is_running'));
+    return scope(method.call0()).asBool();
+  });
 
   @override
-  void sync() => handle.getAttr('sync').using((m) => m.call0());
+  void sync() => Py.using((scope) {
+    final method = scope(handle.getAttr('sync'));
+    scope(method.call0());
+  });
 
   @override
-  void close() => handle.getAttr('close').using((m) => m.call0());
+  void close() => Py.using((scope) {
+    final method = scope(handle.getAttr('close'));
+    scope(method.call0());
+  });
 
   @override
   void dispose() => handle.ref.discrement();

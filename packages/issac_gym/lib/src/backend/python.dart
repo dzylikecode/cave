@@ -8,10 +8,10 @@ final class PythonApi implements BaseApi {
   // Isaac Gym must be imported before PyTorch.
   late final gymapi = PyModule('isaacgym.gymapi');
   @override
-  Gym acquire_gym() => GymPython(
-    gymapi.getAttr('acquire_gym').using((method) => method.call0()),
-    this,
-  );
+  Gym acquire_gym() => Py.using((scope) {
+    final method = scope(gymapi.getAttr('acquire_gym'));
+    return GymPython(method.call0(), this);
+  });
 
   PyObject encode(Object? value) {
     if (value is PythonHandle) {
@@ -20,7 +20,7 @@ final class PythonApi implements BaseApi {
       return value.handle;
     }
     return switch (value) {
-      null => PyNone()..ref.increment(),
+      null => PyObject.getConst(.none),
       bool v => PyBool(v),
       int v => PyInt(v),
       double v => PyDouble(v),
@@ -50,76 +50,58 @@ final class PythonApi implements BaseApi {
     };
   }
 
-  // Each encoded argument owns one reference, consumed by callN.
   PyObject call(PyObject object, String name, List<Object?> values) =>
-      object.getAttr(name).using((method) {
-        final args = <PyObject>[];
-        try {
-          for (final value in values) {
-            args.add(encode(value));
-          }
-        } catch (_) {
-          for (final arg in args) {
-            arg.ref.discrement();
-          }
-          rethrow;
+      Py.using((scope) {
+        final method = scope(object.getAttr(name));
+        final args = scope(PyTuple(values.length));
+        for (var i = 0; i < values.length; i++) {
+          // The tuple consumes each newly encoded reference.
+          args.setElementAt(i, encode(values[i]));
         }
-        return method.callN(args);
+        return method.call(args);
       });
+
   PyObject construct(String name, List<Object?> values) =>
       call(gymapi, name, values);
-  void fields(PyObject object, Map<String, Object?> values) {
-    for (final entry in values.entries) {
-      if (entry.value != null) {
-        encode(entry.value).using((value) => object.setAttr(entry.key, value));
-      }
-    }
-  }
 
-  PyObject config(String name, Map<String, Object?> values) {
-    final result = construct(name, []);
-    try {
-      fields(result, values);
-      return result;
-    } catch (_) {
-      result.ref.discrement();
-      rethrow;
-    }
-  }
+  void fields(PyObject object, Map<String, Object?> values) =>
+      Py.using((scope) {
+        for (final entry in values.entries) {
+          if (entry.value != null) {
+            object.setAttr(entry.key, scope(encode(entry.value)));
+          }
+        }
+      });
 
-  PyObject simParams(SimParams v) {
-    final result = config('SimParams', {
-      'dt': v.dt,
-      'substeps': v.substeps,
-      'use_gpu_pipeline': v.use_gpu_pipeline,
+  PyObject config(String name, Map<String, Object?> values) =>
+      Py.using((scope) {
+        final result = scope(construct(name, []));
+        fields(result, values);
+        return scope.escape(result);
+      });
+
+  PyObject simParams(SimParams v) => Py.using((scope) {
+    final result = scope(
+      config('SimParams', {
+        'dt': v.dt,
+        'substeps': v.substeps,
+        'use_gpu_pipeline': v.use_gpu_pipeline,
+      }),
+    );
+    fields(scope(result.getAttr('physx')), {
+      'solver_type': v.physx.solver_type,
+      'num_position_iterations': v.physx.num_position_iterations,
+      'num_velocity_iterations': v.physx.num_velocity_iterations,
+      'num_threads': v.physx.num_threads,
+      'use_gpu': v.physx.use_gpu,
     });
-    try {
-      result
-          .getAttr('physx')
-          .using(
-            (obj) => fields(obj, {
-              'solver_type': v.physx.solver_type,
-              'num_position_iterations': v.physx.num_position_iterations,
-              'num_velocity_iterations': v.physx.num_velocity_iterations,
-              'num_threads': v.physx.num_threads,
-              'use_gpu': v.physx.use_gpu,
-            }),
-          );
-      result
-          .getAttr('flex')
-          .using(
-            (obj) => fields(obj, {
-              'shape_collision_margin': v.flex.shape_collision_margin,
-              'num_outer_iterations': v.flex.num_outer_iterations,
-              'num_inner_iterations': v.flex.num_inner_iterations,
-            }),
-          );
-      return result;
-    } catch (_) {
-      result.ref.discrement();
-      rethrow;
-    }
-  }
+    fields(scope(result.getAttr('flex')), {
+      'shape_collision_margin': v.flex.shape_collision_margin,
+      'num_outer_iterations': v.flex.num_outer_iterations,
+      'num_inner_iterations': v.flex.num_inner_iterations,
+    });
+    return scope.escape(result);
+  });
 }
 
 class PythonHandle {
@@ -160,20 +142,18 @@ final class RigidBodyStatesPython extends PythonHandle
     implements RigidBodyStates {
   RigidBodyStatesPython(super.handle, [super.owner]);
   @override
-  int get length {
+  int get length => Py.using((scope) {
     check();
-    return handle
-        .getAttr('__len__')
-        .using((m) => m.call0().using((v) => v.asInt()));
-  }
+    final method = scope(handle.getAttr('__len__'));
+    return scope(method.call0()).asInt();
+  });
 
   @override
-  RigidBodyStates copy() {
+  RigidBodyStates copy() => Py.using((scope) {
     check();
-    return RigidBodyStatesPython(
-      handle.getAttr('copy').using((m) => m.call0()),
-    );
-  }
+    final method = scope(handle.getAttr('copy'));
+    return RigidBodyStatesPython(method.call0());
+  });
 
   @override
   void dispose() => release();
@@ -200,7 +180,7 @@ final class GymPython extends PythonHandle implements Gym {
 
   PyObject requiredResult(String name, List<Object?> args) {
     final result = invoke(name, args);
-    final isNone = result.ptr == PyNone().ptr;
+    final isNone = result.ptr == PyObject.borrowedConst(.none).ptr;
     if (isNone) {
       result.ref.discrement();
       throw StateError('$name returned None');
@@ -283,14 +263,19 @@ final class GymPython extends PythonHandle implements Gym {
         'Environment and asset must belong to the same simulation',
       );
     }
-    final actor = invoke('create_actor', [
-      env,
-      asset,
-      pose,
-      name,
-      collision_group,
-      collision_filter,
-    ]).using((v) => v.asInt());
+    final actor = Py.using((scope) {
+      final v = scope(
+        invoke('create_actor', [
+          env,
+          asset,
+          pose,
+          name,
+          collision_group,
+          collision_filter,
+        ]),
+      );
+      return v.asInt();
+    });
     if (actor < 0) throw StateError('create_actor failed');
     return actor;
   }
@@ -310,23 +295,17 @@ final class GymPython extends PythonHandle implements Gym {
 
   @override
   List<ActionEvent> query_viewer_action_events(Viewer viewer) =>
-      invoke('query_viewer_action_events', [viewer]).using((events) {
-        final count = events
-            .getAttr('__len__')
-            .using((m) => m.call0().using((v) => v.asInt()));
-        return List.generate(
-          count,
-          (i) => PyInt(i).using(
-            (index) => events
-                .getItem(index)
-                .using(
-                  (event) => ActionEvent(
-                    event.getAttrString('action'),
-                    event.getAttrDouble('value'),
-                  ),
-                ),
-          ),
-        );
+      Py.using((scope) {
+        final events = scope(invoke('query_viewer_action_events', [viewer]));
+        final length = scope(events.getAttr('__len__'));
+        final count = scope(length.call0()).asInt();
+        return List.generate(count, (i) {
+          final event = scope(events.getItem(scope(PyInt(i))));
+          return ActionEvent(
+            event.getAttrString('action'),
+            event.getAttrDouble('value'),
+          );
+        });
       });
   @override
   void destroy_viewer(covariant ViewerPython viewer) {
@@ -403,14 +382,15 @@ final class GymPython extends PythonHandle implements Gym {
     Sim sim,
     RigidBodyStates states,
     StateFlags flags,
-  ) => invoke('set_sim_rigid_body_states', [
-    sim,
-    states,
-    flags,
-  ]).using((v) => v.asBool());
+  ) => Py.using((scope) {
+    final v = scope(invoke('set_sim_rigid_body_states', [sim, states, flags]));
+    return v.asBool();
+  });
   @override
-  bool query_viewer_has_closed(Viewer viewer) =>
-      invoke('query_viewer_has_closed', [viewer]).using((v) => v.asBool());
+  bool query_viewer_has_closed(Viewer viewer) => Py.using((scope) {
+    final v = scope(invoke('query_viewer_has_closed', [viewer]));
+    return v.asBool();
+  });
   @override
   void simulate(Sim sim) => invoke('simulate', [sim]).ref.discrement();
   @override

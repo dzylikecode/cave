@@ -85,16 +85,11 @@ class const MjModelPython(final PyObject handle) implements MjModel {
   int get nsensordata => handle.getAttrInt('nsensordata');
 
   @override
-  MjModelSensorViewsPython sensor(String name) {
-    final id = handle
-        .getAttr('sensor')
-        .using(
-          (method) => method
-              .callN([PyString(name)])
-              .using((view) => view.getAttrInt('id')),
-        );
-    return sensorById(id);
-  }
+  MjModelSensorViewsPython sensor(String name) => Py.using((scope) {
+    final method = scope(handle.getAttr('sensor'));
+    final view = scope(method.forward([name]));
+    return sensorById(view.getAttrInt('id'));
+  });
 
   @override
   MjModelSensorViewsPython sensorById(int id) {
@@ -155,15 +150,15 @@ class const MjDoubleListViewPython(final PyObject handle)
   int get length => handle.getAttrInt('size');
 
   @override
-  double operator [](int index) =>
-      PyInt(index)
-          .using((i) => handle.getItem(i))
-          .using((item) => item.asDouble());
+  double operator [](int index) => Py.using((scope) {
+    final item = scope(handle.getItem(scope(PyInt(index))));
+    return item.asDouble();
+  });
 
   @override
-  void operator []=(int index, double value) =>
-      PyInt(index)
-          .using((i) => PyDouble(value).using((v) => handle.setItem(i, v)));
+  void operator []=(int index, double value) => Py.using((scope) {
+    handle.setItem(scope(PyInt(index)), scope(PyDouble(value)));
+  });
 
   @override
   List<double> toList() {
@@ -179,17 +174,16 @@ class MjModelSensorViewsPython(
   final MjModelPython model,
   @override final int id,
 ) implements MjModelSensorViews {
-  T _withView<T>(T Function(PyObject) action) => model.handle
-      .getAttr('sensor')
-      .using((method) => method.callN([PyInt(id)]).using(action));
+  T _withView<T>(T Function(PyObject) action) => Py.using((scope) {
+    final method = scope(model.handle.getAttr('sensor'));
+    final view = scope(method.forward([id]));
+    return action(view);
+  });
 
-  int _getInt(String field) => model.handle
-      .getAttr('sensor_$field')
-      .using(
-        (array) => PyInt(id).using(
-          (index) => array.getItem(index).using((value) => value.asInt()),
-        ),
-      );
+  int _getInt(String field) => Py.using((scope) {
+    final array = scope(model.handle.getAttr('sensor_$field'));
+    return scope(array.getItem(scope(PyInt(id)))).asInt();
+  });
 
   @override
   String get name => _withView((view) => view.getAttrString('name'));

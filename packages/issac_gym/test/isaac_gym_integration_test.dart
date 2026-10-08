@@ -6,17 +6,14 @@ import 'package:issac_gym/src/backend/python.dart';
 import 'package:py_embed/py_embed.dart';
 import 'package:test/test.dart';
 
-bool sameStates(RigidBodyStates left, RigidBodyStates right) {
-  final a = (left as RigidBodyStatesPython).handle;
-  final b = (right as RigidBodyStatesPython).handle;
-  return PyModule('numpy').using(
-    (np) => np.getAttr('array_equal').using((fn) {
-      a.ref.increment();
-      b.ref.increment();
-      return fn.callN([a, b]).using((value) => value.asBool());
-    }),
-  );
-}
+bool sameStates(RigidBodyStates left, RigidBodyStates right) =>
+    Py.using((scope) {
+      final a = (left as RigidBodyStatesPython).handle;
+      final b = (right as RigidBodyStatesPython).handle;
+      final np = scope(PyModule('numpy'));
+      final fn = scope(np.getAttr('array_equal'));
+      return scope(fn.forward([a, b])).asBool();
+    });
 
 void main() {
   test(
