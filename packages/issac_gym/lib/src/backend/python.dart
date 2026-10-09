@@ -13,22 +13,29 @@ final class PythonApi implements BaseApi {
     return GymPython(method.call0(), this);
   });
 
-  PyObject encode(Object? value) {
-    if (value is PythonHandle) {
-      value.check();
-      value.handle.ref.increment();
-      return value.handle;
-    }
+  late final converter = GymConverter(gymapi);
+}
+
+/// Only Gym-specific types are converted here; py_embed handles the rest.
+final class GymConverter extends PyConverter {
+  final PyObject gymapi;
+  GymConverter(this.gymapi);
+
+  late final simTypeBorrowed = <SimType, PyObject>{
+    .physx: gymapi.getAttr('SIM_PHYSX'),
+    .flex: gymapi.getAttr('SIM_FLEX'),
+  };
+
+  PyObject simTypeToPy(SimType v) {
+    final obj = simTypeBorrowed[v]!;
+    obj.ref.increment();
+    return obj;
+  }
+
+  @override
+  PyObject toPyObject(Object? value) {
     return switch (value) {
-      null => PyObject.getConst(.none),
-      bool v => PyBool(v),
-      int v => PyInt(v),
-      double v => PyDouble(v),
-      String v => PyString(v),
-      SimType v => gymapi.getAttr(switch (v) {
-        SimType.physx => 'SIM_PHYSX',
-        SimType.flex => 'SIM_FLEX',
-      }),
+      SimType v => simTypeToPy(v),
       StateFlags v => gymapi.getAttr(switch (v) {
         StateFlags.none => 'STATE_NONE',
         StateFlags.pos => 'STATE_POS',
@@ -44,31 +51,20 @@ final class PythonApi implements BaseApi {
       CameraProperties _ => construct('CameraProperties', []),
       AssetOptions _ => construct('AssetOptions', []),
       SimParams v => simParams(v),
-      _ => throw ArgumentError(
-        'Unsupported Python argument: ${value.runtimeType}',
-      ),
+      _ => super.toPyObject(value),
     };
   }
 
-  PyObject call(PyObject object, String name, List<Object?> values) =>
-      Py.using((scope) {
-        final method = scope(object.getAttr(name));
-        final args = scope(PyTuple(values.length));
-        for (var i = 0; i < values.length; i++) {
-          // The tuple consumes each newly encoded reference.
-          args.setElementAt(i, encode(values[i]));
-        }
-        return method.call(args);
-      });
-
-  PyObject construct(String name, List<Object?> values) =>
-      call(gymapi, name, values);
+  PyObject construct(String name, List<Object?> values) => Py.using((scope) {
+    final constructor = scope(gymapi.getAttr(name));
+    return constructor.forward(values, converter: this);
+  });
 
   void fields(PyObject object, Map<String, Object?> values) =>
       Py.using((scope) {
         for (final entry in values.entries) {
           if (entry.value != null) {
-            object.setAttr(entry.key, scope(encode(entry.value)));
+            object.setAttr(entry.key, scope(toPyObject(entry.value)));
           }
         }
       });
@@ -104,53 +100,42 @@ final class PythonApi implements BaseApi {
   });
 }
 
-class PythonHandle {
+class PythonHandle implements PyObjectWrapper {
+  @override
   final PyObject handle;
-  final PythonHandle? owner;
-  bool _disposed = false;
-  PythonHandle(this.handle, [this.owner]);
-  void check() {
-    if (_disposed) throw StateError('$runtimeType has been disposed');
-    owner?.check();
-  }
-
-  void release() {
-    if (_disposed) return;
-    _disposed = true;
-    handle.ref.discrement();
-  }
+  PythonHandle(this.handle);
+  void release() => handle.ref.discrement();
 }
 
 final class SimPython extends PythonHandle implements Sim {
+  // Env and Asset have no public dispose(); the simulation owns their wrappers.
   final children = <PythonHandle>[];
-  SimPython(super.handle, super.owner);
+  SimPython(super.handle);
 }
 
 final class EnvPython extends PythonHandle implements Env {
-  EnvPython(super.handle, SimPython super.owner);
+  EnvPython(super.handle);
 }
 
 final class AssetPython extends PythonHandle implements Asset {
-  AssetPython(super.handle, SimPython super.owner);
+  AssetPython(super.handle);
 }
 
 final class ViewerPython extends PythonHandle implements Viewer {
-  ViewerPython(super.handle, SimPython super.owner);
+  ViewerPython(super.handle);
 }
 
 final class RigidBodyStatesPython extends PythonHandle
     implements RigidBodyStates {
-  RigidBodyStatesPython(super.handle, [super.owner]);
+  RigidBodyStatesPython(super.handle);
   @override
   int get length => Py.using((scope) {
-    check();
     final method = scope(handle.getAttr('__len__'));
     return scope(method.call0()).asInt();
   });
 
   @override
   RigidBodyStates copy() => Py.using((scope) {
-    check();
     final method = scope(handle.getAttr('copy'));
     return RigidBodyStatesPython(method.call0());
   });
@@ -161,32 +146,12 @@ final class RigidBodyStatesPython extends PythonHandle
 
 final class GymPython extends PythonHandle implements Gym {
   final PythonApi api;
-  final _sims = <SimPython>[];
   GymPython(super.handle, this.api);
-  PyObject invoke(String name, List<Object?> args) {
-    check();
-    for (final arg in args.whereType<PythonHandle>()) {
-      arg.check();
-      PythonHandle root = arg;
-      while (root.owner != null) {
-        root = root.owner!;
-      }
-      if (root is GymPython && !identical(root, this)) {
-        throw ArgumentError('Object belongs to another Gym wrapper');
-      }
-    }
-    return api.call(handle, name, args);
-  }
 
-  PyObject requiredResult(String name, List<Object?> args) {
-    final result = invoke(name, args);
-    final isNone = result.ptr == PyObject.borrowedConst(.none).ptr;
-    if (isNone) {
-      result.ref.discrement();
-      throw StateError('$name returned None');
-    }
-    return result;
-  }
+  PyObject invoke(String name, List<Object?> args) => Py.using((scope) {
+    final method = scope(handle.getAttr(name));
+    return method.forward(args, converter: api.converter);
+  });
 
   @override
   Sim create_sim(
@@ -194,29 +159,13 @@ final class GymPython extends PythonHandle implements Gym {
     int graphics_device_id,
     SimType type,
     SimParams params,
-  ) {
-    final sim = SimPython(
-      requiredResult('create_sim', [
-        compute_device_id,
-        graphics_device_id,
-        type,
-        params,
-      ]),
-      this,
-    );
-    _sims.add(sim);
-    return sim;
-  }
+  ) => SimPython(
+    invoke('create_sim', [compute_device_id, graphics_device_id, type, params]),
+  );
 
   @override
-  Viewer create_viewer(covariant SimPython sim, CameraProperties properties) {
-    final viewer = ViewerPython(
-      requiredResult('create_viewer', [sim, properties]),
-      sim,
-    );
-    sim.children.add(viewer);
-    return viewer;
-  }
+  Viewer create_viewer(Sim sim, CameraProperties properties) =>
+      ViewerPython(invoke('create_viewer', [sim, properties]));
 
   @override
   Asset load_asset(
@@ -225,10 +174,7 @@ final class GymPython extends PythonHandle implements Gym {
     String file,
     AssetOptions options,
   ) {
-    final asset = AssetPython(
-      requiredResult('load_asset', [sim, root, file, options]),
-      sim,
-    );
+    final asset = AssetPython(invoke('load_asset', [sim, root, file, options]));
     sim.children.add(asset);
     return asset;
   }
@@ -240,10 +186,8 @@ final class GymPython extends PythonHandle implements Gym {
     Vector3 upper,
     int num_per_row,
   ) {
-    if (num_per_row <= 0) throw ArgumentError.value(num_per_row, 'num_per_row');
     final env = EnvPython(
-      requiredResult('create_env', [sim, lower, upper, num_per_row]),
-      sim,
+      invoke('create_env', [sim, lower, upper, num_per_row]),
     );
     sim.children.add(env);
     return env;
@@ -251,47 +195,28 @@ final class GymPython extends PythonHandle implements Gym {
 
   @override
   int create_actor(
-    covariant EnvPython env,
-    covariant AssetPython asset,
+    Env env,
+    Asset asset,
     Transform pose,
     String? name,
     int collision_group,
     int collision_filter,
-  ) {
-    if (!identical(env.owner, asset.owner)) {
-      throw ArgumentError(
-        'Environment and asset must belong to the same simulation',
-      );
-    }
-    final actor = Py.using((scope) {
-      final v = scope(
-        invoke('create_actor', [
-          env,
-          asset,
-          pose,
-          name,
-          collision_group,
-          collision_filter,
-        ]),
-      );
-      return v.asInt();
-    });
-    if (actor < 0) throw StateError('create_actor failed');
-    return actor;
-  }
+  ) => Py.using((scope) {
+    return scope(
+      invoke('create_actor', [
+        env,
+        asset,
+        pose,
+        name,
+        collision_group,
+        collision_filter,
+      ]),
+    ).asInt();
+  });
 
   @override
-  RigidBodyStates get_sim_rigid_body_states(
-    covariant SimPython sim,
-    StateFlags flags,
-  ) {
-    final states = RigidBodyStatesPython(
-      requiredResult('get_sim_rigid_body_states', [sim, flags]),
-      sim,
-    );
-    sim.children.add(states);
-    return states;
-  }
+  RigidBodyStates get_sim_rigid_body_states(Sim sim, StateFlags flags) =>
+      RigidBodyStatesPython(invoke('get_sim_rigid_body_states', [sim, flags]));
 
   @override
   List<ActionEvent> query_viewer_action_events(Viewer viewer) =>
@@ -309,34 +234,22 @@ final class GymPython extends PythonHandle implements Gym {
       });
   @override
   void destroy_viewer(covariant ViewerPython viewer) {
-    if (viewer._disposed) return;
     invoke('destroy_viewer', [viewer]).ref.discrement();
     viewer.release();
   }
 
   @override
   void destroy_sim(covariant SimPython sim) {
-    if (sim._disposed) return;
-    sim.check();
-    for (final viewer in sim.children.whereType<ViewerPython>()) {
-      destroy_viewer(viewer);
-    }
     invoke('destroy_sim', [sim]).ref.discrement();
     for (final child in sim.children) {
       child.release();
     }
     sim.children.clear();
     sim.release();
-    _sims.remove(sim);
   }
 
   @override
-  void dispose() {
-    if (_sims.isNotEmpty) {
-      throw StateError('Destroy simulations before disposing Gym');
-    }
-    release();
-  }
+  void dispose() => release();
 
   @override
   void add_ground(Sim sim, PlaneParams params) =>

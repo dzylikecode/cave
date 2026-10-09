@@ -60,18 +60,19 @@ class Transform {
   Quaternion r = Quaternion.identity();
 }
 
-/// Owned by Gym; release with destroy_sim. Its assets and environments then expire.
+/// Release once with destroy_sim, after destroying its viewers.
+/// Its assets and environments then expire; callers manage lifetime and pairing.
 abstract interface class Sim {}
 
 abstract interface class Env {}
 
 abstract interface class Asset {}
 
-/// Release with destroy_viewer before destroying its simulation.
+/// Release once with destroy_viewer before destroying its simulation.
 abstract interface class Viewer {}
 
 /// Opaque NumPy state array. copy() creates an independent reset snapshot.
-/// Release every returned array with dispose().
+/// Release every returned array once with dispose(); do not access it afterward.
 abstract interface class RigidBodyStates {
   int get length;
   RigidBodyStates copy();

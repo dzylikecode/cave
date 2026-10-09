@@ -16,9 +16,7 @@ final class PythonApi() implements BaseApi {
     covariant MjModelPython model,
     covariant MjDataPython data,
   ) {
-    model.handle.ref.increment();
-    data.handle.ref.increment();
-    final h = _MujocoViewer_launch_passive.callN([model.handle, data.handle]);
+    final h = _MujocoViewer_launch_passive.forward([model, data]);
     return MujocoViewerPython(h, model, data);
   }
 }

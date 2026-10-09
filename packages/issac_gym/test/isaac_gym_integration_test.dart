@@ -27,6 +27,7 @@ void main() {
         SimParams()..use_gpu_pipeline = false,
       );
       RigidBodyStates? snapshot;
+      var simDestroyed = false;
       try {
         gym.add_ground(sim, PlaneParams());
         final root = Directory('ref_code/isaacgym/assets').absolute.path;
@@ -54,7 +55,6 @@ void main() {
         expect(original.length, 1);
         snapshot = original.copy();
         original.dispose();
-        expect(() => original.copy(), throwsStateError);
         for (var i = 0; i < 10; i++) {
           gym.simulate(sim);
           gym.fetch_results(sim, true);
@@ -76,14 +76,14 @@ void main() {
           reset.dispose();
         }
         gym.destroy_sim(sim);
+        simDestroyed = true;
         expect(
           snapshot.length,
           1,
         ); // The independent copy outlives the simulation.
-        expect(() => gym.simulate(sim), throwsStateError);
       } finally {
         snapshot?.dispose();
-        gym.destroy_sim(sim);
+        if (!simDestroyed) gym.destroy_sim(sim);
         gym.dispose();
       }
     },

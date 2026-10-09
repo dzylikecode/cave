@@ -1,6 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:py_embed/py_embed.dart';
-import 'package:py_embed/debug.dart';
 
 import '../base.dart';
 
@@ -14,43 +13,32 @@ final class PythonApi() implements BaseApi {
   late final _MjModel_from_xml_string = _MjModel.getAttr('from_xml_string');
   @override
   MjModelPython MjModel_from_xml_string(String xml) {
-    final model = _MjModel_from_xml_string.callN([PyString(xml)]);
+    final model = _MjModel_from_xml_string.forward([xml]);
     return MjModelPython(model);
   }
 
   late final _MjModel_from_xml_path = _MjModel.getAttr('from_xml_path');
   @override
   MjModelPython MjModel_from_xml_path(String path) {
-    final model = _MjModel_from_xml_path.callN([PyString(path)]);
+    final model = _MjModel_from_xml_path.forward([path]);
     return MjModelPython(model);
   }
 
   late final _MjData = _mujoco.getAttr('MjData');
   @override
-  MjDataPython MjData_new(covariant MjModelPython model) {
-    // dart format off
-                                                  // 测试 ref 调用前后保持不变
-                                                  final count = model.handle.ref.count;
-    model.handle.ref.increment();                 // MjData 会持有 model 的引用，所以会 ref++
-    final data = _MjData.callN([model.handle]);   assert(model.handle.ref.count == count + 1, '${model.handle.ref.count} != $count');
-    // dart format on
-    return MjDataPython(data, model);
-  }
+  MjDataPython MjData_new(covariant MjModelPython model) =>
+      MjDataPython(_MjData.forward([model]), model);
 
   late final _mj_forward = _mujoco.getAttr('mj_forward');
   @override
   void mj_forward(covariant MjModelPython model, covariant MjDataPython data) {
-    model.handle.ref.increment();
-    data.handle.ref.increment();
-    _mj_forward.callN([model.handle, data.handle]);
+    _mj_forward.forward([model, data]).ref.discrement();
   }
 
   late final _mj_step = _mujoco.getAttr('mj_step');
   @override
   void mj_step(covariant MjModelPython model, covariant MjDataPython data) {
-    model.handle.ref.increment();
-    data.handle.ref.increment();
-    _mj_step.callN([model.handle, data.handle]);
+    _mj_step.forward([model, data]).ref.discrement();
   }
 
   late final _mj_resetData = _mujoco.getAttr('mj_resetData');
@@ -59,13 +47,12 @@ final class PythonApi() implements BaseApi {
     covariant MjModelPython model,
     covariant MjDataPython data,
   ) {
-    model.handle.ref.increment();
-    data.handle.ref.increment();
-    _mj_resetData.callN([model.handle, data.handle]);
+    _mj_resetData.forward([model, data]).ref.discrement();
   }
 }
 
-class const MjModelPython(final PyObject handle) implements MjModel {
+class const MjModelPython(@override final PyObject handle)
+    implements MjModel, PyObjectWrapper {
   @override
   int get nq => handle.getAttrInt('nq');
 
@@ -101,8 +88,10 @@ class const MjModelPython(final PyObject handle) implements MjModel {
   void dispose() => handle.ref.discrement();
 }
 
-class MjDataPython(final PyObject handle, @override final MjModelPython model)
-    implements MjData {
+class MjDataPython(
+  @override final PyObject handle,
+  @override final MjModelPython model,
+) implements MjData, PyObjectWrapper {
   @override
   double get time => handle.getAttrDouble('time');
 
@@ -144,8 +133,8 @@ class MjDataPython(final PyObject handle, @override final MjModelPython model)
   }
 }
 
-class const MjDoubleListViewPython(final PyObject handle)
-    implements MjDoubleListView {
+class const MjDoubleListViewPython(@override final PyObject handle)
+    implements MjDoubleListView, PyObjectWrapper {
   @override
   int get length => handle.getAttrInt('size');
 
