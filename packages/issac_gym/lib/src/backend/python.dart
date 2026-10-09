@@ -4,7 +4,7 @@ import 'package:vector_math/vector_math.dart' show Vector3, Quaternion;
 
 import '../base.dart';
 
-final class PythonApi implements BaseApi {
+final class PythonApi() implements BaseApi {
   // Isaac Gym must be imported before PyTorch.
   late final gymapi = PyModule('isaacgym.gymapi');
   @override
@@ -17,30 +17,19 @@ final class PythonApi implements BaseApi {
 }
 
 /// Only Gym-specific types are converted here; py_embed handles the rest.
-final class GymConverter extends PyConverter {
-  final PyObject gymapi;
-  GymConverter(this.gymapi);
-
-  late final simTypeBorrowed = <SimType, PyObject>{
-    .physx: gymapi.getAttr('SIM_PHYSX'),
-    .flex: gymapi.getAttr('SIM_FLEX'),
-  };
-
-  PyObject simTypeToPy(SimType v) {
-    final obj = simTypeBorrowed[v]!;
-    obj.ref.increment();
-    return obj;
-  }
-
+final class GymConverter(final PyObject gymapi) extends PyConverter {
   @override
   PyObject toPyObject(Object? value) {
     return switch (value) {
-      SimType v => simTypeToPy(v),
+      SimType v => gymapi.getAttr(switch (v) {
+        .physx => 'SIM_PHYSX',
+        .flex => 'SIM_FLEX',
+      }),
       StateFlags v => gymapi.getAttr(switch (v) {
-        StateFlags.none => 'STATE_NONE',
-        StateFlags.pos => 'STATE_POS',
-        StateFlags.vel => 'STATE_VEL',
-        StateFlags.all => 'STATE_ALL',
+        .none => 'STATE_NONE',
+        .pos => 'STATE_POS',
+        .vel => 'STATE_VEL',
+        .all => 'STATE_ALL',
       }),
       MeshType _ => gymapi.getAttr('MESH_VISUAL_AND_COLLISION'),
       KeyboardInput _ => gymapi.getAttr('KEY_R'),
@@ -100,10 +89,7 @@ final class GymConverter extends PyConverter {
   });
 }
 
-class PythonHandle implements PyObjectWrapper {
-  @override
-  final PyObject handle;
-  PythonHandle(this.handle);
+class PythonHandle(@override final PyObject handle) implements PyObjectWrapper {
   void release() => handle.ref.discrement();
 }
 
@@ -113,29 +99,18 @@ final class SimPython extends PythonHandle implements Sim {
   SimPython(super.handle);
 }
 
-final class EnvPython extends PythonHandle implements Env {
-  EnvPython(super.handle);
-}
+final class EnvPython(super.handle) extends PythonHandle implements Env;
+final class AssetPython(super.handle) extends PythonHandle implements Asset;
+final class ViewerPython(super.handle) extends PythonHandle implements Viewer;
 
-final class AssetPython extends PythonHandle implements Asset {
-  AssetPython(super.handle);
-}
-
-final class ViewerPython extends PythonHandle implements Viewer {
-  ViewerPython(super.handle);
-}
-
-final class RigidBodyStatesPython extends PythonHandle
+final class RigidBodyStatesPython(super.handle)
+    extends PythonHandle
     implements RigidBodyStates {
-  RigidBodyStatesPython(super.handle);
   @override
-  int get length => Py.using((scope) {
-    final method = scope(handle.getAttr('__len__'));
-    return scope(method.call0()).asInt();
-  });
+  int get length => Py.len(handle);
 
   @override
-  RigidBodyStates copy() => Py.using((scope) {
+  RigidBodyStatesPython copy() => Py.using((scope) {
     final method = scope(handle.getAttr('copy'));
     return RigidBodyStatesPython(method.call0());
   });
@@ -222,8 +197,7 @@ final class GymPython extends PythonHandle implements Gym {
   List<ActionEvent> query_viewer_action_events(Viewer viewer) =>
       Py.using((scope) {
         final events = scope(invoke('query_viewer_action_events', [viewer]));
-        final length = scope(events.getAttr('__len__'));
-        final count = scope(length.call0()).asInt();
+        final count = Py.len(events);
         return List.generate(count, (i) {
           final event = scope(events.getItem(scope(PyInt(i))));
           return ActionEvent(
