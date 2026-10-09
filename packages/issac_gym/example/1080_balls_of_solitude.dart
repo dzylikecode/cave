@@ -55,7 +55,7 @@ void main(List<String> arguments) {
   }
   final params = SimParams()..use_gpu_pipeline = false;
   final type = args.flag('flex') ? SimType.flex : SimType.physx;
-  if (type == SimType.flex) {
+  if (type == .flex) {
     params.flex
       ..shape_collision_margin = 0.25
       ..num_outer_iterations = 4
@@ -86,7 +86,7 @@ void main(List<String> arguments) {
     gym.add_ground(sim, PlaneParams());
     if (!headless) {
       viewer = gym.create_viewer(sim, CameraProperties());
-      gym.subscribe_viewer_keyboard_event(viewer, KeyboardInput.r, 'reset');
+      gym.subscribe_viewer_keyboard_event(viewer, .r, 'reset');
     }
     final asset = gym.load_asset(
       sim,
@@ -127,13 +127,7 @@ void main(List<String> arguments) {
               args.flag('all_collisions') || args.flag('no_collisions') ? 0 : i,
               args.flag('no_collisions') ? 1 : 0,
             );
-            gym.set_rigid_body_color(
-              env,
-              actor,
-              0,
-              MeshType.visualAndCollision,
-              color,
-            );
+            gym.set_rigid_body_color(env, actor, 0, .visualAndCollision, color);
           }
         }
         y += spacing;
@@ -148,7 +142,7 @@ void main(List<String> arguments) {
         Vector3(0, 1, 0),
       );
     }
-    final states = gym.get_sim_rigid_body_states(sim, StateFlags.all);
+    final states = gym.get_sim_rigid_body_states(sim, .all);
     try {
       initialState = states.copy();
     } finally {

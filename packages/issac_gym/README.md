@@ -11,16 +11,27 @@ Dart bindings for Isaac Gym Preview 4.
 Install Isaac Gym into the Python 3.8 environment:
 
 ```bash
-conda activate py_embed
+conda create -n gym python=3.8.20 pip
+conda activate gym
 pip install -e isaacgym/python
 ```
+
+>
+> [!NOTE]
+>
+> 运行 python 代码设置环境，而对于 dart 代码不需要
+>
+> ```bash
+> export LD_LIBRARY_PATH="$CONDA_PREFIX/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+> ```
+>
 
 ## Run
 
 From the repository root, activate the same environment and run:
 
 ```bash
-conda activate py_embed
+conda activate gym
 dart run example/1080_balls_of_solitude.dart
 ```
 
