@@ -1,4 +1,5 @@
 import 'package:mujoco/mujoco.dart';
+import 'package:args/args.dart';
 
 const xml = """
 <mujoco model="basic_pendulum">
@@ -30,13 +31,31 @@ const xml = """
 </mujoco>
 """;
 
-void main() {
-  Mujoco.useNativeApi = false;
+void main(List<String> arguments) {
+  final ArgParser parser = ArgParser()
+    ..addFlag('help', abbr: 'h', negatable: false)
+    ..addFlag(
+      'native',
+      defaultsTo: true,
+      callback: (v) => Mujoco.useNativeApi = v,
+    );
+
+  final args = parser.parse(arguments);
+
+  if (args.flag('help')) {
+    print(parser.usage);
+    return;
+  }
+
+  print('use api: ${Mujoco.useNativeApi ? 'native' : 'python'}');
+
   final model = MjModel.from_xml_string(xml);
   final data = MjData(model);
 
   print('model nq: ${model.nq}, nv: ${model.nv}, nu: ${model.nu}');
-  print('qpos.length: ${data.qpos.length}, qvel.length: ${data.qvel.length}, act.length: ${data.act.length}, ctrl.length: ${data.ctrl.length}');
+  print(
+    'qpos.length: ${data.qpos.length}, qvel.length: ${data.qvel.length}, act.length: ${data.act.length}, ctrl.length: ${data.ctrl.length}',
+  );
 
   data.ctrl[0] = 1.0;
 
