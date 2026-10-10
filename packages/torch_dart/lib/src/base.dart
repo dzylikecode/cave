@@ -11,9 +11,7 @@ final pythonApi = PythonApi();
 BaseApi get api => pythonApi;
 
 /// Entry point for the active PyTorch backend.
-final class Torch {
-  Torch._();
-
+abstract final class Torch {
   static String get version => api.version;
 }
 
@@ -85,11 +83,36 @@ enum DType {
   complex128,
 }
 
-enum DeviceType { cpu, cuda, mps }
+enum DeviceType {
+  cpu,
+  cuda,
+  mps;
+
+  factory fromString(String v) => switch (v) {
+    'cpu' => .cpu,
+    'cuda' => .cuda,
+    'mps' => .mps,
+    _ => throw FormatException('Unknown device type', v),
+  };
+}
 
 /// A device type and optional index. A null index leaves selection to the backend.
 final class const Device(final DeviceType type, {final int? index}) {
   this : assert(index == null || index >= 0);
+
+  /// Parses `type` or `type:index`, with a nonnegative decimal index.
+  factory parse(String value) {
+    final parts = value.split(':');
+    if (parts.length > 2) {
+      throw FormatException('Expected type or type:index', value);
+    }
+
+    final DeviceType type = .fromString(parts[0]);
+
+    final index = parts.length == 2 ? int.parse(parts[1]) : null;
+
+    return .new(type, index: index);
+  }
 
   @override
   bool operator ==(Object other) =>

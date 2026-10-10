@@ -14,7 +14,7 @@ BaseApi _api = pythonApi;
 @internal
 BaseApi get api => _api;
 
-final class Mujoco {
+abstract final class Mujoco {
   static String get version => api.version;
   static bool _isUsingNativeApi = false;
   static set useNativeApi(bool useNative) {
