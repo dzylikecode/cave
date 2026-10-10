@@ -29,6 +29,22 @@ T inference_mode<T>(T Function() action) => api.inference_mode(action);
 Tensor zeros(List<int> shape, {DType? dtype, Device? device}) =>
     api.zeros(shape, dtype: dtype, device: device);
 
+Tensor arange(
+  num end, {
+  num start = 0,
+  num step = 1,
+  DType? dtype,
+  Device? device,
+  bool requiresGrad = false,
+}) => api.arange(
+  end,
+  start: start,
+  step: step,
+  dtype: dtype,
+  device: device,
+  requiresGrad: requiresGrad,
+);
+
 const jit = Jit();
 
 /// Loading operations for TorchScript models.
@@ -65,6 +81,15 @@ abstract interface class BaseApi {
   T inference_mode<T>(T Function() action);
   ScriptModule jit_load(String path, {Device? map_location});
   Tensor zeros(List<int> shape, {DType? dtype, Device? device});
+
+  Tensor arange(
+    num end, {
+    num start = 0,
+    num step = 1,
+    DType? dtype,
+    Device? device,
+    bool requiresGrad = false,
+  });
 }
 
 /// Scalar element types supported by the initial Tensor API.
@@ -130,6 +155,8 @@ abstract interface class Tensor {
   List<int> get shape;
   DType get dtype;
   Device get device;
+
+  Tensor reshape(List<int> shape);
 
   /// Releases this tensor's resources. Do not use the tensor afterward.
   void dispose();

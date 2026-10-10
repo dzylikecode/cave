@@ -28,6 +28,44 @@ final class PythonApi() implements BaseApi {
     });
   }
 
+  late final _arange = _torch.getAttr('arange');
+
+  @override
+  TensorPython arange(
+    num end, {
+    num start = 0,
+    num step = 1,
+    DType? dtype,
+    Device? device,
+    bool requiresGrad = false,
+  }) {
+    if (step == 0) {
+      throw ArgumentError.value(step, 'step', 'Step cannot be zero');
+    }
+    if (step > 0 && start >= end || step < 0 && start <= end) {
+      throw ArgumentError(
+        'Step must be positive when start < end '
+        'and negative when start > end.',
+      );
+    }
+
+    return Py.using((scope) {
+      final kwargs = <String, Object?>{};
+
+      if (dtype != null) {
+        kwargs['dtype'] = scope(_torch.getAttr(dtype.name));
+      }
+      if (device != null) {
+        kwargs['device'] = device.toString();
+      }
+      if (requiresGrad) {
+        kwargs['requires_grad'] = true;
+      }
+
+      return TensorPython(_arange.forward([start, end, step], kwargs: kwargs));
+    });
+  }
+
   late final _inference_mode = _torch.getAttr('inference_mode');
 
   @override
@@ -126,6 +164,15 @@ final class TensorPython(final PyObject handle) implements Tensor {
           : index.asInt(),
     );
   });
+
+  @override
+  TensorPython reshape(List<int> shape) => Py.using((scope) {
+    final method = scope(handle.getAttr('reshape'));
+    return TensorPython(method.forward(shape));
+  });
+
+  @override
+  String toString() => handle.toString();
 
   @override
   void dispose() => handle.ref.discrement();
