@@ -26,8 +26,63 @@ T inference_mode<T>(T Function() action) => api.inference_mode(action);
 /// An empty shape creates a scalar; zero-sized dimensions are allowed.
 /// Omitted [dtype] and [device] use the backend defaults.
 /// The caller owns the returned tensor and must dispose it.
-Tensor zeros(List<int> shape, {DType? dtype, Device? device}) =>
-    api.zeros(shape, dtype: dtype, device: device);
+Tensor zeros(
+  List<int> shape, {
+  DType? dtype,
+  Device? device,
+  bool requires_grad = false,
+}) => api.zeros(
+  shape,
+  dtype: dtype,
+  device: device,
+  requires_grad: requires_grad,
+);
+
+/// Copies a numeric/bool scalar or nested Dart list into a new leaf tensor.
+///
+/// The caller owns the result. Tensor inputs are not accepted; use [Tensor.clone] instead.
+Tensor tensor(
+  Object data, {
+  DType? dtype,
+  Device? device,
+  bool requires_grad = false,
+}) => api.tensor(
+  data,
+  dtype: dtype,
+  device: device,
+  requires_grad: requires_grad,
+);
+
+/// Creates a tensor filled with ones.
+///
+/// The caller owns the result.
+Tensor ones(
+  List<int> shape, {
+  DType? dtype,
+  Device? device,
+  bool requires_grad = false,
+}) =>
+    api.ones(shape, dtype: dtype, device: device, requires_grad: requires_grad);
+
+/// Creates standard normal samples.
+///
+/// The caller owns the result.
+Tensor randn(
+  List<int> shape, {
+  DType? dtype,
+  Device? device,
+  bool requires_grad = false,
+}) => api.randn(
+  shape,
+  dtype: dtype,
+  device: device,
+  requires_grad: requires_grad,
+);
+
+/// Disables gradient recording for a synchronous callback, restoring on error.
+///
+/// Factory requires_grad arguments still apply. Do not pass an async callback.
+T no_grad<T>(T Function() action) => api.no_grad(action);
 
 Tensor arange(
   num end, {
@@ -35,14 +90,14 @@ Tensor arange(
   num step = 1,
   DType? dtype,
   Device? device,
-  bool requiresGrad = false,
+  bool requires_grad = false,
 }) => api.arange(
   end,
   start: start,
   step: step,
   dtype: dtype,
   device: device,
-  requiresGrad: requiresGrad,
+  requires_grad: requires_grad,
 );
 
 const jit = Jit();
@@ -80,7 +135,31 @@ abstract interface class BaseApi {
   String get version;
   T inference_mode<T>(T Function() action);
   ScriptModule jit_load(String path, {Device? map_location});
-  Tensor zeros(List<int> shape, {DType? dtype, Device? device});
+  T no_grad<T>(T Function() action);
+  Tensor tensor(
+    Object data, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  });
+  Tensor zeros(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  });
+  Tensor ones(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  });
+  Tensor randn(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  });
 
   Tensor arange(
     num end, {
@@ -88,7 +167,7 @@ abstract interface class BaseApi {
     num step = 1,
     DType? dtype,
     Device? device,
-    bool requiresGrad = false,
+    bool requires_grad = false,
   });
 }
 
@@ -156,12 +235,102 @@ final class const Device(final DeviceType type, {final int? index}) {
 }
 
 /// A backend-independent tensor owning resources until [dispose] is called.
+///
+/// Each returned wrapper owns its reference, including views and gradients.
+/// Views may share storage. Dispose each wrapper once and do not use it afterward.
+/// In-place methods ending in `_` return this wrapper.
 abstract interface class Tensor {
   List<int> get shape;
   DType get dtype;
   Device get device;
 
+  int get ndim;
+  int get numel;
+
+  /// Whether operations involving this tensor record gradients.
+  ///
+  /// Changes follow PyTorch's gradient flag validation, including leaf checks.
+  bool get requires_grad;
+  set requires_grad(bool value);
+  bool get is_leaf;
+
+  /// Returns an independently owned wrapper, or null if no gradient is stored.
+  Tensor? get grad;
+
+  /// Retains gradients on a non-leaf tensor during backward.
+  void retain_grad();
+
+  /// Accumulates gradients into leaf tensors participating in this graph.
+  ///
+  /// Non-scalar outputs require [gradient]. Omitted [retain_graph] defaults to
+  /// [create_graph]. With [create_graph], reset leaf gradients using [zero_grad]
+  /// afterward to break possible reference cycles.
+  void backward({
+    Tensor? gradient,
+    bool? retain_graph,
+    bool create_graph = false,
+  });
+
+  /// Clears the stored gradient, leaving it absent when [set_to_none] is true.
+  ///
+  /// This is a Dart binding convenience, not a native PyTorch Tensor method.
+  ///
+  /// Otherwise detaches and zeros an existing gradient without creating one.
+  void zero_grad({bool set_to_none = true});
+
+  /// Adds a tensor or number using broadcasting.
+  ///
+  /// Non-mutating operation results are caller-owned and must be disposed.
+  Tensor operator +(Object other);
+  Tensor operator -(Object other);
+  Tensor operator *(Object other);
+  Tensor operator /(Object other);
+  Tensor operator -();
+  Tensor matmul(Tensor other);
+
+  /// Adds [other] scaled by [alpha] in place and returns this wrapper.
+  ///
+  /// Use [no_grad] when updating leaf tensors that require gradients.
+  Tensor add_(Object other, {num alpha = 1});
+
+  /// Multiplies by [other] in place and returns this wrapper.
+  Tensor mul_(Object other);
+
+  /// Copies values from [source] in place and returns this wrapper.
+  Tensor copy_(Tensor source);
+  Tensor pow(num exponent);
+  Tensor relu();
+  Tensor sigmoid();
+  Tensor tanh();
+  Tensor exp();
+  Tensor log();
+  Tensor sum({int? dim, bool keepdim = false});
+  Tensor mean({int? dim, bool keepdim = false});
+  Tensor transpose(int dim0, int dim1);
+  Tensor contiguous();
+
+  /// Converts the device or element type.
+  ///
+  /// Even a no-op returns a separately owned wrapper.
+  Tensor to({Device? device, DType? dtype});
+
+  /// Reads a one-element bool, integer, or real tensor.
+  ///
+  /// Complex values are unsupported.
+  Object item();
+
+  /// Copies values into nested Dart lists matching the shape.
+  ///
+  /// A scalar returns a scalar.
+  /// Reading may synchronize an accelerator. Complex values are unsupported.
+  Object toList();
+
   Tensor reshape(List<int> shape);
+  Tensor view(List<int> shape);
+  Tensor unsqueeze(int dim);
+  Tensor squeeze([int? dim]);
+  Tensor detach();
+  Tensor clone();
 
   /// Releases this tensor's resources. Do not use the tensor afterward.
   void dispose();

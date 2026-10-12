@@ -11,21 +11,111 @@ final class PythonApi() implements BaseApi {
   @override
   late final String version = _torch.getAttrString('__version__');
 
-  late final _zeros = _torch.getAttr('zeros');
+  TensorPython _create(
+    String name,
+    Object data, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  }) => Py.using((scope) {
+    final method = scope(_torch.getAttr(name));
+    return TensorPython(
+      method.forward(
+        [data],
+        kwargs: {
+          if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
+          if (device != null) 'device': device.toString(),
+          'requires_grad': requires_grad,
+        },
+      ),
+    );
+  });
 
   @override
-  TensorPython zeros(List<int> shape, {DType? dtype, Device? device}) {
-    for (var i = 0; i < shape.length; i++) {
-      if (shape[i] < 0) {
-        throw ArgumentError.value(shape, 'shape', 'Dimension $i is negative');
+  TensorPython tensor(
+    Object data, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  }) {
+    final active = Set<List>.identity();
+    void validate(Object? value) {
+      if (value is List) {
+        if (!active.add(value)) {
+          throw ArgumentError('Cyclic tensor data is not supported');
+        }
+        try {
+          for (final element in value) {
+            validate(element);
+          }
+        } finally {
+          active.remove(value);
+        }
+      } else if (value is! num && value is! bool) {
+        throw ArgumentError.value(
+          value,
+          'data',
+          'Expected numeric/bool scalar or nested list',
+        );
       }
     }
-    return Py.using((scope) {
-      final kwargs = <String, Object?>{};
-      if (dtype != null) kwargs['dtype'] = scope(_torch.getAttr(dtype.name));
-      if (device != null) kwargs['device'] = device.toString();
-      return TensorPython(_zeros.forward([shape], kwargs: kwargs));
-    });
+
+    validate(data);
+    return _create(
+      'tensor',
+      data,
+      dtype: dtype,
+      device: device,
+      requires_grad: requires_grad,
+    );
+  }
+
+  @override
+  TensorPython zeros(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  }) {
+    return _create(
+      'zeros',
+      shape,
+      dtype: dtype,
+      device: device,
+      requires_grad: requires_grad,
+    );
+  }
+
+  @override
+  TensorPython ones(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  }) {
+    return _create(
+      'ones',
+      shape,
+      dtype: dtype,
+      device: device,
+      requires_grad: requires_grad,
+    );
+  }
+
+  @override
+  TensorPython randn(
+    List<int> shape, {
+    DType? dtype,
+    Device? device,
+    bool requires_grad = false,
+  }) {
+    return _create(
+      'randn',
+      shape,
+      dtype: dtype,
+      device: device,
+      requires_grad: requires_grad,
+    );
   }
 
   late final _arange = _torch.getAttr('arange');
@@ -37,7 +127,7 @@ final class PythonApi() implements BaseApi {
     num step = 1,
     DType? dtype,
     Device? device,
-    bool requiresGrad = false,
+    bool requires_grad = false,
   }) {
     if (step == 0) {
       throw ArgumentError.value(step, 'step', 'Step cannot be zero');
@@ -58,13 +148,20 @@ final class PythonApi() implements BaseApi {
       if (device != null) {
         kwargs['device'] = device.toString();
       }
-      if (requiresGrad) {
+      if (requires_grad) {
         kwargs['requires_grad'] = true;
       }
 
       return TensorPython(_arange.forward([start, end, step], kwargs: kwargs));
     });
   }
+
+  @override
+  T no_grad<T>(T Function() action) => Py.using((scope) {
+    final method = scope(_torch.getAttr('no_grad'));
+    final context = scope(method.call0());
+    return context.withContext((_) => action());
+  });
 
   late final _inference_mode = _torch.getAttr('inference_mode');
 
@@ -125,7 +222,197 @@ final class ScriptModulePython(final PyObject handle) implements ScriptModule {
   void dispose() => handle.ref.discrement();
 }
 
-final class TensorPython(final PyObject handle) implements Tensor {
+final class TensorPython(@override final PyObject handle)
+    implements Tensor, PyObjectWrapper {
+  TensorPython _apply(
+    String name, [
+    List<Object?> args = const [],
+    Map<String, Object?>? kwargs,
+  ]) => Py.using((scope) {
+    final method = scope(handle.getAttr(name));
+    return TensorPython(method.forward(args, kwargs: kwargs));
+  });
+
+  void _invoke(
+    String name, [
+    List<Object?> args = const [],
+    Map<String, Object?>? kwargs,
+  ]) => Py.using((scope) {
+    final method = scope(handle.getAttr(name));
+    scope(method.forward(args, kwargs: kwargs));
+  });
+
+  @override
+  int get ndim => handle.getAttrInt('ndim');
+  @override
+  int get numel => Py.using(
+    (scope) => scope(scope(handle.getAttr('numel')).call0()).asInt(),
+  );
+  @override
+  bool get requires_grad => handle.getAttrBool('requires_grad');
+  @override
+  set requires_grad(bool value) => _invoke('requires_grad_', [value]);
+  @override
+  bool get is_leaf => handle.getAttrBool('is_leaf');
+  @override
+  TensorPython? get grad => Py.using((scope) {
+    final value = scope(handle.getAttr('grad'));
+    return value.ptr == PyObject.borrowedConst(.none).ptr
+        ? null
+        : TensorPython(scope.escape(value));
+  });
+  @override
+  void retain_grad() => _invoke('retain_grad');
+  @override
+  void backward({
+    Tensor? gradient,
+    bool? retain_graph,
+    bool create_graph = false,
+  }) => _invoke('backward', [], {
+    'gradient': ?gradient,
+    'retain_graph': ?retain_graph,
+    'create_graph': create_graph,
+  });
+  @override
+  void zero_grad({bool set_to_none = true}) => Py.using((scope) {
+    if (set_to_none) {
+      handle.setAttr('grad', PyObject.borrowedConst(.none));
+    } else {
+      final value = scope(handle.getAttr('grad'));
+      if (value.ptr != PyObject.borrowedConst(.none).ptr) {
+        scope(scope(value.getAttr('detach_')).call0());
+        scope(scope(value.getAttr('zero_')).call0());
+      }
+    }
+  });
+
+  @override
+  TensorPython operator +(Object other) => Py.using((scope) {
+    final operand = scope(PyConverter().toPyObject(other));
+    return TensorPython(handle + operand);
+  });
+  @override
+  TensorPython operator -(Object other) => Py.using((scope) {
+    final operand = scope(PyConverter().toPyObject(other));
+    return TensorPython(handle - operand);
+  });
+  @override
+  TensorPython operator *(Object other) => Py.using((scope) {
+    final operand = scope(PyConverter().toPyObject(other));
+    return TensorPython(handle * operand);
+  });
+  @override
+  TensorPython operator /(Object other) => Py.using((scope) {
+    final operand = scope(PyConverter().toPyObject(other));
+    return TensorPython(handle / operand);
+  });
+  @override
+  TensorPython operator -() => TensorPython(-handle);
+  @override
+  TensorPython matmul(Tensor other) => Py.using((scope) {
+    final operand = scope(PyConverter().toPyObject(other));
+    return TensorPython(handle.matrixMultiply(operand));
+  });
+  @override
+  TensorPython add_(Object other, {num alpha = 1}) {
+    _invoke('add_', [other], {'alpha': alpha});
+    return this;
+  }
+
+  @override
+  TensorPython mul_(Object other) {
+    _invoke('mul_', [other]);
+    return this;
+  }
+
+  @override
+  TensorPython copy_(Tensor source) {
+    _invoke('copy_', [source]);
+    return this;
+  }
+
+  @override
+  TensorPython pow(num exponent) => _apply('pow', [exponent]);
+  @override
+  TensorPython relu() => _apply('relu');
+  @override
+  TensorPython sigmoid() => _apply('sigmoid');
+  @override
+  TensorPython tanh() => _apply('tanh');
+  @override
+  TensorPython exp() => _apply('exp');
+  @override
+  TensorPython log() => _apply('log');
+  @override
+  TensorPython contiguous() => _apply('contiguous');
+  @override
+  TensorPython sum({int? dim, bool keepdim = false}) =>
+      _reduce('sum', dim: dim, keepdim: keepdim);
+  @override
+  TensorPython mean({int? dim, bool keepdim = false}) =>
+      _reduce('mean', dim: dim, keepdim: keepdim);
+
+  TensorPython _reduce(String name, {int? dim, required bool keepdim}) {
+    // Older PyTorch versions resolve dim=None to the named-dimension overload.
+    // A global reduction uses the no-argument overload; keeping dimensions
+    // requires explicitly selecting all numerical axes.
+    if (dim == null && !keepdim) return _apply(name);
+    return _apply(name, [], {
+      'dim': dim ?? List<int>.generate(ndim, (i) => i),
+      'keepdim': keepdim,
+    });
+  }
+
+  @override
+  TensorPython transpose(int dim0, int dim1) =>
+      _apply('transpose', [dim0, dim1]);
+  @override
+  TensorPython to({Device? device, DType? dtype}) => Py.using((scope) {
+    final torch = scope(PyModule('torch'));
+    return _apply('to', [], {
+      if (device != null) 'device': device.toString(),
+      if (dtype != null) 'dtype': scope(torch.getAttr(dtype.name)),
+    });
+  });
+
+  Object _scalar(PyObject value, DType type) => switch (type) {
+    DType.bool => value.asBool(),
+    DType.uint8 ||
+    DType.int8 ||
+    DType.int16 ||
+    DType.int32 ||
+    DType.int64 => value.asInt(),
+    DType.float16 ||
+    DType.bfloat16 ||
+    DType.float32 ||
+    DType.float64 => value.asDouble(),
+    _ => throw UnsupportedError(
+      'Complex tensor data conversion is not supported',
+    ),
+  };
+  @override
+  Object item() => Py.using(
+    (scope) => _scalar(scope(scope(handle.getAttr('item')).call0()), dtype),
+  );
+  @override
+  Object toList() => Py.using((scope) {
+    final type = dtype;
+    if (type == DType.complex64 || type == DType.complex128) {
+      throw UnsupportedError('Complex tensor data conversion is not supported');
+    }
+    final dimensions = shape;
+    final values = scope(scope(handle.getAttr('tolist')).call0());
+    Object read(PyObject value, int depth) {
+      if (depth == dimensions.length) return _scalar(value, type);
+      return List<Object>.generate(
+        dimensions[depth],
+        (i) => read(scope(value.getItem(scope(PyInt(i)))), depth + 1),
+      );
+    }
+
+    return read(values, 0);
+  });
+
   @override
   List<int> get shape => Py.using((scope) {
     final shape = scope(handle.getAttr('shape'));
@@ -147,10 +434,9 @@ final class TensorPython(final PyObject handle) implements Tensor {
   @override
   Device get device => Py.using((scope) {
     final device = scope(handle.getAttr('device'));
-    final type = DeviceType.fromString(device.getAttrString('type'));
     final index = scope(device.getAttr('index'));
     return Device(
-      type,
+      .fromString(device.getAttrString('type')),
       index: index.ptr == PyObject.borrowedConst(.none).ptr
           ? null
           : index.asInt(),
@@ -161,6 +447,36 @@ final class TensorPython(final PyObject handle) implements Tensor {
   TensorPython reshape(List<int> shape) => Py.using((scope) {
     final method = scope(handle.getAttr('reshape'));
     return TensorPython(method.forward(shape));
+  });
+
+  @override
+  TensorPython unsqueeze(int dim) => Py.using((scope) {
+    final method = scope(handle.getAttr('unsqueeze'));
+    return TensorPython(method.forward([dim]));
+  });
+
+  @override
+  TensorPython squeeze([int? dim]) => Py.using((scope) {
+    final method = scope(handle.getAttr('squeeze'));
+    return TensorPython(method.forward([dim]));
+  });
+
+  @override
+  TensorPython view(List<int> shape) => Py.using((scope) {
+    final method = scope(handle.getAttr('view'));
+    return TensorPython(method.forward(shape));
+  });
+
+  @override
+  Tensor detach() => Py.using((scope) {
+    final method = scope(handle.getAttr('detach'));
+    return TensorPython(method.call0());
+  });
+
+  @override
+  Tensor clone() => Py.using((scope) {
+    final method = scope(handle.getAttr('clone'));
+    return TensorPython(method.call0());
   });
 
   @override
