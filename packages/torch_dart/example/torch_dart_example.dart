@@ -3,8 +3,11 @@ import 'package:torch_dart/torch_dart.dart' show Torch;
 
 void main() {
   print('PyTorch: ${Torch.version}');
-  final x = torch.zeros([2, 3]);
+  final x = torch.zeros([2, 3], dtype: .int32, device: .parse('cuda:0'));
   print(x);
+  print(x.shape);
+  print(x.dtype);
+  print(x.device);
 
   final y = torch.arange(12);
   print(y);

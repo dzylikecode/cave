@@ -105,7 +105,12 @@ enum DType {
   float32,
   float64,
   complex64,
-  complex128,
+  complex128;
+
+  factory fromString(String s) => values.firstWhere(
+    (v) => v.name == s,
+    orElse: () => throw FormatException('unknown dtype', s),
+  );
 }
 
 enum DeviceType {

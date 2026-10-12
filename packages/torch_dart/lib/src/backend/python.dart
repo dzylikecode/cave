@@ -129,7 +129,7 @@ final class TensorPython(final PyObject handle) implements Tensor {
   @override
   List<int> get shape => Py.using((scope) {
     final shape = scope(handle.getAttr('shape'));
-    return List<int>.unmodifiable(
+    return .unmodifiableOf(
       List<int>.generate(
         handle.getAttrInt('ndim'),
         (i) => scope(shape.getItem(scope(PyInt(i)))).asInt(),
@@ -140,22 +140,14 @@ final class TensorPython(final PyObject handle) implements Tensor {
   @override
   DType get dtype => Py.using((scope) {
     final dtype = scope(handle.getAttr('dtype'));
-    final method = scope(dtype.getAttr('__str__'));
-    final name = scope(method.call0()).asString();
-    for (final dtype in DType.values) {
-      if (name == 'torch.${dtype.name}') return dtype;
-    }
-    throw UnsupportedError('Unsupported dtype: $name');
+    final name = dtype.toString();
+    return .fromString(name.substring(6));
   });
 
   @override
   Device get device => Py.using((scope) {
     final device = scope(handle.getAttr('device'));
-    final name = device.getAttrString('type');
-    final type = DeviceType.values
-        .where((type) => type.name == name)
-        .firstOrNull;
-    if (type == null) throw UnsupportedError('Unsupported device: $name');
+    final type = DeviceType.fromString(device.getAttrString('type'));
     final index = scope(device.getAttr('index'));
     return Device(
       type,
