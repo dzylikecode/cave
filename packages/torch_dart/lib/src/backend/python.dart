@@ -5,6 +5,56 @@ import 'package:py_embed/py_embed.dart';
 import '../base.dart';
 
 final class PythonApi() implements BaseApi {
+  @override
+  AdamPython adam(
+    List<Tensor> params, {
+    double lr = 0.001,
+    List<double> betas = const [0.9, 0.999],
+    double eps = 1e-8,
+    double weight_decay = 0,
+    bool amsgrad = false,
+  }) => Py.using((scope) {
+    final optim = scope(PyModule('torch.optim'));
+    final constructor = scope(optim.getAttr('Adam'));
+    return AdamPython(
+      constructor.forward(
+        [params],
+        kwargs: {
+          'lr': lr,
+          'betas': betas,
+          'eps': eps,
+          'weight_decay': weight_decay,
+          'amsgrad': amsgrad,
+        },
+      ),
+    );
+  });
+
+  @override
+  SGDPython sgd(
+    List<Tensor> params, {
+    double lr = 0.001,
+    double momentum = 0,
+    double dampening = 0,
+    double weight_decay = 0,
+    bool nesterov = false,
+  }) => Py.using((scope) {
+    final optim = scope(PyModule('torch.optim'));
+    final constructor = scope(optim.getAttr('SGD'));
+    return SGDPython(
+      constructor.forward(
+        [params],
+        kwargs: {
+          'lr': lr,
+          'momentum': momentum,
+          'dampening': dampening,
+          'weight_decay': weight_decay,
+          'nesterov': nesterov,
+        },
+      ),
+    );
+  });
+
   // Import PyTorch only when the backend is first used.
   late final _torch = PyModule('torch');
 
@@ -76,15 +126,13 @@ final class PythonApi() implements BaseApi {
     DType? dtype,
     Device? device,
     bool requires_grad = false,
-  }) {
-    return _create(
-      'zeros',
-      shape,
-      dtype: dtype,
-      device: device,
-      requires_grad: requires_grad,
-    );
-  }
+  }) => _create(
+    'zeros',
+    shape,
+    dtype: dtype,
+    device: device,
+    requires_grad: requires_grad,
+  );
 
   @override
   TensorPython ones(
@@ -92,15 +140,13 @@ final class PythonApi() implements BaseApi {
     DType? dtype,
     Device? device,
     bool requires_grad = false,
-  }) {
-    return _create(
-      'ones',
-      shape,
-      dtype: dtype,
-      device: device,
-      requires_grad: requires_grad,
-    );
-  }
+  }) => _create(
+    'ones',
+    shape,
+    dtype: dtype,
+    device: device,
+    requires_grad: requires_grad,
+  );
 
   @override
   TensorPython randn(
@@ -108,15 +154,13 @@ final class PythonApi() implements BaseApi {
     DType? dtype,
     Device? device,
     bool requires_grad = false,
-  }) {
-    return _create(
-      'randn',
-      shape,
-      dtype: dtype,
-      device: device,
-      requires_grad: requires_grad,
-    );
-  }
+  }) => _create(
+    'randn',
+    shape,
+    dtype: dtype,
+    device: device,
+    requires_grad: requires_grad,
+  );
 
   late final _arange = _torch.getAttr('arange');
 
@@ -469,6 +513,40 @@ final class TensorPython(@override final PyObject handle)
 
   @override
   String toString() => handle.toString();
+
+  @override
+  void dispose() => handle.ref.discrement();
+}
+
+final class SGDPython(final PyObject handle) implements SGD {
+  @override
+  void zero_grad({bool set_to_none = true}) => Py.using((scope) {
+    final method = scope(handle.getAttr('zero_grad'));
+    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  });
+
+  @override
+  void step() => Py.using((scope) {
+    final method = scope(handle.getAttr('step'));
+    scope(method.call0());
+  });
+
+  @override
+  void dispose() => handle.ref.discrement();
+}
+
+final class AdamPython(final PyObject handle) implements Adam {
+  @override
+  void zero_grad({bool set_to_none = true}) => Py.using((scope) {
+    final method = scope(handle.getAttr('zero_grad'));
+    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  });
+
+  @override
+  void step() => Py.using((scope) {
+    final method = scope(handle.getAttr('step'));
+    scope(method.call0());
+  });
 
   @override
   void dispose() => handle.ref.discrement();

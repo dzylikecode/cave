@@ -132,6 +132,22 @@ abstract interface class ScriptModule {
 /// Backend contract. Extend this as the public API takes shape.
 @internal
 abstract interface class BaseApi {
+  Adam adam(
+    List<Tensor> params, {
+    double lr = 0.001,
+    List<double> betas = const [0.9, 0.999],
+    double eps = 1e-8,
+    double weight_decay = 0,
+    bool amsgrad = false,
+  });
+  SGD sgd(
+    List<Tensor> params, {
+    double lr = 0.001,
+    double momentum = 0,
+    double dampening = 0,
+    double weight_decay = 0,
+    bool nesterov = false,
+  });
   String get version;
   T inference_mode<T>(T Function() action);
   ScriptModule jit_load(String path, {Device? map_location});
@@ -334,4 +350,60 @@ abstract interface class Tensor {
 
   /// Releases this tensor's resources. Do not use the tensor afterward.
   void dispose();
+}
+
+/// A PyTorch optimizer owning a backend reference until disposed.
+abstract interface class Optimizer {
+  /// Clears gradients on the optimizer's parameters.
+  void zero_grad({bool set_to_none = true});
+
+  /// Updates parameters using their current gradients.
+  void step();
+
+  /// Releases this wrapper; dispose once and do not use it afterward.
+  void dispose();
+}
+
+/// Stochastic gradient descent with optional momentum and weight decay.
+///
+/// Parameters remain owned by the caller. The optimizer retains its own
+/// references. Parameter and option validation is delegated to PyTorch.
+abstract interface class SGD implements Optimizer {
+  factory SGD(
+    List<Tensor> params, {
+    double lr = 0.001,
+    double momentum = 0,
+    double dampening = 0,
+    double weight_decay = 0,
+    bool nesterov = false,
+  }) => api.sgd(
+    params,
+    lr: lr,
+    momentum: momentum,
+    dampening: dampening,
+    weight_decay: weight_decay,
+    nesterov: nesterov,
+  );
+}
+
+/// Adaptive moment estimation backed by PyTorch.
+///
+/// Parameters remain owned by the caller; the optimizer retains its own
+/// references. Option validation is delegated to PyTorch.
+abstract interface class Adam implements Optimizer {
+  factory Adam(
+    List<Tensor> params, {
+    double lr = 0.001,
+    List<double> betas = const [0.9, 0.999],
+    double eps = 1e-8,
+    double weight_decay = 0,
+    bool amsgrad = false,
+  }) => api.adam(
+    params,
+    lr: lr,
+    betas: betas,
+    eps: eps,
+    weight_decay: weight_decay,
+    amsgrad: amsgrad,
+  );
 }

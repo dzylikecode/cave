@@ -36,7 +36,39 @@ Python 引用，需要单独 `dispose()`。不同包装器可能共享底层存�
 
 `tensor` 接受数字、布尔值或它们的嵌套 List；零维 Tensor 的 `toList()` 返回标量。
 复数 Tensor 暂不支持 `item` / `toList` 数据读取。运算和梯度遵循 PyTorch 语义，
-后端错误以 `PyException` 传播。`nn` 和优化器尚未实现。
+后端错误以 `PyException` 传播。`nn` 尚未实现。
 
 Python 后端要求 `py_embed >= 0.5.1`，标量构造和字符串转换由底层负责 GIL 保护。
 Python 初始化尚无跨 isolate 锁，首次使用需串行；测试配置设置 `concurrency: 1`。
+
+## SGD
+
+```dart
+import 'package:torch_dart/optim.dart' as optim;
+import 'package:torch_dart/torch_dart.dart' as torch;
+
+final weight = torch.tensor(2.0, requires_grad: true);
+final optimizer = optim.SGD([weight], lr: 0.1, momentum: 0.9);
+optimizer.zero_grad();
+final loss = weight.pow(2);
+loss.backward();
+optimizer.step();
+loss.dispose();
+optimizer.dispose();
+weight.dispose();
+```
+
+`SGD` 直接包装 Python 优化器，支持 `lr`、`momentum`、`dampening`、
+`weight_decay`、`nesterov`。参数列表和选项由 PyTorch 校验。
+优化器持有自己的参数引用；调用方仍需释放自己的 Tensor 包装器。
+完整训练与释放示例：`dart run example/sgd.dart`。
+
+## Adam
+
+使用同一组 `zero_grad()`、`step()`、`dispose()` 接口：
+
+```dart
+final optimizer = optim.Adam([weight], lr: 0.001, betas: [0.9, 0.999]);
+```
+
+直接转发 `lr`、`betas`、`eps`、`weight_decay`、`amsgrad` 到 PyTorch。
