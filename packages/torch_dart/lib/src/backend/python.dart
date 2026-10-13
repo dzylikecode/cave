@@ -139,21 +139,18 @@ final class PythonApi() implements BaseApi {
       );
     }
 
-    return Py.using((scope) {
-      final kwargs = <String, Object?>{};
-
-      if (dtype != null) {
-        kwargs['dtype'] = scope(_torch.getAttr(dtype.name));
-      }
-      if (device != null) {
-        kwargs['device'] = device.toString();
-      }
-      if (requires_grad) {
-        kwargs['requires_grad'] = true;
-      }
-
-      return TensorPython(_arange.forward([start, end, step], kwargs: kwargs));
-    });
+    return Py.using(
+      (scope) => TensorPython(
+        _arange.forward(
+          [start, end, step],
+          kwargs: {
+            if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
+            if (device != null) 'device': device.toString(),
+            if (requires_grad) 'requires_grad': true,
+          },
+        ),
+      ),
+    );
   }
 
   @override
