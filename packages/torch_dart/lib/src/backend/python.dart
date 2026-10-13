@@ -194,26 +194,24 @@ final class ScriptModulePython(final PyObject handle) implements ScriptModule {
   });
 
   @override
-  TensorPython call(Tensor input) => forward([input]);
+  TensorPython call(covariant TensorPython input) => forward([input]);
 
   @override
-  TensorPython forward(List<Tensor> inputs) => Py.using((scope) {
-    final args = <PyObject>[];
-    for (final input in inputs) {
-      if (input is! TensorPython) {
-        throw ArgumentError.value(input, 'inputs', 'Expected a Python tensor');
-      }
-      args.add(input.handle);
-    }
-    final method = scope(handle.getAttr('forward'));
-    final result = scope(method.forward(args));
-    final module = scope(PyModule('torch'));
-    final check = scope(module.getAttr('is_tensor'));
-    if (!scope(check.forward([result])).asBool()) {
-      throw UnsupportedError('Only a single Tensor output is supported');
-    }
-    return TensorPython(scope.escape(result));
-  });
+  TensorPython forward(covariant List<TensorPython> inputs) =>
+      Py.using((scope) {
+        final args = <PyObject>[];
+        for (final input in inputs) {
+          args.add(input.handle);
+        }
+        final method = scope(handle.getAttr('forward'));
+        final result = scope(method.forward(args));
+        final module = scope(PyModule('torch'));
+        final check = scope(module.getAttr('is_tensor'));
+        if (!scope(check.forward([result])).asBool()) {
+          throw UnsupportedError('Only a single Tensor output is supported');
+        }
+        return TensorPython(scope.escape(result));
+      });
 
   @override
   void dispose() => handle.ref.discrement();
@@ -254,7 +252,7 @@ final class TensorPython(@override final PyObject handle)
   @override
   TensorPython? get grad => Py.using((scope) {
     final value = scope(handle.getAttr('grad'));
-    return value.ptr == PyObject.borrowedConst(.none).ptr
+    return value == PyObject.borrowedConst(.none)
         ? null
         : TensorPython(scope.escape(value));
   });
@@ -273,10 +271,10 @@ final class TensorPython(@override final PyObject handle)
   @override
   void zero_grad({bool set_to_none = true}) => Py.using((scope) {
     if (set_to_none) {
-      handle.setAttr('grad', PyObject.borrowedConst(.none));
+      handle.setAttr('grad', .borrowedConst(.none));
     } else {
       final value = scope(handle.getAttr('grad'));
-      if (value.ptr != PyObject.borrowedConst(.none).ptr) {
+      if (value != PyObject.borrowedConst(.none)) {
         scope(scope(value.getAttr('detach_')).call0());
         scope(scope(value.getAttr('zero_')).call0());
       }
@@ -373,16 +371,9 @@ final class TensorPython(@override final PyObject handle)
   });
 
   Object _scalar(PyObject value, DType type) => switch (type) {
-    DType.bool => value.asBool(),
-    DType.uint8 ||
-    DType.int8 ||
-    DType.int16 ||
-    DType.int32 ||
-    DType.int64 => value.asInt(),
-    DType.float16 ||
-    DType.bfloat16 ||
-    DType.float32 ||
-    DType.float64 => value.asDouble(),
+    .bool => value.asBool(),
+    .uint8 || .int8 || .int16 || .int32 || .int64 => value.asInt(),
+    .float16 || .bfloat16 || .float32 || .float64 => value.asDouble(),
     _ => throw UnsupportedError(
       'Complex tensor data conversion is not supported',
     ),
@@ -394,7 +385,7 @@ final class TensorPython(@override final PyObject handle)
   @override
   Object toList() => Py.using((scope) {
     final type = dtype;
-    if (type == DType.complex64 || type == DType.complex128) {
+    if (type == .complex64 || type == .complex128) {
       throw UnsupportedError('Complex tensor data conversion is not supported');
     }
     final dimensions = shape;
