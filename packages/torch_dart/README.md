@@ -37,7 +37,7 @@ Python 引用，需要单独 `dispose()`。不同包装器可能共享底层存�
 
 `tensor` 接受数字、布尔值或它们的嵌套 List；零维 Tensor 的 `toList()` 返回标量。
 复数 Tensor 暂不支持 `item` / `toList` 数据读取。运算和梯度遵循 PyTorch 语义，
-后端错误以 `PyException` 传播。`nn` 尚未实现。
+后端错误以 `PyException` 传播。`nn` 已支持自定义 Module 和 Linear。
 
 Python 后端要求 `py_embed >= 0.5.1`，标量构造和字符串转换由底层负责 GIL 保护。
 Python 初始化尚无跨 isolate 锁，首次使用需串行；测试配置设置 `concurrency: 1`。
@@ -76,3 +76,17 @@ final optimizer = optim.Adam([weight], lr: 0.001, betas: [0.9, 0.999]);
 ```
 
 直接转发 `lr`、`betas`、`eps`、`weight_decay`、`amsgrad` 到 PyTorch。
+
+## Module
+
+公共接口统一在 `src/base.dart`，通过 `package:torch_dart/nn.dart` 导入。
+继承 `Module`，覆盖 `forward(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}})`，
+用 `register_module(name, child)` 注册 Dart 保存的层。回调不需要 Python `self`。
+调用 `model(inputs, kwargs: ...)` 会走 Python Module 调用流程。
+
+第一版支持 Tensor 位置参数、Tensor 命名参数和单 Tensor 输出。
+forward 的输入包装器仅在回调中借用，不应释放或保存；返回新输出即转移其所有权，
+也可以原样返回输入。中间 Tensor 仍需显式释放。
+
+`parameters()` 的每个返回包装器均需单独释放。父模型释放后再释放注册的子层，
+避免 Python 仍引用子模型的 Dart 回调。示例：`dart run example/module.dart`。

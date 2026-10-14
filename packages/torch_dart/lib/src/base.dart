@@ -138,6 +138,10 @@ abstract interface class ScriptModule {
 /// Backend contract. Extend this as the public API takes shape.
 @internal
 abstract interface class BaseApi {
+  ModuleBackend module(
+    Tensor Function(List<Tensor>, Map<String, Tensor>) forward,
+  );
+  ModuleBackend linear(int in_features, int out_features, {bool bias = true});
   Adam adam(
     List<Tensor> params, {
     double lr = 0.001,
@@ -413,4 +417,73 @@ abstract interface class Adam implements Optimizer {
     weight_decay: weight_decay,
     amsgrad: amsgrad,
   );
+}
+
+/// A model with Python-managed state and a Dart-defined forward computation.
+abstract class Module {
+  Module() {
+    _backend = api.module((inputs, kwargs) => forward(inputs, kwargs: kwargs));
+  }
+
+  @internal
+  Module.fromBackend(ModuleBackend backend) : _backend = backend;
+
+  late final ModuleBackend _backend;
+
+  /// Computes one tensor output from tensor inputs and keyword arguments.
+  ///
+  /// Callback inputs are borrowed for this call; do not dispose or keep them.
+  /// Return an owned output, or an input unchanged. Output ownership transfers
+  /// to the caller. Non-tensor arguments and outputs are not supported yet.
+  Tensor forward(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}});
+
+  /// Calls through Python's Module machinery, including forward hooks.
+  Tensor call(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}}) =>
+      _backend.call(inputs, kwargs: kwargs);
+
+  /// Registers a child with PyTorch and returns the supplied Dart wrapper.
+  T register_module<T extends Module>(String name, T module) {
+    _backend.register_module(name, module._backend);
+    return module;
+  }
+
+  /// Returns independently owned parameter wrappers; dispose each once.
+  List<Tensor> parameters() => _backend.parameters();
+  bool get training => _backend.training;
+  Module train([bool mode = true]) {
+    _backend.train(mode);
+    return this;
+  }
+
+  Module eval() => train(false);
+  void zero_grad({bool set_to_none = true}) =>
+      _backend.zero_grad(set_to_none: set_to_none);
+
+  /// Releases this wrapper once, after its Python owners have been released.
+  ///
+  /// Child wrappers remain caller-owned. Dispose parent models before children.
+  void dispose() => _backend.dispose();
+}
+
+/// A linear layer backed directly by torch.nn.Linear.
+final class Linear extends Module {
+  Linear(int in_features, int out_features, {bool bias = true})
+    : super.fromBackend(api.linear(in_features, out_features, bias: bias));
+
+  @override
+  Tensor forward(
+    List<Tensor> inputs, {
+    Map<String, Tensor> kwargs = const {},
+  }) => _backend.call(inputs, kwargs: kwargs);
+}
+
+@internal
+abstract interface class ModuleBackend {
+  Tensor call(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}});
+  void register_module(String name, ModuleBackend module);
+  List<Tensor> parameters();
+  bool get training;
+  void train(bool mode);
+  void zero_grad({bool set_to_none = true});
+  void dispose();
 }

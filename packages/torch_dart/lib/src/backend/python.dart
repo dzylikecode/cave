@@ -6,6 +6,61 @@ import '../base.dart';
 
 final class PythonApi() implements BaseApi {
   @override
+  ModulePython module(
+    Tensor Function(List<Tensor>, Map<String, Tensor>) forward,
+  ) {
+    final callback = PyFunction(
+      (args, kwargs) => using((scope) {
+        final inputs = [
+          for (var i = 0; i < args.length; i++) TensorPython(args[i]),
+        ];
+        final keywords = <String, Tensor>{};
+        if (kwargs != null) {
+          final keys = scope(kwargs.keys);
+          for (var i = 0; i < keys.length; i++) {
+            final key = keys[i].asString();
+            keywords[key] = TensorPython(kwargs.elementAtStr(key)!);
+          }
+        }
+        final output = forward(inputs, keywords) as TensorPython;
+        // An input returned unchanged still needs a new reference for Python.
+        if (inputs.any((v) => identical(v, output)) ||
+            keywords.values.any((v) => identical(v, output))) {
+          output.handle.ref.increment();
+        }
+        return output.handle;
+      }),
+      name: 'forward',
+    );
+    try {
+      return using((scope) {
+        final nn = scope(PyModule('torch.nn'));
+        final base = scope(nn.getAttr('Module'));
+        final modelClass = scope(
+          newType('DartModule', [base], {'forward': callback}),
+        );
+        return ModulePython(modelClass.call0(), callback);
+      });
+    } catch (_) {
+      callback.dispose();
+      rethrow;
+    }
+  }
+
+  @override
+  ModulePython linear(int in_features, int out_features, {bool bias = true}) =>
+      using((scope) {
+        final nn = scope(PyModule('torch.nn'));
+        final constructor = scope(nn.getAttr('Linear'));
+        return ModulePython(
+          constructor.forward(
+            [in_features, out_features],
+            kwargs: {'bias': bias},
+          ),
+        );
+      });
+
+  @override
   AdamPython adam(
     List<Tensor> params, {
     double lr = 0.001,
@@ -553,4 +608,50 @@ final class AdamPython(final PyObject handle) implements Adam {
 
   @override
   void dispose() => handle.ref.discrement();
+}
+
+final class ModulePython(final PyObject handle, [final PyFunction? callback])
+    implements ModuleBackend {
+  @override
+  TensorPython call(
+    List<Tensor> inputs, {
+    Map<String, Tensor> kwargs = const {},
+  }) => TensorPython(handle.forward(inputs, kwargs: kwargs));
+
+  @override
+  void register_module(String name, ModuleBackend module) => using((scope) {
+    final method = scope(handle.getAttr('add_module'));
+    scope(method.forward([name, (module as ModulePython).handle]));
+  });
+
+  @override
+  List<Tensor> parameters() => using((scope) {
+    final method = scope(handle.getAttr('parameters'));
+    final iterator = scope(method.call0());
+    final list = scope(scope(PyModule('builtins')).getAttr('list'));
+    final values = PyList.fromHandle(scope(list.forward([iterator])).ptr);
+    return List<Tensor>.generate(values.length, (i) {
+      final value = values[i];
+      value.ref.increment();
+      return TensorPython(value);
+    });
+  });
+
+  @override
+  bool get training => handle.getAttrBool('training');
+  @override
+  void train(bool mode) => using((scope) {
+    final method = scope(handle.getAttr('train'));
+    scope(method.forward([mode]));
+  });
+  @override
+  void zero_grad({bool set_to_none = true}) => using((scope) {
+    final method = scope(handle.getAttr('zero_grad'));
+    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  });
+  @override
+  void dispose() {
+    handle.ref.discrement();
+    callback?.dispose();
+  }
 }

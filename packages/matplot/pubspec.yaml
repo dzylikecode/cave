@@ -10,7 +10,7 @@ resolution: workspace
 
 # Add regular dependencies here.
 dependencies:
-  py_embed: ^0.6.0
+  py_embed: ^0.7.0
   num_py: ^0.0.1
 
 dev_dependencies:
