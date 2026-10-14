@@ -17,7 +17,7 @@ const modelXml = '''
 
 void main() {
   group(
-    'py_embed 0.4 scope compatibility',
+    'py_embed 0.6 scope compatibility',
     () {
       test('MuJoCo reads and writes arrays and sensor views', () {
         Mujoco.useNativeApi = false;
@@ -49,7 +49,7 @@ import types
 _scope_viewer = types.SimpleNamespace(
     is_running=lambda: True, sync=lambda: None, close=lambda: None)
 ''');
-        final handle = Py.using((scope) {
+        final handle = using((scope) {
           final main = scope(PyModule('__main__'));
           return main.getAttr('_scope_viewer');
         });
@@ -106,7 +106,7 @@ _scope_model.save(${jsonEncode(path)})
                     torch.inference_mode<void>(() => throw StateError('stop')),
                 throwsStateError,
               );
-              final active = Py.using((scope) {
+              final active = using((scope) {
                 final module = scope(PyModule('torch'));
                 final check = scope(
                   module.getAttr('is_inference_mode_enabled'),

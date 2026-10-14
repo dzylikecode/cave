@@ -15,6 +15,12 @@ abstract final class Torch {
   static String get version => api.version;
 }
 
+/// Seeds PyTorch's random number generators on all devices.
+///
+/// Resetting the same [seed] reproduces random sequences in the same environment.
+/// The backend's returned generator is discarded.
+void manual_seed(int seed) => api.manual_seed(seed);
+
 /// Runs [action] synchronously with inference mode enabled.
 ///
 /// Restores the previous mode when [action] returns or throws. The return value
@@ -149,6 +155,7 @@ abstract interface class BaseApi {
     bool nesterov = false,
   });
   String get version;
+  void manual_seed(int seed);
   T inference_mode<T>(T Function() action);
   ScriptModule jit_load(String path, {Device? map_location});
   T no_grad<T>(T Function() action);

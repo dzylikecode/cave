@@ -8,7 +8,7 @@ final class PythonApi() implements BaseApi {
   // Isaac Gym must be imported before PyTorch.
   late final gymapi = PyModule('isaacgym.gymapi');
   @override
-  Gym acquire_gym() => Py.using((scope) {
+  Gym acquire_gym() => using((scope) {
     final method = scope(gymapi.getAttr('acquire_gym'));
     return GymPython(method.call0(), this);
   });
@@ -44,28 +44,26 @@ final class GymConverter(final PyObject gymapi) extends PyConverter {
     };
   }
 
-  PyObject construct(String name, List<Object?> values) => Py.using((scope) {
+  PyObject construct(String name, List<Object?> values) => using((scope) {
     final constructor = scope(gymapi.getAttr(name));
     return constructor.forward(values, converter: this);
   });
 
-  void fields(PyObject object, Map<String, Object?> values) =>
-      Py.using((scope) {
-        for (final entry in values.entries) {
-          if (entry.value != null) {
-            object.setAttr(entry.key, scope(toPyObject(entry.value)));
-          }
-        }
-      });
+  void fields(PyObject object, Map<String, Object?> values) => using((scope) {
+    for (final entry in values.entries) {
+      if (entry.value != null) {
+        object.setAttr(entry.key, scope(toPyObject(entry.value)));
+      }
+    }
+  });
 
-  PyObject config(String name, Map<String, Object?> values) =>
-      Py.using((scope) {
-        final result = scope(construct(name, []));
-        fields(result, values);
-        return scope.escape(result);
-      });
+  PyObject config(String name, Map<String, Object?> values) => using((scope) {
+    final result = scope(construct(name, []));
+    fields(result, values);
+    return scope.escape(result);
+  });
 
-  PyObject simParams(SimParams v) => Py.using((scope) {
+  PyObject simParams(SimParams v) => using((scope) {
     final result = scope(
       config('SimParams', {
         'dt': v.dt,
@@ -107,10 +105,10 @@ final class RigidBodyStatesPython(super.handle)
     extends PythonHandle
     implements RigidBodyStates {
   @override
-  int get length => Py.len(handle);
+  int get length => len(handle);
 
   @override
-  RigidBodyStatesPython copy() => Py.using((scope) {
+  RigidBodyStatesPython copy() => using((scope) {
     final method = scope(handle.getAttr('copy'));
     return RigidBodyStatesPython(method.call0());
   });
@@ -123,7 +121,7 @@ final class GymPython extends PythonHandle implements Gym {
   final PythonApi api;
   GymPython(super.handle, this.api);
 
-  PyObject invoke(String name, List<Object?> args) => Py.using((scope) {
+  PyObject invoke(String name, List<Object?> args) => using((scope) {
     final method = scope(handle.getAttr(name));
     return method.forward(args, converter: api.converter);
   });
@@ -176,7 +174,7 @@ final class GymPython extends PythonHandle implements Gym {
     String? name,
     int collision_group,
     int collision_filter,
-  ) => Py.using((scope) {
+  ) => using((scope) {
     return scope(
       invoke('create_actor', [
         env,
@@ -194,18 +192,17 @@ final class GymPython extends PythonHandle implements Gym {
       RigidBodyStatesPython(invoke('get_sim_rigid_body_states', [sim, flags]));
 
   @override
-  List<ActionEvent> query_viewer_action_events(Viewer viewer) =>
-      Py.using((scope) {
-        final events = scope(invoke('query_viewer_action_events', [viewer]));
-        final count = Py.len(events);
-        return List.generate(count, (i) {
-          final event = scope(events.getItem(scope(PyInt(i))));
-          return ActionEvent(
-            event.getAttrString('action'),
-            event.getAttrDouble('value'),
-          );
-        });
-      });
+  List<ActionEvent> query_viewer_action_events(Viewer viewer) => using((scope) {
+    final events = scope(invoke('query_viewer_action_events', [viewer]));
+    final count = len(events);
+    return List.generate(count, (i) {
+      final event = scope(events.getItem(scope(PyInt(i))));
+      return ActionEvent(
+        event.getAttrString('action'),
+        event.getAttrDouble('value'),
+      );
+    });
+  });
   @override
   void destroy_viewer(covariant ViewerPython viewer) {
     invoke('destroy_viewer', [viewer]).ref.discrement();
@@ -269,12 +266,12 @@ final class GymPython extends PythonHandle implements Gym {
     Sim sim,
     RigidBodyStates states,
     StateFlags flags,
-  ) => Py.using((scope) {
+  ) => using((scope) {
     final v = scope(invoke('set_sim_rigid_body_states', [sim, states, flags]));
     return v.asBool();
   });
   @override
-  bool query_viewer_has_closed(Viewer viewer) => Py.using((scope) {
+  bool query_viewer_has_closed(Viewer viewer) => using((scope) {
     final v = scope(invoke('query_viewer_has_closed', [viewer]));
     return v.asBool();
   });

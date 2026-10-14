@@ -27,19 +27,19 @@ class MujocoViewerPython(
   final MjDataPython data,
 ) implements MujocoViewer {
   @override
-  bool get is_running => Py.using((scope) {
+  bool get is_running => using((scope) {
     final method = scope(handle.getAttr('is_running'));
     return scope(method.call0()).asBool();
   });
 
   @override
-  void sync() => Py.using((scope) {
+  void sync() => using((scope) {
     final method = scope(handle.getAttr('sync'));
     scope(method.call0());
   });
 
   @override
-  void close() => Py.using((scope) {
+  void close() => using((scope) {
     final method = scope(handle.getAttr('close'));
     scope(method.call0());
   });

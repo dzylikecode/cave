@@ -293,10 +293,10 @@ packages:
     dependency: transitive
     description:
       name: py_embed
-      sha256: d5ce62c599ca8f1f95fbfb850b706bbd86cabe5be597bd417f8cf5dd156a0617
+      sha256: "86cc9aed103e38d59a27a41522aed467ea9c36a56e4280041b1f2838f1101ec8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.5.2"
+    version: "0.6.0"
   quiver:
     dependency: transitive
     description:

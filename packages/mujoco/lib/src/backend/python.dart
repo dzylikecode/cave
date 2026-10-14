@@ -72,7 +72,7 @@ class const MjModelPython(@override final PyObject handle)
   int get nsensordata => handle.getAttrInt('nsensordata');
 
   @override
-  MjModelSensorViewsPython sensor(String name) => Py.using((scope) {
+  MjModelSensorViewsPython sensor(String name) => using((scope) {
     final method = scope(handle.getAttr('sensor'));
     final view = scope(method.forward([name]));
     return sensorById(view.getAttrInt('id'));
@@ -139,13 +139,13 @@ class const MjDoubleListViewPython(@override final PyObject handle)
   int get length => handle.getAttrInt('size');
 
   @override
-  double operator [](int index) => Py.using((scope) {
+  double operator [](int index) => using((scope) {
     final item = scope(handle.getItem(scope(PyInt(index))));
     return item.asDouble();
   });
 
   @override
-  void operator []=(int index, double value) => Py.using((scope) {
+  void operator []=(int index, double value) => using((scope) {
     handle.setItem(scope(PyInt(index)), scope(PyDouble(value)));
   });
 
@@ -163,13 +163,13 @@ class MjModelSensorViewsPython(
   final MjModelPython model,
   @override final int id,
 ) implements MjModelSensorViews {
-  T _withView<T>(T Function(PyObject) action) => Py.using((scope) {
+  T _withView<T>(T Function(PyObject) action) => using((scope) {
     final method = scope(model.handle.getAttr('sensor'));
     final view = scope(method.forward([id]));
     return action(view);
   });
 
-  int _getInt(String field) => Py.using((scope) {
+  int _getInt(String field) => using((scope) {
     final array = scope(model.handle.getAttr('sensor_$field'));
     return scope(array.getItem(scope(PyInt(id)))).asInt();
   });

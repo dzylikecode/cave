@@ -39,6 +39,26 @@ void main() {
     expect(samples.requires_grad, isTrue);
   });
 
+  test(
+    'manual_seed reproduces random sequences and accepts negative seeds',
+    () {
+      for (final seed in [42, 0, -1, -9223372036854775808]) {
+        manual_seed(seed);
+        final first = own(randn([2, 3])).toList();
+        final second = own(randn([2, 3])).toList();
+        expect(second, isNot(equals(first)));
+
+        manual_seed(seed);
+        expect(own(randn([2, 3])).toList(), first);
+        expect(own(randn([2, 3])).toList(), second);
+      }
+      manual_seed(43);
+      final first = own(randn([8])).toList();
+      manual_seed(44);
+      expect(own(randn([8])).toList(), isNot(equals(first)));
+    },
+  );
+
   test('broadcast arithmetic, activations and reductions', () {
     final x = own(
       tensor([

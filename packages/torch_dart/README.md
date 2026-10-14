@@ -12,6 +12,7 @@
 目前提供：
 
 - 数据创建：`tensor`、`zeros`、`ones`、`randn`、`arange`。
+- 随机数种子：`manual_seed(int seed)`，设置所有设备的 PyTorch 随机数种子。
 - 形状：`reshape`、`view`、`unsqueeze`、`squeeze`、`transpose`、`contiguous`。
 - 运算：Tensor/数字的 `+ - * /`、取负、`matmul`、`pow`、`sum`、`mean`。
 - 激活与数学函数：`relu`、`sigmoid`、`tanh`、`exp`、`log`。
@@ -42,6 +43,9 @@ Python 后端要求 `py_embed >= 0.5.1`，标量构造和字符串转换由底�
 Python 初始化尚无跨 isolate 锁，首次使用需串行；测试配置设置 `concurrency: 1`。
 
 ## SGD
+
+调用 `torch.manual_seed(42)` 后再使用 `torch.randn(...)`；在相同环境中重设
+相同种子可以复现随机序列。该函数返回 `void`，不暴露 PyTorch 的 Generator。
 
 ```dart
 import 'package:torch_dart/optim.dart' as optim;
