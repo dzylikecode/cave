@@ -646,6 +646,14 @@ final class AdamPython(final PyObject handle) implements Adam {
 final class ModulePython(final PyObject handle, [final PyFunction? callback])
     implements ModuleBackend {
   @override
+  void save_pt(String path, {required List<Tensor> inputs}) {
+    if (inputs.length != 1) {
+      throw UnsupportedError('save_pt currently requires one tensor input');
+    }
+    using((scope) => scope(_savePt.forward([handle, path, inputs.single])));
+  }
+
+  @override
   TensorPython call(
     List<Tensor> inputs, {
     Map<String, Tensor> kwargs = const {},
@@ -688,3 +696,44 @@ final class ModulePython(final PyObject handle, [final PyFunction? callback])
     callback?.dispose();
   }
 }
+
+// A Python function supplies the inspectable signature FX requires. Keep this
+// export adapter local to the backend; restore original methods even on failure.
+final _savePt = using((scope) {
+  final namespace = scope(PyDict());
+  final exec = scope(scope(PyModule('builtins')).getAttr('exec'));
+  scope(exec.forward([_savePtSource, namespace]));
+  final function = namespace.elementAtStr('_save_pt')!;
+  function.ref.increment();
+  return function;
+});
+
+const _savePtSource = r'''
+import inspect
+import torch
+import torch.fx
+
+def _make_forward(callback):
+    def forward(self, x):
+        return callback(x)
+    return forward
+
+def _save_pt(model, path, example_input):
+    training = [(module, module.training) for module in model.modules()]
+    originals = {}
+    try:
+        model.eval()
+        for module, _ in training:
+            cls = type(module)
+            if inspect.isbuiltin(module.forward) and cls not in originals:
+                originals[cls] = cls.forward
+                cls.forward = _make_forward(module.forward)
+        graph = torch.fx.symbolic_trace(model)
+        traced = torch.jit.trace(graph, (example_input,))
+        traced.save(path)
+    finally:
+        for cls, forward in originals.items():
+            cls.forward = forward
+        for module, flag in training:
+            module.training = flag
+''';

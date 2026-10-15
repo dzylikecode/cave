@@ -102,3 +102,22 @@ final output = conv([input]);
 的整数 List；`padding` 还接受 `'same'` / `'valid'`。支持 `groups`、`bias`、
 `padding_mode`、`device`、`dtype`。所有选项直接转发，由 PyTorch 校验。
 层、输出及 `parameters()` 返回的 Tensor 包装器需按现有规则释放。
+
+## Export to .pt
+
+```dart
+model.save_pt('model.pt', inputs: [exampleInput]);
+final loaded = torch.jit.load('model.pt');
+```
+
+`save_pt` first captures an FX GraphModule, then uses TorchScript tracing to save
+an inference model that does not depend on Dart callbacks. The first version
+supports one positional Tensor input and one Tensor output, with no keyword
+inputs. Export runs in evaluation mode and restores the original forward methods
+and each layer's training flag even if export fails. The model must be FX
+traceable; reading Tensor values to drive Dart control flow is not supported.
+Trace with representative inputs and validate the loaded model on your intended
+input shapes. Newer PyTorch versions emit a TorchScript deprecation warning.
+
+`example/export_conv2d.dart` demonstrates the public API and verifies the saved
+model in a separate Python process on several input shapes.

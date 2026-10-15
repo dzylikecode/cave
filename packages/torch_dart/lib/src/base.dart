@@ -472,6 +472,14 @@ abstract class Module {
   void zero_grad({bool set_to_none = true}) =>
       _backend.zero_grad(set_to_none: set_to_none);
 
+  /// Exports an FX-traceable model to a TorchScript file for inference.
+  ///
+  /// Currently accepts one positional tensor input and one tensor output.
+  /// Tracing runs in evaluation mode and restores each module's training flag
+  /// afterward. Data-dependent Dart control flow is not supported.
+  void save_pt(String path, {required List<Tensor> inputs}) =>
+      _backend.save_pt(path, inputs: inputs);
+
   /// Releases this wrapper once, after its Python owners have been released.
   ///
   /// Child wrappers remain caller-owned. Dispose parent models before children.
@@ -533,6 +541,7 @@ final class Conv2d extends Module {
 
 @internal
 abstract interface class ModuleBackend {
+  void save_pt(String path, {required List<Tensor> inputs});
   Tensor call(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}});
   void register_module(String name, ModuleBackend module);
   List<Tensor> parameters();
