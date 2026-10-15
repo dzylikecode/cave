@@ -6,6 +6,39 @@ import '../base.dart';
 
 final class PythonApi() implements BaseApi {
   @override
+  ModulePython conv2d(
+    int in_channels,
+    int out_channels,
+    Object kernel_size, {
+    Object stride = 1,
+    Object padding = 0,
+    Object dilation = 1,
+    int groups = 1,
+    bool bias = true,
+    String padding_mode = 'zeros',
+    Device? device,
+    DType? dtype,
+  }) => using((scope) {
+    final nn = scope(PyModule('torch.nn'));
+    final constructor = scope(nn.getAttr('Conv2d'));
+    return ModulePython(
+      constructor.forward(
+        [in_channels, out_channels, kernel_size],
+        kwargs: {
+          'stride': stride,
+          'padding': padding,
+          'dilation': dilation,
+          'groups': groups,
+          'bias': bias,
+          'padding_mode': padding_mode,
+          if (device != null) 'device': device.toString(),
+          if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
+        },
+      ),
+    );
+  });
+
+  @override
   ModulePython module(
     Tensor Function(List<Tensor>, Map<String, Tensor>) forward,
   ) {
@@ -630,7 +663,7 @@ final class ModulePython(final PyObject handle, [final PyFunction? callback])
     final iterator = scope(method.call0());
     final list = scope(scope(PyModule('builtins')).getAttr('list'));
     final values = PyList.fromHandle(scope(list.forward([iterator])).ptr);
-    return List<Tensor>.generate(values.length, (i) {
+    return .generate(values.length, (i) {
       final value = values[i];
       value.ref.increment();
       return TensorPython(value);

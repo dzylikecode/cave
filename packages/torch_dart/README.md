@@ -90,3 +90,15 @@ forward 的输入包装器仅在回调中借用，不应释放或保存；返回
 
 `parameters()` 的每个返回包装器均需单独释放。父模型释放后再释放注册的子层，
 避免 Python 仍引用子模型的 Dart 回调。示例：`dart run example/module.dart`。
+
+## Conv2d
+
+```dart
+final conv = nn.Conv2d(1, 20, 5);
+final output = conv([input]);
+```
+
+参数命名沿用 PyTorch。`kernel_size`、`stride`、`dilation` 接受整数或长度为 2
+的整数 List；`padding` 还接受 `'same'` / `'valid'`。支持 `groups`、`bias`、
+`padding_mode`、`device`、`dtype`。所有选项直接转发，由 PyTorch 校验。
+层、输出及 `parameters()` 返回的 Tensor 包装器需按现有规则释放。

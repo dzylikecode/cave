@@ -138,6 +138,19 @@ abstract interface class ScriptModule {
 /// Backend contract. Extend this as the public API takes shape.
 @internal
 abstract interface class BaseApi {
+  ModuleBackend conv2d(
+    int in_channels,
+    int out_channels,
+    Object kernel_size, {
+    Object stride = 1,
+    Object padding = 0,
+    Object dilation = 1,
+    int groups = 1,
+    bool bias = true,
+    String padding_mode = 'zeros',
+    Device? device,
+    DType? dtype,
+  });
   ModuleBackend module(
     Tensor Function(List<Tensor>, Map<String, Tensor>) forward,
   );
@@ -469,6 +482,47 @@ abstract class Module {
 final class Linear extends Module {
   Linear(int in_features, int out_features, {bool bias = true})
     : super.fromBackend(api.linear(in_features, out_features, bias: bias));
+
+  @override
+  Tensor forward(
+    List<Tensor> inputs, {
+    Map<String, Tensor> kwargs = const {},
+  }) => _backend.call(inputs, kwargs: kwargs);
+}
+
+/// A two-dimensional convolution backed by torch.nn.Conv2d.
+///
+/// [kernel_size], [stride], and [dilation] accept an int or a two-element
+/// `List<int>`. [padding] additionally accepts `same` or `valid`.
+/// PyTorch validates the arguments. Dispose this wrapper once after use.
+final class Conv2d extends Module {
+  Conv2d(
+    int in_channels,
+    int out_channels,
+    Object kernel_size, {
+    Object stride = 1,
+    Object padding = 0,
+    Object dilation = 1,
+    int groups = 1,
+    bool bias = true,
+    String padding_mode = 'zeros',
+    Device? device,
+    DType? dtype,
+  }) : super.fromBackend(
+         api.conv2d(
+           in_channels,
+           out_channels,
+           kernel_size,
+           stride: stride,
+           padding: padding,
+           dilation: dilation,
+           groups: groups,
+           bias: bias,
+           padding_mode: padding_mode,
+           device: device,
+           dtype: dtype,
+         ),
+       );
 
   @override
   Tensor forward(
