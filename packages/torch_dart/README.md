@@ -121,3 +121,22 @@ input shapes. Newer PyTorch versions emit a TorchScript deprecation warning.
 
 `example/export_conv2d.dart` demonstrates the public API and verifies the saved
 model in a separate Python process on several input shapes.
+
+## Models defined by Python source
+
+```dart
+final model = nn.Module.fromSource(source, name: 'my_model');
+torch.save(model, 'model.pt');
+```
+
+`Module.fromSource` constructs a Python class (default `class_name: 'Model'`).
+`args` and `kwargs` are passed to its constructor. The module `name` is optional for ordinary execution and graph export. Supply
+a stable `name` for whole-model pickle saving so Python can locate the class.
+
+`torch.save` saves the Python object without example inputs. To load it, first
+recreate the same named module from the source, then use Python
+`torch.load(path, weights_only=False)` (omit `weights_only` on older versions
+without that option). This file cannot be loaded with `jit.load`.
+
+`save_pt` remains the separate standalone graph export path with example inputs.
+See `example/source_model.dart` for both saving methods.

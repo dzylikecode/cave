@@ -6,6 +6,19 @@ import '../base.dart';
 
 final class PythonApi() implements BaseApi {
   @override
+  ModulePython module_from_source(
+    String source, {
+    String class_name = 'Model',
+    String? name,
+    List<Object?> args = const [],
+    Map<String, Object?> kwargs = const {},
+  }) => using((scope) {
+    final module = scope(PyModule.fromSource(source, name: name));
+    final constructor = scope(module.getAttr(class_name));
+    return ModulePython(constructor.forward(args, kwargs: kwargs));
+  });
+
+  @override
   ModulePython conv2d(
     int in_channels,
     int out_channels,
@@ -645,6 +658,12 @@ final class AdamPython(final PyObject handle) implements Adam {
 
 final class ModulePython(final PyObject handle, [final PyFunction? callback])
     implements ModuleBackend {
+  @override
+  void save(String path) => using((scope) {
+    final method = scope(scope(PyModule('torch')).getAttr('save'));
+    scope(method.forward([handle, path]));
+  });
+
   @override
   void save_pt(String path, {required List<Tensor> inputs}) {
     if (inputs.length != 1) {

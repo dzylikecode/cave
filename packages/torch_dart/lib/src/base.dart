@@ -138,6 +138,13 @@ abstract interface class ScriptModule {
 /// Backend contract. Extend this as the public API takes shape.
 @internal
 abstract interface class BaseApi {
+  ModuleBackend module_from_source(
+    String source, {
+    String class_name = 'Model',
+    String? name,
+    List<Object?> args = const [],
+    Map<String, Object?> kwargs = const {},
+  });
   ModuleBackend conv2d(
     int in_channels,
     int out_channels,
@@ -438,6 +445,27 @@ abstract class Module {
     _backend = api.module((inputs, kwargs) => forward(inputs, kwargs: kwargs));
   }
 
+  /// Creates a Python model class from source and calls its constructor.
+  ///
+  /// [class_name] selects the class; [args] and [kwargs] are constructor arguments.
+  /// Supplying [name] registers a Python module, allowing whole-model pickle
+  /// saving. Recreate the same named module before loading in a new process.
+  factory Module.fromSource(
+    String source, {
+    String class_name = 'Model',
+    String? name,
+    List<Object?> args = const [],
+    Map<String, Object?> kwargs = const {},
+  }) => _SourceModule(
+    api.module_from_source(
+      source,
+      class_name: class_name,
+      name: name,
+      args: args,
+      kwargs: kwargs,
+    ),
+  );
+
   @internal
   Module.fromBackend(ModuleBackend backend) : _backend = backend;
 
@@ -485,6 +513,23 @@ abstract class Module {
   /// Child wrappers remain caller-owned. Dispose parent models before children.
   void dispose() => _backend.dispose();
 }
+
+final class _SourceModule(super.backend) extends Module {
+  this : super.fromBackend();
+
+  @override
+  Tensor forward(
+    List<Tensor> inputs, {
+    Map<String, Tensor> kwargs = const {},
+  }) => _backend.call(inputs, kwargs: kwargs);
+}
+
+/// Pickles a complete Python model without requiring example inputs.
+///
+/// This is torch.save, not TorchScript export. The model class must be importable
+/// by module name; Dart callback models are not supported. Loading requires the
+/// same class definition and torch.load, not jit.load.
+void save(Module model, String path) => model._backend.save(path);
 
 /// A linear layer backed directly by torch.nn.Linear.
 final class Linear extends Module {
@@ -541,6 +586,7 @@ final class Conv2d extends Module {
 
 @internal
 abstract interface class ModuleBackend {
+  void save(String path);
   void save_pt(String path, {required List<Tensor> inputs});
   Tensor call(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}});
   void register_module(String name, ModuleBackend module);
