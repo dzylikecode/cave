@@ -1,7 +1,7 @@
 import 'package:py_embed/py_embed.dart';
 import 'package:num_py/num_py.dart';
 
-void main() async {
+void main() => ResourceScope.scope(() {
   // t = np.arange(0.0, 2.0, 0.01)
   final t = arange(
     PyTuple.fromList([PyDouble(0.0), PyDouble(2.0), PyDouble(0.01)]),
@@ -16,7 +16,7 @@ void main() async {
   final plt = PyModule('matplotlib.pyplot');
 
   // fig, ax = plt.subplots()
-  final PyTuple result = .fromHandle(plt.getAttr('subplots').call0().ptr);
+  final PyTuple result = .fromRef(plt.getAttr('subplots').call0().ref);
   final fig = result[0];
   final ax = result[1];
 
@@ -39,4 +39,4 @@ void main() async {
 
   // plt.show()
   // plt.getAttr('show')(PyTuple(0));
-}
+});

@@ -5,10 +5,12 @@ import 'package:mujoco/src/backend/python.dart';
 import '../base.dart';
 
 final class PythonApi() implements BaseApi {
-  final _mujoco_viewer = PyModule('mujoco.viewer');
+  final _mujoco_viewer = ResourceScope.unmanaged(
+    () => PyModule('mujoco.viewer'),
+  );
 
-  late final _MujocoViewer_launch_passive = _mujoco_viewer.getAttr(
-    'launch_passive',
+  late final _MujocoViewer_launch_passive = ResourceScope.unmanaged(
+    () => _mujoco_viewer.getAttr('launch_passive'),
   );
 
   @override
@@ -27,23 +29,23 @@ class MujocoViewerPython(
   final MjDataPython data,
 ) implements MujocoViewer {
   @override
-  bool get is_running => using((scope) {
-    final method = scope(handle.getAttr('is_running'));
-    return scope(method.call0()).asBool();
+  bool get is_running => ResourceScope.scope(() {
+    final method = handle.getAttr('is_running');
+    return method.call0().asBool();
   });
 
   @override
-  void sync() => using((scope) {
-    final method = scope(handle.getAttr('sync'));
-    scope(method.call0());
+  void sync() => ResourceScope.scope(() {
+    final method = handle.getAttr('sync');
+    method.call0();
   });
 
   @override
-  void close() => using((scope) {
-    final method = scope(handle.getAttr('close'));
-    scope(method.call0());
+  void close() => ResourceScope.scope(() {
+    final method = handle.getAttr('close');
+    method.call0();
   });
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }

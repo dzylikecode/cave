@@ -9,14 +9,18 @@ import '../base.dart';
 
 final class PythonApi() implements BaseApi {
   // Isaac Gym must be imported before PyTorch.
-  late final gymapi = PyModule('isaacgym.gymapi');
+  late final gymapi = ResourceScope.unmanaged(
+    () => PyModule('isaacgym.gymapi'),
+  );
   @override
-  Gym acquire_gym() => using((scope) {
-    final method = scope(gymapi.getAttr('acquire_gym'));
-    return GymPython(method.call0(), this);
+  Gym acquire_gym() => ResourceScope.scope(() {
+    final method = gymapi.getAttr('acquire_gym');
+    return GymPython(method.call0().detachToParentScope(), this);
   });
 
-  late final gymtorch = PyModule('isaacgym.gymtorch');
+  late final gymtorch = ResourceScope.unmanaged(
+    () => PyModule('isaacgym.gymtorch'),
+  );
 
   late final converter = GymConverter(gymapi);
 }
@@ -69,53 +73,54 @@ final class GymConverter(final PyObject gymapi) extends PyConverter {
     };
   }
 
-  PyObject construct(String name, List<Object?> values) => using((scope) {
-    final constructor = scope(gymapi.getAttr(name));
-    return constructor.forward(values, converter: this);
-  });
+  PyObject construct(String name, List<Object?> values) =>
+      ResourceScope.returning(() {
+        final constructor = gymapi.getAttr(name);
+        return constructor.forward(values, converter: this);
+      });
 
-  void fields(PyObject object, Map<String, Object?> values) => using((scope) {
-    for (final entry in values.entries) {
-      if (entry.value != null) {
-        object.setAttr(entry.key, scope(toPyObject(entry.value)));
-      }
-    }
-  });
+  void fields(PyObject object, Map<String, Object?> values) =>
+      ResourceScope.scope(() {
+        for (final entry in values.entries) {
+          if (entry.value != null) {
+            object.setAttr(entry.key, toPyObject(entry.value));
+          }
+        }
+      });
 
-  PyObject config(String name, Map<String, Object?> values) => using((scope) {
-    final result = scope(construct(name, []));
-    fields(result, values);
-    return scope.escape(result);
-  });
+  PyObject config(String name, Map<String, Object?> values) =>
+      ResourceScope.returning(() {
+        final result = construct(name, []);
+        fields(result, values);
+        return result;
+      });
 
-  PyObject simParams(SimParams v) => using((scope) {
-    final result = scope(
-      config('SimParams', {
-        'up_axis': v.up_axis,
-        'gravity': v.gravity,
-        'dt': v.dt,
-        'substeps': v.substeps,
-        'use_gpu_pipeline': v.use_gpu_pipeline,
-      }),
-    );
-    fields(scope(result.getAttr('physx')), {
+  PyObject simParams(SimParams v) => ResourceScope.returning(() {
+    final result = config('SimParams', {
+      'up_axis': v.up_axis,
+      'gravity': v.gravity,
+      'dt': v.dt,
+      'substeps': v.substeps,
+      'use_gpu_pipeline': v.use_gpu_pipeline,
+    });
+    fields(result.getAttr('physx'), {
       'solver_type': v.physx.solver_type,
       'num_position_iterations': v.physx.num_position_iterations,
       'num_velocity_iterations': v.physx.num_velocity_iterations,
       'num_threads': v.physx.num_threads,
       'use_gpu': v.physx.use_gpu,
     });
-    fields(scope(result.getAttr('flex')), {
+    fields(result.getAttr('flex'), {
       'shape_collision_margin': v.flex.shape_collision_margin,
       'num_outer_iterations': v.flex.num_outer_iterations,
       'num_inner_iterations': v.flex.num_inner_iterations,
     });
-    return scope.escape(result);
+    return result;
   });
 }
 
 class PythonHandle(@override final PyObject handle) implements PyObjectWrapper {
-  void release() => handle.ref.discrement();
+  void release() => handle.dispose();
 }
 
 final class SimPython extends PythonHandle implements Sim {
@@ -135,9 +140,9 @@ final class RigidBodyStatesPython(super.handle)
   int get length => len(handle);
 
   @override
-  RigidBodyStatesPython copy() => using((scope) {
-    final method = scope(handle.getAttr('copy'));
-    return RigidBodyStatesPython(method.call0());
+  RigidBodyStatesPython copy() => ResourceScope.scope(() {
+    final method = handle.getAttr('copy');
+    return RigidBodyStatesPython(method.call0().detachToParentScope());
   });
 
   @override
@@ -150,25 +155,22 @@ final class GymArrayPython(super.handle)
   @override
   int get length => len(handle);
   @override
-  List<double> field(String name) => using((scope) {
-    final column = scope(handle.getItem(scope(PyString(name))));
+  List<double> field(String name) => ResourceScope.scope(() {
+    final column = handle.getItem(PyString(name));
     return List.generate(
       len(column),
-      (i) => scope(column.getItem(scope(PyInt(i)))).asDouble(),
+      (i) => column.getItem(PyInt(i)).asDouble(),
     );
   });
   @override
-  void setField(String name, List<num> values) => using((scope) {
+  void setField(String name, List<num> values) => ResourceScope.scope(() {
     if (values.length != length) throw ArgumentError('Expected $length values');
-    handle.setItem(
-      scope(PyString(name)),
-      scope(PyConverter().toPyObject(values)),
-    );
+    handle.setItem(PyString(name), PyConverter().toPyObject(values));
   });
   @override
-  GymArray copy() => using((scope) {
-    final method = scope(handle.getAttr('copy'));
-    return GymArrayPython(method.call0());
+  GymArray copy() => ResourceScope.scope(() {
+    final method = handle.getAttr('copy');
+    return GymArrayPython(method.call0().detachToParentScope());
   });
   @override
   void dispose() => release();
@@ -180,31 +182,32 @@ final class GymPython extends PythonHandle implements Gym {
 
   @override
   int get_asset_dof_count(Asset asset) =>
-      using((scope) => scope(invoke('get_asset_dof_count', [asset])).asInt());
+      ResourceScope.scope(() => invoke('get_asset_dof_count', [asset]).asInt());
   @override
-  int get_asset_rigid_body_count(Asset asset) => using(
-    (scope) => scope(invoke('get_asset_rigid_body_count', [asset])).asInt(),
+  int get_asset_rigid_body_count(Asset asset) => ResourceScope.scope(
+    () => invoke('get_asset_rigid_body_count', [asset]).asInt(),
   );
   @override
-  int get_asset_rigid_shape_count(Asset asset) => using(
-    (scope) => scope(invoke('get_asset_rigid_shape_count', [asset])).asInt(),
+  int get_asset_rigid_shape_count(Asset asset) => ResourceScope.scope(
+    () => invoke('get_asset_rigid_shape_count', [asset]).asInt(),
   );
   @override
-  List<String> get_asset_dof_names(Asset asset) => using((scope) {
-    final result = scope(invoke('get_asset_dof_names', [asset]));
+  List<String> get_asset_dof_names(Asset asset) => ResourceScope.scope(() {
+    final result = invoke('get_asset_dof_names', [asset]);
     return List.generate(
       len(result),
-      (i) => scope(result.getItem(scope(PyInt(i)))).asString(),
+      (i) => result.getItem(PyInt(i)).asString(),
     );
   });
   @override
-  List<String> get_asset_rigid_body_names(Asset asset) => using((scope) {
-    final result = scope(invoke('get_asset_rigid_body_names', [asset]));
-    return List.generate(
-      len(result),
-      (i) => scope(result.getItem(scope(PyInt(i)))).asString(),
-    );
-  });
+  List<String> get_asset_rigid_body_names(Asset asset) =>
+      ResourceScope.scope(() {
+        final result = invoke('get_asset_rigid_body_names', [asset]);
+        return List.generate(
+          len(result),
+          (i) => result.getItem(PyInt(i)).asString(),
+        );
+      });
   @override
   GymArray get_asset_dof_properties(Asset asset) =>
       GymArrayPython(invoke('get_asset_dof_properties', [asset]));
@@ -217,108 +220,107 @@ final class GymPython extends PythonHandle implements Gym {
     int actor,
     GymArray states,
     StateFlags flags,
-  ) => using(
-    (scope) =>
-        scope(invoke('set_actor_dof_states', [env, actor, states, flags]))
-            .asBool(),
+  ) => ResourceScope.scope(
+    () => invoke('set_actor_dof_states', [env, actor, states, flags]).asBool(),
   );
   @override
   bool set_actor_dof_properties(Env env, int actor, GymArray properties) =>
-      using(
-        (scope) =>
-            scope(invoke('set_actor_dof_properties', [env, actor, properties]))
-                .asBool(),
+      ResourceScope.scope(
+        () => invoke('set_actor_dof_properties', [
+          env,
+          actor,
+          properties,
+        ]).asBool(),
       );
   @override
   bool apply_actor_dof_efforts(Env env, int actor, List<double> efforts) =>
-      using((scope) {
-        final np = scope(PyModule('numpy'));
-        final asarray = scope(np.getAttr('asarray'));
-        final values = scope(
-          asarray.forward([efforts], kwargs: {'dtype': 'float32'}),
-        );
-        return scope(invoke('apply_actor_dof_efforts', [env, actor, values]))
-            .asBool();
+      ResourceScope.scope(() {
+        final np = PyModule('numpy');
+        final asarray = np.getAttr('asarray');
+        final values = asarray.forward([efforts], kwargs: {'dtype': 'float32'});
+        return invoke('apply_actor_dof_efforts', [env, actor, values]).asBool();
       });
   @override
-  int find_actor_rigid_body_handle(Env env, int actor, String name) => using(
-    (scope) =>
-        scope(invoke('find_actor_rigid_body_handle', [env, actor, name]))
-            .asInt(),
-  );
+  int find_actor_rigid_body_handle(Env env, int actor, String name) =>
+      ResourceScope.scope(
+        () =>
+            invoke('find_actor_rigid_body_handle', [env, actor, name]).asInt(),
+      );
   @override
-  int get_actor_index(Env env, int actor, IndexDomain domain) => using(
-    (scope) => scope(invoke('get_actor_index', [env, actor, domain])).asInt(),
-  );
+  int get_actor_index(Env env, int actor, IndexDomain domain) =>
+      ResourceScope.scope(
+        () => invoke('get_actor_index', [env, actor, domain]).asInt(),
+      );
   @override
   void prepare_sim(Sim sim) => invoke('prepare_sim', [sim]).dispose();
   @override
-  Tensor acquire_actor_root_state_tensor(Sim sim) => using((scope) {
-    final descriptor = scope(invoke('acquire_actor_root_state_tensor', [sim]));
-    final wrap = scope(api.gymtorch.getAttr('wrap_tensor'));
-    return TensorPython(wrap.forward([descriptor]));
+  Tensor acquire_actor_root_state_tensor(Sim sim) => ResourceScope.scope(() {
+    final descriptor = invoke('acquire_actor_root_state_tensor', [sim]);
+    final wrap = api.gymtorch.getAttr('wrap_tensor');
+    return TensorPython(wrap.forward([descriptor]).detachToParentScope());
   });
   @override
   void refresh_actor_root_state_tensor(Sim sim) =>
       invoke('refresh_actor_root_state_tensor', [sim]).dispose();
   @override
-  Tensor acquire_dof_state_tensor(Sim sim) => using((scope) {
-    final descriptor = scope(invoke('acquire_dof_state_tensor', [sim]));
-    final wrap = scope(api.gymtorch.getAttr('wrap_tensor'));
-    return TensorPython(wrap.forward([descriptor]));
+  Tensor acquire_dof_state_tensor(Sim sim) => ResourceScope.scope(() {
+    final descriptor = invoke('acquire_dof_state_tensor', [sim]);
+    final wrap = api.gymtorch.getAttr('wrap_tensor');
+    return TensorPython(wrap.forward([descriptor]).detachToParentScope());
   });
   @override
   void refresh_dof_state_tensor(Sim sim) =>
       invoke('refresh_dof_state_tensor', [sim]).dispose();
   @override
-  Tensor acquire_rigid_body_state_tensor(Sim sim) => using((scope) {
-    final descriptor = scope(invoke('acquire_rigid_body_state_tensor', [sim]));
-    final wrap = scope(api.gymtorch.getAttr('wrap_tensor'));
-    return TensorPython(wrap.forward([descriptor]));
+  Tensor acquire_rigid_body_state_tensor(Sim sim) => ResourceScope.scope(() {
+    final descriptor = invoke('acquire_rigid_body_state_tensor', [sim]);
+    final wrap = api.gymtorch.getAttr('wrap_tensor');
+    return TensorPython(wrap.forward([descriptor]).detachToParentScope());
   });
   @override
   void refresh_rigid_body_state_tensor(Sim sim) =>
       invoke('refresh_rigid_body_state_tensor', [sim]).dispose();
   @override
-  Tensor acquire_net_contact_force_tensor(Sim sim) => using((scope) {
-    final descriptor = scope(invoke('acquire_net_contact_force_tensor', [sim]));
-    final wrap = scope(api.gymtorch.getAttr('wrap_tensor'));
-    return TensorPython(wrap.forward([descriptor]));
+  Tensor acquire_net_contact_force_tensor(Sim sim) => ResourceScope.scope(() {
+    final descriptor = invoke('acquire_net_contact_force_tensor', [sim]);
+    final wrap = api.gymtorch.getAttr('wrap_tensor');
+    return TensorPython(wrap.forward([descriptor]).detachToParentScope());
   });
   @override
   void refresh_net_contact_force_tensor(Sim sim) =>
       invoke('refresh_net_contact_force_tensor', [sim]).dispose();
   @override
-  bool set_actor_root_state_tensor(Sim sim, Tensor tensor) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    return scope(invoke('set_actor_root_state_tensor', [sim, descriptor]))
-        .asBool();
-  });
+  bool set_actor_root_state_tensor(Sim sim, Tensor tensor) =>
+      ResourceScope.scope(() {
+        final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+        final descriptor = unwrap.forward([tensor]);
+        return invoke('set_actor_root_state_tensor', [
+          sim,
+          descriptor,
+        ]).asBool();
+      });
   @override
   bool set_actor_root_state_tensor_indexed(
     Sim sim,
     Tensor tensor,
     Tensor actor_indices,
     int count,
-  ) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    final indices = scope(unwrap.forward([actor_indices]));
-    return scope(
-      invoke('set_actor_root_state_tensor_indexed', [
-        sim,
-        descriptor,
-        indices,
-        count,
-      ]),
-    ).asBool();
+  ) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    final indices = unwrap.forward([actor_indices]);
+    return invoke('set_actor_root_state_tensor_indexed', [
+      sim,
+      descriptor,
+      indices,
+      count,
+    ]).asBool();
   });
   @override
-  bool set_dof_state_tensor(Sim sim, Tensor tensor) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    return scope(invoke('set_dof_state_tensor', [sim, descriptor])).asBool();
+  bool set_dof_state_tensor(Sim sim, Tensor tensor) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    return invoke('set_dof_state_tensor', [sim, descriptor]).asBool();
   });
   @override
   bool set_dof_state_tensor_indexed(
@@ -326,97 +328,104 @@ final class GymPython extends PythonHandle implements Gym {
     Tensor tensor,
     Tensor actor_indices,
     int count,
-  ) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    final indices = scope(unwrap.forward([actor_indices]));
-    return scope(
-      invoke('set_dof_state_tensor_indexed', [sim, descriptor, indices, count]),
-    ).asBool();
+  ) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    final indices = unwrap.forward([actor_indices]);
+    return invoke('set_dof_state_tensor_indexed', [
+      sim,
+      descriptor,
+      indices,
+      count,
+    ]).asBool();
   });
   @override
-  bool set_dof_actuation_force_tensor(Sim sim, Tensor tensor) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    return scope(invoke('set_dof_actuation_force_tensor', [sim, descriptor]))
-        .asBool();
-  });
+  bool set_dof_actuation_force_tensor(Sim sim, Tensor tensor) =>
+      ResourceScope.scope(() {
+        final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+        final descriptor = unwrap.forward([tensor]);
+        return invoke('set_dof_actuation_force_tensor', [
+          sim,
+          descriptor,
+        ]).asBool();
+      });
   @override
   bool set_dof_actuation_force_tensor_indexed(
     Sim sim,
     Tensor tensor,
     Tensor actor_indices,
     int count,
-  ) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    final indices = scope(unwrap.forward([actor_indices]));
-    return scope(
-      invoke('set_dof_actuation_force_tensor_indexed', [
-        sim,
-        descriptor,
-        indices,
-        count,
-      ]),
-    ).asBool();
+  ) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    final indices = unwrap.forward([actor_indices]);
+    return invoke('set_dof_actuation_force_tensor_indexed', [
+      sim,
+      descriptor,
+      indices,
+      count,
+    ]).asBool();
   });
   @override
-  bool set_dof_position_target_tensor(Sim sim, Tensor tensor) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    return scope(invoke('set_dof_position_target_tensor', [sim, descriptor]))
-        .asBool();
-  });
+  bool set_dof_position_target_tensor(Sim sim, Tensor tensor) =>
+      ResourceScope.scope(() {
+        final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+        final descriptor = unwrap.forward([tensor]);
+        return invoke('set_dof_position_target_tensor', [
+          sim,
+          descriptor,
+        ]).asBool();
+      });
   @override
   bool set_dof_position_target_tensor_indexed(
     Sim sim,
     Tensor tensor,
     Tensor actor_indices,
     int count,
-  ) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    final indices = scope(unwrap.forward([actor_indices]));
-    return scope(
-      invoke('set_dof_position_target_tensor_indexed', [
-        sim,
-        descriptor,
-        indices,
-        count,
-      ]),
-    ).asBool();
+  ) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    final indices = unwrap.forward([actor_indices]);
+    return invoke('set_dof_position_target_tensor_indexed', [
+      sim,
+      descriptor,
+      indices,
+      count,
+    ]).asBool();
   });
   @override
-  bool set_dof_velocity_target_tensor(Sim sim, Tensor tensor) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    return scope(invoke('set_dof_velocity_target_tensor', [sim, descriptor]))
-        .asBool();
-  });
+  bool set_dof_velocity_target_tensor(Sim sim, Tensor tensor) =>
+      ResourceScope.scope(() {
+        final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+        final descriptor = unwrap.forward([tensor]);
+        return invoke('set_dof_velocity_target_tensor', [
+          sim,
+          descriptor,
+        ]).asBool();
+      });
   @override
   bool set_dof_velocity_target_tensor_indexed(
     Sim sim,
     Tensor tensor,
     Tensor actor_indices,
     int count,
-  ) => using((scope) {
-    final unwrap = scope(api.gymtorch.getAttr('unwrap_tensor'));
-    final descriptor = scope(unwrap.forward([tensor]));
-    final indices = scope(unwrap.forward([actor_indices]));
-    return scope(
-      invoke('set_dof_velocity_target_tensor_indexed', [
-        sim,
-        descriptor,
-        indices,
-        count,
-      ]),
-    ).asBool();
+  ) => ResourceScope.scope(() {
+    final unwrap = api.gymtorch.getAttr('unwrap_tensor');
+    final descriptor = unwrap.forward([tensor]);
+    final indices = unwrap.forward([actor_indices]);
+    return invoke('set_dof_velocity_target_tensor_indexed', [
+      sim,
+      descriptor,
+      indices,
+      count,
+    ]).asBool();
   });
 
-  PyObject invoke(String name, List<Object?> args) => using((scope) {
-    final method = scope(handle.getAttr(name));
-    return method.forward(args, converter: api.converter);
-  });
+  PyObject invoke(String name, List<Object?> args) =>
+      ResourceScope.returning(() {
+        final method = handle.getAttr(name);
+        return method.forward(args, converter: api.converter);
+      });
 
   @override
   Sim create_sim(
@@ -466,17 +475,15 @@ final class GymPython extends PythonHandle implements Gym {
     String? name,
     int collision_group,
     int collision_filter,
-  ) => using((scope) {
-    return scope(
-      invoke('create_actor', [
-        env,
-        asset,
-        pose,
-        name,
-        collision_group,
-        collision_filter,
-      ]),
-    ).asInt();
+  ) => ResourceScope.scope(() {
+    return invoke('create_actor', [
+      env,
+      asset,
+      pose,
+      name,
+      collision_group,
+      collision_filter,
+    ]).asInt();
   });
 
   @override
@@ -484,26 +491,27 @@ final class GymPython extends PythonHandle implements Gym {
       RigidBodyStatesPython(invoke('get_sim_rigid_body_states', [sim, flags]));
 
   @override
-  List<ActionEvent> query_viewer_action_events(Viewer viewer) => using((scope) {
-    final events = scope(invoke('query_viewer_action_events', [viewer]));
-    final count = len(events);
-    return List.generate(count, (i) {
-      final event = scope(events.getItem(scope(PyInt(i))));
-      return ActionEvent(
-        event.getAttrString('action'),
-        event.getAttrDouble('value'),
-      );
-    });
-  });
+  List<ActionEvent> query_viewer_action_events(Viewer viewer) =>
+      ResourceScope.scope(() {
+        final events = invoke('query_viewer_action_events', [viewer]);
+        final count = len(events);
+        return List.generate(count, (i) {
+          final event = events.getItem(PyInt(i));
+          return ActionEvent(
+            event.getAttrString('action'),
+            event.getAttrDouble('value'),
+          );
+        });
+      });
   @override
   void destroy_viewer(covariant ViewerPython viewer) {
-    invoke('destroy_viewer', [viewer]).ref.discrement();
+    invoke('destroy_viewer', [viewer]).dispose();
     viewer.release();
   }
 
   @override
   void destroy_sim(covariant SimPython sim) {
-    invoke('destroy_sim', [sim]).ref.discrement();
+    invoke('destroy_sim', [sim]).dispose();
     for (final child in sim.children) {
       child.release();
     }
@@ -516,7 +524,7 @@ final class GymPython extends PythonHandle implements Gym {
 
   @override
   void add_ground(Sim sim, PlaneParams params) =>
-      invoke('add_ground', [sim, params]).ref.discrement();
+      invoke('add_ground', [sim, params]).dispose();
   @override
   void set_rigid_body_color(
     Env env,
@@ -524,13 +532,8 @@ final class GymPython extends PythonHandle implements Gym {
     int body,
     MeshType mesh,
     Vector3 color,
-  ) => invoke('set_rigid_body_color', [
-    env,
-    actor,
-    body,
-    mesh,
-    color,
-  ]).ref.discrement();
+  ) =>
+      invoke('set_rigid_body_color', [env, actor, body, mesh, color]).dispose();
   @override
   void subscribe_viewer_keyboard_event(
     Viewer viewer,
@@ -540,7 +543,7 @@ final class GymPython extends PythonHandle implements Gym {
     viewer,
     key,
     action,
-  ]).ref.discrement();
+  ]).dispose();
   @override
   void viewer_camera_look_at(
     Viewer viewer,
@@ -552,33 +555,31 @@ final class GymPython extends PythonHandle implements Gym {
     env,
     position,
     target,
-  ]).ref.discrement();
+  ]).dispose();
   @override
   bool set_sim_rigid_body_states(
     Sim sim,
     RigidBodyStates states,
     StateFlags flags,
-  ) => using((scope) {
-    final v = scope(invoke('set_sim_rigid_body_states', [sim, states, flags]));
+  ) => ResourceScope.scope(() {
+    final v = invoke('set_sim_rigid_body_states', [sim, states, flags]);
     return v.asBool();
   });
   @override
-  bool query_viewer_has_closed(Viewer viewer) => using((scope) {
-    final v = scope(invoke('query_viewer_has_closed', [viewer]));
+  bool query_viewer_has_closed(Viewer viewer) => ResourceScope.scope(() {
+    final v = invoke('query_viewer_has_closed', [viewer]);
     return v.asBool();
   });
   @override
-  void simulate(Sim sim) => invoke('simulate', [sim]).ref.discrement();
+  void simulate(Sim sim) => invoke('simulate', [sim]).dispose();
   @override
   void fetch_results(Sim sim, bool wait) =>
-      invoke('fetch_results', [sim, wait]).ref.discrement();
+      invoke('fetch_results', [sim, wait]).dispose();
   @override
-  void step_graphics(Sim sim) =>
-      invoke('step_graphics', [sim]).ref.discrement();
+  void step_graphics(Sim sim) => invoke('step_graphics', [sim]).dispose();
   @override
   void draw_viewer(Viewer viewer, Sim sim, bool sync) =>
-      invoke('draw_viewer', [viewer, sim, sync]).ref.discrement();
+      invoke('draw_viewer', [viewer, sim, sync]).dispose();
   @override
-  void sync_frame_time(Sim sim) =>
-      invoke('sync_frame_time', [sim]).ref.discrement();
+  void sync_frame_time(Sim sim) => invoke('sync_frame_time', [sim]).dispose();
 }

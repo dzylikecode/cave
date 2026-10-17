@@ -31,15 +31,30 @@ dart analyze
 ```
 
 每个返回的 Tensor 包装器（包括 view、`grad` 和无转换的 `to()`）均拥有独立
-Python 引用，需要单独 `dispose()`。不同包装器可能共享底层存储。
-每个包装器只释放一次，释放后不再使用。原地方法返回原包装器。
-目前临时运算结果也需要显式释放，尚未提供 Tensor scope。
+Python 引用，不同包装器可能共享底层存储。Python 后端使用 `ResourceScope`
+自动管理作用域内创建的引用和 Module 回调资源；作用域之外仍需显式 `dispose()`。
+原地方法返回原包装器，释放后不再使用。
+
+```dart
+import 'package:py_embed/py_embed.dart' show ResourceScope;
+import 'package:torch_dart/torch_dart.dart' as torch;
+
+ResourceScope.scope(() {
+  final x = torch.ones([2, 3]);
+  final y = x.relu();
+  print(y.toList());
+}); // 自动释放 x、y 及中间 Python 引用
+```
+
+从内部作用域返回 Python 对象时，使用 `ResourceScope.returning`，或将其
+`handle.detachToParentScope()` 移交给外层。`ResourceScope.unmanaged`
+只关闭自动释放，不关闭分配追踪。
 
 `tensor` 接受数字、布尔值或它们的嵌套 List；零维 Tensor 的 `toList()` 返回标量。
 复数 Tensor 暂不支持 `item` / `toList` 数据读取。运算和梯度遵循 PyTorch 语义，
 后端错误以 `PyException` 传播。`nn` 已支持自定义 Module 和 Linear。
 
-Python 后端要求 `py_embed >= 0.5.1`，标量构造和字符串转换由底层负责 GIL 保护。
+Python 后端要求 `py_embed >= 0.9.0`，标量构造和字符串转换由底层负责 GIL 保护。
 Python 初始化尚无跨 isolate 锁，首次使用需串行；测试配置设置 `concurrency: 1`。
 
 ## SGD

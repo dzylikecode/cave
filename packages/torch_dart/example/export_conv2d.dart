@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:py_embed/py_embed.dart' show using;
+import 'package:py_embed/py_embed.dart' show ResourceScope;
 import 'package:torch_dart/nn.dart' as nn;
 import 'package:torch_dart/torch_dart.dart' as torch;
 
@@ -17,24 +17,22 @@ class Model extends nn.Module {
   torch.Tensor forward(
     List<torch.Tensor> inputs, {
     Map<String, torch.Tensor> kwargs = const {},
-  }) => using((scope) {
+  }) {
     final a = conv1(inputs);
-    scope.defer(a.dispose);
+
     final b = a.relu();
-    scope.defer(b.dispose);
+
     final c = conv2([b]);
-    scope.defer(c.dispose);
+
     return c.relu();
-  });
+  }
 }
 
-void main() => using((scope) {
+void main() => ResourceScope.scope(() {
   final model = Model();
-  scope.defer(model.conv2.dispose);
-  scope.defer(model.conv1.dispose);
-  scope.defer(model.dispose);
+
   final input = torch.randn([1, 1, 28, 28]);
-  scope.defer(input.dispose);
+
   final directory = Directory.systemTemp.createTempSync('torch-dart-conv2d-');
   final path = '${directory.path}/model.pt';
 
@@ -47,11 +45,11 @@ void main() => using((scope) {
     [2, 1, 28, 28],
     [1, 1, 32, 32],
   ]) {
-    using((inner) {
+    ResourceScope.scope(() {
       final x = torch.randn(shape);
-      inner.defer(x.dispose);
+
       final y = model([x]);
-      inner.defer(y.dispose);
+
       fixtures.add({'input': x.toList(), 'expected': y.toList()});
     });
   }

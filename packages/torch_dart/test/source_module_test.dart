@@ -19,67 +19,67 @@ void main() {
   test(
     'source model constructor, parameters, forward and TorchScript export',
     () {
-      py.using((scope) {
+      py.ResourceScope.scope(() {
         final dir = Directory.systemTemp.createTempSync('torch-source-');
-        scope.defer(() => dir.deleteSync(recursive: true));
-        final model = nn.Module.fromSource(
-          source,
-          args: [3],
-          kwargs: {'bias': false},
-        );
-        scope.defer(model.dispose);
-        final params = model.parameters();
-        for (final param in params) {
-          scope.defer(param.dispose);
+        try {
+          final model = nn.Module.fromSource(
+            source,
+            args: [3],
+            kwargs: {'bias': false},
+          );
+
+          final params = model.parameters();
+
+          expect(params.length, 1);
+          expect(params.single.shape, [1, 3]);
+          final input = torch.ones([1, 3]);
+
+          final expected = model([input]);
+
+          expect(expected.shape, [1, 1]);
+          model.save_pt('${dir.path}/graph.pt', inputs: [input]);
+          final loaded = torch.jit.load('${dir.path}/graph.pt');
+
+          final actual = loaded(input);
+
+          expect(actual.toList(), expected.toList());
+        } finally {
+          dir.deleteSync(recursive: true);
         }
-        expect(params.length, 1);
-        expect(params.single.shape, [1, 3]);
-        final input = torch.ones([1, 3]);
-        scope.defer(input.dispose);
-        final expected = model([input]);
-        scope.defer(expected.dispose);
-        expect(expected.shape, [1, 1]);
-        model.save_pt('${dir.path}/graph.pt', inputs: [input]);
-        final loaded = torch.jit.load('${dir.path}/graph.pt');
-        scope.defer(loaded.dispose);
-        final actual = loaded(input);
-        scope.defer(actual.dispose);
-        expect(actual.toList(), expected.toList());
       });
     },
   );
 
   test('named source model can be pickled without an example input', () {
-    py.using((scope) {
+    py.ResourceScope.scope(() {
       final dir = Directory.systemTemp.createTempSync('torch-pickle-');
-      scope.defer(() => dir.deleteSync(recursive: true));
-      final model = nn.Module.fromSource(source, name: '_torch_source_test');
-      scope.defer(model.dispose);
-      final path = '${dir.path}/model.pt';
-      torch.save(model, path);
-      final torchPy = scope(py.PyModule('torch'));
-      final load = scope(torchPy.getAttr('load'));
-      // Explicitly allow pickle on versions which support weights_only.
-      final inspect = scope(py.PyModule('inspect'));
-      final signature = scope(
-        scope(inspect.getAttr('signature')).forward([load]),
-      );
-      final parameters = scope(signature.getAttr('parameters'));
-      final contains = scope(parameters.getAttr('__contains__'));
-      final hasWeightsOnly = scope(contains.forward(['weights_only'])).asBool();
-      final restored = scope(
-        load.forward(
+      try {
+        final model = nn.Module.fromSource(source, name: '_torch_source_test');
+
+        final path = '${dir.path}/model.pt';
+        torch.save(model, path);
+        final torchPy = py.PyModule('torch');
+        final load = torchPy.getAttr('load');
+        // Explicitly allow pickle on versions which support weights_only.
+        final inspect = py.PyModule('inspect');
+        final signature = inspect.getAttr('signature').forward([load]);
+        final parameters = signature.getAttr('parameters');
+        final contains = parameters.getAttr('__contains__');
+        final hasWeightsOnly = contains.forward(['weights_only']).asBool();
+        final restored = load.forward(
           [path],
           kwargs: {if (hasWeightsOnly) 'weights_only': false},
-        ),
-      );
-      final input = torch.ones([1, 2]);
-      scope.defer(input.dispose);
-      final output = model([input]);
-      scope.defer(output.dispose);
-      final actual = scope(restored.forward([input]));
-      final values = scope(scope(actual.getAttr('tolist')).call0());
-      expect(values.toString(), output.toList().toString());
+        );
+        final input = torch.ones([1, 2]);
+
+        final output = model([input]);
+
+        final actual = restored.forward([input]);
+        final values = actual.getAttr('tolist').call0();
+        expect(values.toString(), output.toList().toString());
+      } finally {
+        dir.deleteSync(recursive: true);
+      }
     });
   });
 }

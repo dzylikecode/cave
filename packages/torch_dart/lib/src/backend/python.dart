@@ -1,5 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 
+import 'dart:async' show Zone;
+
 import 'package:py_embed/py_embed.dart';
 
 import '../base.dart';
@@ -12,10 +14,11 @@ final class PythonApi() implements BaseApi {
     String? name,
     List<Object?> args = const [],
     Map<String, Object?> kwargs = const {},
-  }) => using((scope) {
-    final module = scope(PyModule.fromSource(source, name: name));
-    final constructor = scope(module.getAttr(class_name));
-    return ModulePython(constructor.forward(args, kwargs: kwargs));
+  }) => ResourceScope.scope(() {
+    final module = PyModule.fromSource(source, name: name);
+    final constructor = module.getAttr(class_name);
+    return ModulePython(constructor.forward(args, kwargs: kwargs))
+        .detachToParentScope();
   });
 
   @override
@@ -31,9 +34,9 @@ final class PythonApi() implements BaseApi {
     String padding_mode = 'zeros',
     Device? device,
     DType? dtype,
-  }) => using((scope) {
-    final nn = scope(PyModule('torch.nn'));
-    final constructor = scope(nn.getAttr('Conv2d'));
+  }) => ResourceScope.scope(() {
+    final nn = PyModule('torch.nn');
+    final constructor = nn.getAttr('Conv2d');
     return ModulePython(
       constructor.forward(
         [in_channels, out_channels, kernel_size],
@@ -45,47 +48,39 @@ final class PythonApi() implements BaseApi {
           'bias': bias,
           'padding_mode': padding_mode,
           if (device != null) 'device': device.toString(),
-          if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
+          if (dtype != null) 'dtype': _torch.getAttr(dtype.name),
         },
       ),
-    );
+    ).detachToParentScope();
   });
 
   @override
   ModulePython module(
     Tensor Function(List<Tensor>, Map<String, Tensor>) forward,
   ) {
-    final callback = PyFunction(
-      (args, kwargs) => using((scope) {
+    final callback = ResourceScope.unmanaged(
+      () => PyFunction((args, kwargs) {
         final inputs = [
           for (var i = 0; i < args.length; i++) TensorPython(args[i]),
         ];
         final keywords = <String, Tensor>{};
         if (kwargs != null) {
-          final keys = scope(kwargs.keys);
+          final keys = kwargs.keys;
           for (var i = 0; i < keys.length; i++) {
             final key = keys[i].asString();
             keywords[key] = TensorPython(kwargs.elementAtStr(key)!);
           }
         }
         final output = forward(inputs, keywords) as TensorPython;
-        // An input returned unchanged still needs a new reference for Python.
-        if (inputs.any((v) => identical(v, output)) ||
-            keywords.values.any((v) => identical(v, output))) {
-          output.handle.ref.increment();
-        }
         return output.handle;
-      }),
-      name: 'forward',
+      }, name: 'forward'),
     );
     try {
-      return using((scope) {
-        final nn = scope(PyModule('torch.nn'));
-        final base = scope(nn.getAttr('Module'));
-        final modelClass = scope(
-          newType('DartModule', [base], {'forward': callback}),
-        );
-        return ModulePython(modelClass.call0(), callback);
+      return ResourceScope.scope(() {
+        final nn = PyModule('torch.nn');
+        final base = nn.getAttr('Module');
+        final modelClass = newType('DartModule', [base], {'forward': callback});
+        return ModulePython(modelClass.call0(), callback).detachToParentScope();
       });
     } catch (_) {
       callback.dispose();
@@ -95,15 +90,15 @@ final class PythonApi() implements BaseApi {
 
   @override
   ModulePython linear(int in_features, int out_features, {bool bias = true}) =>
-      using((scope) {
-        final nn = scope(PyModule('torch.nn'));
-        final constructor = scope(nn.getAttr('Linear'));
+      ResourceScope.scope(() {
+        final nn = PyModule('torch.nn');
+        final constructor = nn.getAttr('Linear');
         return ModulePython(
           constructor.forward(
             [in_features, out_features],
             kwargs: {'bias': bias},
           ),
-        );
+        ).detachToParentScope();
       });
 
   @override
@@ -114,19 +109,21 @@ final class PythonApi() implements BaseApi {
     double eps = 1e-8,
     double weight_decay = 0,
     bool amsgrad = false,
-  }) => using((scope) {
-    final constructor = scope(_optim.getAttr('Adam'));
+  }) => ResourceScope.scope(() {
+    final constructor = _optim.getAttr('Adam');
     return AdamPython(
-      constructor.forward(
-        [params],
-        kwargs: {
-          'lr': lr,
-          'betas': betas,
-          'eps': eps,
-          'weight_decay': weight_decay,
-          'amsgrad': amsgrad,
-        },
-      ),
+      constructor
+          .forward(
+            [params],
+            kwargs: {
+              'lr': lr,
+              'betas': betas,
+              'eps': eps,
+              'weight_decay': weight_decay,
+              'amsgrad': amsgrad,
+            },
+          )
+          .detachToParentScope(),
     );
   });
 
@@ -138,33 +135,35 @@ final class PythonApi() implements BaseApi {
     double dampening = 0,
     double weight_decay = 0,
     bool nesterov = false,
-  }) => using((scope) {
-    final constructor = scope(_optim.getAttr('SGD'));
+  }) => ResourceScope.scope(() {
+    final constructor = _optim.getAttr('SGD');
     return SGDPython(
-      constructor.forward(
-        [params],
-        kwargs: {
-          'lr': lr,
-          'momentum': momentum,
-          'dampening': dampening,
-          'weight_decay': weight_decay,
-          'nesterov': nesterov,
-        },
-      ),
+      constructor
+          .forward(
+            [params],
+            kwargs: {
+              'lr': lr,
+              'momentum': momentum,
+              'dampening': dampening,
+              'weight_decay': weight_decay,
+              'nesterov': nesterov,
+            },
+          )
+          .detachToParentScope(),
     );
   });
 
   // Import PyTorch only when the backend is first used.
-  late final _torch = PyModule('torch');
-  late final _optim = PyModule('torch.optim');
+  late final _torch = ResourceScope.unmanaged(() => PyModule('torch'));
+  late final _optim = ResourceScope.unmanaged(() => PyModule('torch.optim'));
 
   @override
   late final String version = _torch.getAttrString('__version__');
 
   @override
-  void manual_seed(int seed) => using((scope) {
-    final method = scope(_torch.getAttr('manual_seed'));
-    scope(method.forward([seed]));
+  void manual_seed(int seed) => ResourceScope.scope(() {
+    final method = _torch.getAttr('manual_seed');
+    method.forward([seed]);
   });
 
   TensorPython _create(
@@ -173,17 +172,19 @@ final class PythonApi() implements BaseApi {
     DType? dtype,
     Device? device,
     bool requires_grad = false,
-  }) => using((scope) {
-    final method = scope(_torch.getAttr(name));
+  }) => ResourceScope.scope(() {
+    final method = _torch.getAttr(name);
     return TensorPython(
-      method.forward(
-        [data],
-        kwargs: {
-          if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
-          if (device != null) 'device': device.toString(),
-          'requires_grad': requires_grad,
-        },
-      ),
+      method
+          .forward(
+            [data],
+            kwargs: {
+              if (dtype != null) 'dtype': _torch.getAttr(dtype.name),
+              if (device != null) 'device': device.toString(),
+              'requires_grad': requires_grad,
+            },
+          )
+          .detachToParentScope(),
     );
   });
 
@@ -268,7 +269,7 @@ final class PythonApi() implements BaseApi {
     requires_grad: requires_grad,
   );
 
-  late final _arange = _torch.getAttr('arange');
+  late final _arange = ResourceScope.unmanaged(() => _torch.getAttr('arange'));
 
   @override
   TensorPython arange(
@@ -289,12 +290,12 @@ final class PythonApi() implements BaseApi {
       );
     }
 
-    return using(
-      (scope) => TensorPython(
-        _arange.forward(
+    return TensorPython(
+      ResourceScope.returning(
+        () => _arange.forward(
           [start, end, step],
           kwargs: {
-            if (dtype != null) 'dtype': scope(_torch.getAttr(dtype.name)),
+            if (dtype != null) 'dtype': _torch.getAttr(dtype.name),
             if (device != null) 'device': device.toString(),
             if (requires_grad) 'requires_grad': true,
           },
@@ -304,24 +305,39 @@ final class PythonApi() implements BaseApi {
   }
 
   @override
-  T no_grad<T>(T Function() action) => using((scope) {
-    final method = scope(_torch.getAttr('no_grad'));
-    final context = scope(method.call0());
-    return context.withContext((_) => action());
-  });
+  T no_grad<T>(T Function() action) {
+    final context = ResourceScope.returning(
+      () => _torch.getAttr('no_grad').call0(),
+    );
+    try {
+      final callerZone = Zone.current;
+      return context.withContext((_) => callerZone.run(action));
+    } finally {
+      context.dispose();
+    }
+  }
 
-  late final _inference_mode = _torch.getAttr('inference_mode');
+  late final _inference_mode = ResourceScope.unmanaged(
+    () => _torch.getAttr('inference_mode'),
+  );
 
   @override
-  T inference_mode<T>(T Function() action) => using((scope) {
-    final context = scope(_inference_mode.call0());
-    return context.withContext((_) => action());
-  });
+  T inference_mode<T>(T Function() action) {
+    final context = ResourceScope.returning(() => _inference_mode.call0());
+    try {
+      final callerZone = Zone.current;
+      return context.withContext((_) => callerZone.run(action));
+    } finally {
+      context.dispose();
+    }
+  }
 
-  late final _jit_load = using((scope) {
-    final module = scope(_torch.getAttr('jit'));
-    return module.getAttr('load');
-  });
+  late final _jit_load = ResourceScope.unmanaged(
+    () => ResourceScope.returning(() {
+      final module = _torch.getAttr('jit');
+      return module.getAttr('load');
+    }),
+  );
 
   @override
   ScriptModulePython jit_load(String path, {Device? map_location}) =>
@@ -337,9 +353,9 @@ final class PythonApi() implements BaseApi {
 
 final class ScriptModulePython(final PyObject handle) implements ScriptModule {
   @override
-  ScriptModulePython eval() => using((scope) {
-    final method = scope(handle.getAttr('eval'));
-    scope(method.call0());
+  ScriptModulePython eval() => ResourceScope.scope(() {
+    final method = handle.getAttr('eval');
+    method.call0();
     return this;
   });
 
@@ -347,50 +363,57 @@ final class ScriptModulePython(final PyObject handle) implements ScriptModule {
   TensorPython call(covariant TensorPython input) => forward([input]);
 
   @override
-  TensorPython forward(List<Tensor> inputs) => using((scope) {
+  TensorPython forward(List<Tensor> inputs) => ResourceScope.scope(() {
     final args = <PyObject>[];
     for (final input in inputs) {
       args.add((input as TensorPython).handle);
     }
-    final method = scope(handle.getAttr('forward'));
-    final result = scope(method.forward(args));
-    final module = scope(PyModule('torch'));
-    final check = scope(module.getAttr('is_tensor'));
-    if (!scope(check.forward([result])).asBool()) {
+    final method = handle.getAttr('forward');
+    final result = method.forward(args);
+    final module = PyModule('torch');
+    final check = module.getAttr('is_tensor');
+    if (!check.forward([result]).asBool()) {
       throw UnsupportedError('Only a single Tensor output is supported');
     }
-    return TensorPython(scope.escape(result));
+    return TensorPython(result.detachToParentScope());
   });
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }
 
 final class TensorPython(@override final PyObject handle)
     implements Tensor, PyObjectWrapper {
+  TensorPython _promote() {
+    handle.detachToParentScope();
+    return this;
+  }
+
   TensorPython _apply(
     String name, [
     List<Object?> args = const [],
     Map<String, Object?>? kwargs,
-  ]) => using((scope) {
-    final method = scope(handle.getAttr(name));
-    return TensorPython(method.forward(args, kwargs: kwargs));
+  ]) => ResourceScope.scope(() {
+    final method = handle.getAttr(name);
+    return TensorPython(
+      method.forward(args, kwargs: kwargs).detachToParentScope(),
+    );
   });
 
   void _invoke(
     String name, [
     List<Object?> args = const [],
     Map<String, Object?>? kwargs,
-  ]) => using((scope) {
-    final method = scope(handle.getAttr(name));
-    scope(method.forward(args, kwargs: kwargs));
+  ]) => ResourceScope.scope(() {
+    final method = handle.getAttr(name);
+    method.forward(args, kwargs: kwargs);
   });
 
   @override
   int get ndim => handle.getAttrInt('ndim');
   @override
   int get numel =>
-      using((scope) => scope(scope(handle.getAttr('numel')).call0()).asInt());
+      ResourceScope.scope(() => handle.getAttr('numel').call0().asInt());
   @override
   bool get requires_grad => handle.getAttrBool('requires_grad');
   @override
@@ -398,11 +421,11 @@ final class TensorPython(@override final PyObject handle)
   @override
   bool get is_leaf => handle.getAttrBool('is_leaf');
   @override
-  TensorPython? get grad => using((scope) {
-    final value = scope(handle.getAttr('grad'));
+  TensorPython? get grad => ResourceScope.scope(() {
+    final value = handle.getAttr('grad');
     return value == PyObject.borrowedConst(.none)
         ? null
-        : TensorPython(scope.escape(value));
+        : TensorPython(value.detachToParentScope());
   });
   @override
   void retain_grad() => _invoke('retain_grad');
@@ -417,44 +440,44 @@ final class TensorPython(@override final PyObject handle)
     'create_graph': create_graph,
   });
   @override
-  void zero_grad({bool set_to_none = true}) => using((scope) {
+  void zero_grad({bool set_to_none = true}) => ResourceScope.scope(() {
     if (set_to_none) {
       handle.setAttr('grad', .borrowedConst(.none));
     } else {
-      final value = scope(handle.getAttr('grad'));
+      final value = handle.getAttr('grad');
       if (value != PyObject.borrowedConst(.none)) {
-        scope(scope(value.getAttr('detach_')).call0());
-        scope(scope(value.getAttr('zero_')).call0());
+        value.getAttr('detach_').call0();
+        value.getAttr('zero_').call0();
       }
     }
   });
 
   @override
-  TensorPython operator +(Object other) => using((scope) {
-    final operand = scope(PyConverter().toPyObject(other));
-    return TensorPython(handle + operand);
+  TensorPython operator +(Object other) => ResourceScope.scope(() {
+    final operand = PyConverter().toPyObject(other);
+    return TensorPython((handle + operand).detachToParentScope());
   });
   @override
-  TensorPython operator -(Object other) => using((scope) {
-    final operand = scope(PyConverter().toPyObject(other));
-    return TensorPython(handle - operand);
+  TensorPython operator -(Object other) => ResourceScope.scope(() {
+    final operand = PyConverter().toPyObject(other);
+    return TensorPython((handle - operand).detachToParentScope());
   });
   @override
-  TensorPython operator *(Object other) => using((scope) {
-    final operand = scope(PyConverter().toPyObject(other));
-    return TensorPython(handle * operand);
+  TensorPython operator *(Object other) => ResourceScope.scope(() {
+    final operand = PyConverter().toPyObject(other);
+    return TensorPython((handle * operand).detachToParentScope());
   });
   @override
-  TensorPython operator /(Object other) => using((scope) {
-    final operand = scope(PyConverter().toPyObject(other));
-    return TensorPython(handle / operand);
+  TensorPython operator /(Object other) => ResourceScope.scope(() {
+    final operand = PyConverter().toPyObject(other);
+    return TensorPython((handle / operand).detachToParentScope());
   });
   @override
   TensorPython operator -() => TensorPython(-handle);
   @override
-  TensorPython matmul(Tensor other) => using((scope) {
-    final operand = scope(PyConverter().toPyObject(other));
-    return TensorPython(handle.matrixMultiply(operand));
+  TensorPython matmul(Tensor other) => ResourceScope.scope(() {
+    final operand = PyConverter().toPyObject(other);
+    return TensorPython(handle.matrixMultiply(operand).detachToParentScope());
   });
   @override
   TensorPython add_(Object other, {num alpha = 1}) {
@@ -510,12 +533,12 @@ final class TensorPython(@override final PyObject handle)
   TensorPython transpose(int dim0, int dim1) =>
       _apply('transpose', [dim0, dim1]);
   @override
-  TensorPython to({Device? device, DType? dtype}) => using((scope) {
-    final torch = scope(PyModule('torch'));
+  TensorPython to({Device? device, DType? dtype}) => ResourceScope.scope(() {
+    final torch = PyModule('torch');
     return _apply('to', [], {
       if (device != null) 'device': device.toString(),
-      if (dtype != null) 'dtype': scope(torch.getAttr(dtype.name)),
-    });
+      if (dtype != null) 'dtype': torch.getAttr(dtype.name),
+    })._promote();
   });
 
   Object _scalar(PyObject value, DType type) => switch (type) {
@@ -527,22 +550,21 @@ final class TensorPython(@override final PyObject handle)
     ),
   };
   @override
-  Object item() => using(
-    (scope) => _scalar(scope(scope(handle.getAttr('item')).call0()), dtype),
-  );
+  Object item() =>
+      ResourceScope.scope(() => _scalar(handle.getAttr('item').call0(), dtype));
   @override
-  Object toList() => using((scope) {
+  Object toList() => ResourceScope.scope(() {
     final type = dtype;
     if (type == .complex64 || type == .complex128) {
       throw UnsupportedError('Complex tensor data conversion is not supported');
     }
     final dimensions = shape;
-    final values = scope(scope(handle.getAttr('tolist')).call0());
+    final values = handle.getAttr('tolist').call0();
     Object read(PyObject value, int depth) {
       if (depth == dimensions.length) return _scalar(value, type);
       return List<Object>.generate(
         dimensions[depth],
-        (i) => read(scope(value.getItem(scope(PyInt(i)))), depth + 1),
+        (i) => read(value.getItem(PyInt(i)), depth + 1),
       );
     }
 
@@ -550,27 +572,27 @@ final class TensorPython(@override final PyObject handle)
   });
 
   @override
-  List<int> get shape => using((scope) {
-    final shape = scope(handle.getAttr('shape'));
+  List<int> get shape => ResourceScope.scope(() {
+    final shape = handle.getAttr('shape');
     return .unmodifiableOf(
       List<int>.generate(
         handle.getAttrInt('ndim'),
-        (i) => scope(shape.getItem(scope(PyInt(i)))).asInt(),
+        (i) => shape.getItem(PyInt(i)).asInt(),
       ),
     );
   });
 
   @override
-  DType get dtype => using((scope) {
-    final dtype = scope(handle.getAttr('dtype'));
+  DType get dtype => ResourceScope.scope(() {
+    final dtype = handle.getAttr('dtype');
     final name = dtype.toString();
     return .fromString(name.substring(6));
   });
 
   @override
-  Device get device => using((scope) {
-    final device = scope(handle.getAttr('device'));
-    final index = scope(device.getAttr('index'));
+  Device get device => ResourceScope.scope(() {
+    final device = handle.getAttr('device');
+    final index = device.getAttr('index');
     return Device(
       .fromString(device.getAttrString('type')),
       index: index.ptr == PyObject.borrowedConst(.none).ptr
@@ -580,88 +602,111 @@ final class TensorPython(@override final PyObject handle)
   });
 
   @override
-  TensorPython reshape(List<int> shape) => using((scope) {
-    final method = scope(handle.getAttr('reshape'));
-    return TensorPython(method.forward(shape));
+  TensorPython reshape(List<int> shape) => ResourceScope.scope(() {
+    final method = handle.getAttr('reshape');
+    return TensorPython(method.forward(shape).detachToParentScope());
   });
 
   @override
-  TensorPython unsqueeze(int dim) => using((scope) {
-    final method = scope(handle.getAttr('unsqueeze'));
-    return TensorPython(method.forward([dim]));
+  TensorPython unsqueeze(int dim) => ResourceScope.scope(() {
+    final method = handle.getAttr('unsqueeze');
+    return TensorPython(method.forward([dim]).detachToParentScope());
   });
 
   @override
-  TensorPython squeeze([int? dim]) => using((scope) {
-    final method = scope(handle.getAttr('squeeze'));
-    return TensorPython(method.forward([dim]));
+  TensorPython squeeze([int? dim]) => ResourceScope.scope(() {
+    final method = handle.getAttr('squeeze');
+    return TensorPython(method.forward([dim]).detachToParentScope());
   });
 
   @override
-  TensorPython view(List<int> shape) => using((scope) {
-    final method = scope(handle.getAttr('view'));
-    return TensorPython(method.forward(shape));
+  TensorPython view(List<int> shape) => ResourceScope.scope(() {
+    final method = handle.getAttr('view');
+    return TensorPython(method.forward(shape).detachToParentScope());
   });
 
   @override
-  Tensor detach() => using((scope) {
-    final method = scope(handle.getAttr('detach'));
-    return TensorPython(method.call0());
+  Tensor detach() => ResourceScope.scope(() {
+    final method = handle.getAttr('detach');
+    return TensorPython(method.call0().detachToParentScope());
   });
 
   @override
-  Tensor clone() => using((scope) {
-    final method = scope(handle.getAttr('clone'));
-    return TensorPython(method.call0());
+  Tensor clone() => ResourceScope.scope(() {
+    final method = handle.getAttr('clone');
+    return TensorPython(method.call0().detachToParentScope());
   });
 
   @override
   String toString() => handle.toString();
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }
 
 final class SGDPython(final PyObject handle) implements SGD {
   @override
-  void zero_grad({bool set_to_none = true}) => using((scope) {
-    final method = scope(handle.getAttr('zero_grad'));
-    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  void zero_grad({bool set_to_none = true}) => ResourceScope.scope(() {
+    final method = handle.getAttr('zero_grad');
+    method.forward([], kwargs: {'set_to_none': set_to_none});
   });
 
   @override
-  void step() => using((scope) {
-    final method = scope(handle.getAttr('step'));
-    scope(method.call0());
+  void step() => ResourceScope.scope(() {
+    final method = handle.getAttr('step');
+    method.call0();
   });
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }
 
 final class AdamPython(final PyObject handle) implements Adam {
   @override
-  void zero_grad({bool set_to_none = true}) => using((scope) {
-    final method = scope(handle.getAttr('zero_grad'));
-    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  void zero_grad({bool set_to_none = true}) => ResourceScope.scope(() {
+    final method = handle.getAttr('zero_grad');
+    method.forward([], kwargs: {'set_to_none': set_to_none});
   });
 
   @override
-  void step() => using((scope) {
-    final method = scope(handle.getAttr('step'));
-    scope(method.call0());
+  void step() => ResourceScope.scope(() {
+    final method = handle.getAttr('step');
+    method.call0();
   });
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }
 
-final class ModulePython(final PyObject handle, [final PyFunction? callback])
-    implements ModuleBackend {
+final class ModulePython implements ModuleBackend, ScopedResource {
+  final PyObject handle;
+  final PyFunction? callback;
+
+  ModulePython(this.handle, [this.callback]) {
+    handle.detachFromScope();
+    callback?.detachFromScope();
+    ResourceScope.track(this);
+  }
+
   @override
-  void save(String path) => using((scope) {
-    final method = scope(scope(PyModule('torch')).getAttr('save'));
-    scope(method.forward([handle, path]));
+  bool get isDisposed => handle.isDisposed;
+
+  @override
+  ModulePython detachFromScope() {
+    ResourceScope.untrack(this);
+    return this;
+  }
+
+  @override
+  ModulePython detachToParentScope() {
+    ResourceScope.promoteToParent(this);
+    return this;
+  }
+
+  @override
+  void save(String path) => ResourceScope.scope(() {
+    final method = PyModule('torch').getAttr('save');
+    method.forward([handle, path]);
   });
 
   @override
@@ -669,7 +714,7 @@ final class ModulePython(final PyObject handle, [final PyFunction? callback])
     if (inputs.length != 1) {
       throw UnsupportedError('save_pt currently requires one tensor input');
     }
-    using((scope) => scope(_savePt.forward([handle, path, inputs.single])));
+    ResourceScope.scope(() => _savePt.forward([handle, path, inputs.single]));
   }
 
   @override
@@ -679,53 +724,56 @@ final class ModulePython(final PyObject handle, [final PyFunction? callback])
   }) => TensorPython(handle.forward(inputs, kwargs: kwargs));
 
   @override
-  void register_module(String name, ModuleBackend module) => using((scope) {
-    final method = scope(handle.getAttr('add_module'));
-    scope(method.forward([name, (module as ModulePython).handle]));
-  });
+  void register_module(String name, ModuleBackend module) =>
+      ResourceScope.scope(() {
+        final method = handle.getAttr('add_module');
+        method.forward([name, (module as ModulePython).handle]);
+      });
 
   @override
-  List<Tensor> parameters() => using((scope) {
-    final method = scope(handle.getAttr('parameters'));
-    final iterator = scope(method.call0());
-    final list = scope(scope(PyModule('builtins')).getAttr('list'));
-    final values = PyList.fromHandle(scope(list.forward([iterator])).ptr);
+  List<Tensor> parameters() => ResourceScope.scope(() {
+    final method = handle.getAttr('parameters');
+    final iterator = method.call0();
+    final list = PyModule('builtins').getAttr('list');
+    final values = PyList.fromRef(list.forward([iterator]).ref);
     return .generate(values.length, (i) {
       final value = values[i];
-      value.ref.increment();
-      return TensorPython(value);
+      return TensorPython(value.detachToParentScope());
     });
   });
 
   @override
   bool get training => handle.getAttrBool('training');
   @override
-  void train(bool mode) => using((scope) {
-    final method = scope(handle.getAttr('train'));
-    scope(method.forward([mode]));
+  void train(bool mode) => ResourceScope.scope(() {
+    final method = handle.getAttr('train');
+    method.forward([mode]);
   });
   @override
-  void zero_grad({bool set_to_none = true}) => using((scope) {
-    final method = scope(handle.getAttr('zero_grad'));
-    scope(method.forward([], kwargs: {'set_to_none': set_to_none}));
+  void zero_grad({bool set_to_none = true}) => ResourceScope.scope(() {
+    final method = handle.getAttr('zero_grad');
+    method.forward([], kwargs: {'set_to_none': set_to_none});
   });
   @override
   void dispose() {
-    handle.ref.discrement();
+    if (isDisposed) return;
+    ResourceScope.untrack(this);
+    handle.dispose();
     callback?.dispose();
   }
 }
 
 // A Python function supplies the inspectable signature FX requires. Keep this
 // export adapter local to the backend; restore original methods even on failure.
-final _savePt = using((scope) {
-  final namespace = scope(PyDict());
-  final exec = scope(scope(PyModule('builtins')).getAttr('exec'));
-  scope(exec.forward([_savePtSource, namespace]));
-  final function = namespace.elementAtStr('_save_pt')!;
-  function.ref.increment();
-  return function;
-});
+final _savePt = ResourceScope.unmanaged(
+  () => ResourceScope.returning(() {
+    final namespace = PyDict();
+    final exec = PyModule('builtins').getAttr('exec');
+    exec.forward([_savePtSource, namespace]);
+    final function = namespace.elementAtStr('_save_pt')!;
+    return function;
+  }),
+);
 
 const _savePtSource = r'''
 import inspect

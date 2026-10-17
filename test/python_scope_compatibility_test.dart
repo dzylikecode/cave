@@ -17,7 +17,7 @@ const modelXml = '''
 
 void main() {
   group(
-    'py_embed 0.6 scope compatibility',
+    'py_embed 0.9 scope compatibility',
     () {
       test('MuJoCo reads and writes arrays and sensor views', () {
         Mujoco.useNativeApi = false;
@@ -40,6 +40,33 @@ void main() {
         }
       });
 
+      test(
+        'MuJoCo handles follow scopes and cached methods survive cleanup',
+        () {
+          Mujoco.useNativeApi = false;
+          late MjModelPython first;
+          late MjDataPython data;
+          ResourceScope.scope(() {
+            first = MjModel.from_xml_string(modelXml) as MjModelPython;
+            data = MjData(first) as MjDataPython;
+            data.qpos[0] = 0.25;
+            mj_forward(first, data);
+            expect(data.qpos[0], closeTo(0.25, 1e-12));
+          });
+          expect(first.handle.isDisposed, isTrue);
+          expect(data.handle.isDisposed, isTrue);
+          expect(() => data.qpos[0], throwsStateError);
+          final baseline = ResourceScope.trackedAllocations;
+          ResourceScope.scope(() {
+            final second = MjModel.from_xml_string(modelXml);
+            final next = MjData(second);
+            mj_forward(second, next);
+            expect(next.qpos[0], 0);
+          });
+          expect(ResourceScope.trackedAllocations, unorderedEquals(baseline));
+        },
+      );
+
       test('Viewer wrapper releases temporary Python method results', () {
         final model = MjModel.from_xml_string(modelXml) as MjModelPython;
         final data = MjData(model) as MjDataPython;
@@ -49,8 +76,8 @@ import types
 _scope_viewer = types.SimpleNamespace(
     is_running=lambda: True, sync=lambda: None, close=lambda: None)
 ''');
-        final handle = using((scope) {
-          final main = scope(PyModule('__main__'));
+        final handle = ResourceScope.returning(() {
+          final main = PyModule('__main__');
           return main.getAttr('_scope_viewer');
         });
         final viewer = MujocoViewerPython(handle, model, data);
@@ -106,12 +133,10 @@ _scope_model.save(${jsonEncode(path)})
                     torch.inference_mode<void>(() => throw StateError('stop')),
                 throwsStateError,
               );
-              final active = using((scope) {
-                final module = scope(PyModule('torch'));
-                final check = scope(
-                  module.getAttr('is_inference_mode_enabled'),
-                );
-                return scope(check.call0()).asBool();
+              final active = ResourceScope.scope(() {
+                final module = PyModule('torch');
+                final check = module.getAttr('is_inference_mode_enabled');
+                return check.call0().asBool();
               });
               expect(active, isFalse);
             } finally {

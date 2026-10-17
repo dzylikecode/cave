@@ -4,50 +4,62 @@ import 'package:py_embed/py_embed.dart';
 import '../base.dart';
 
 final class PythonApi() implements BaseApi {
-  final _mujoco = PyModule('mujoco');
+  final _mujoco = ResourceScope.unmanaged(() => PyModule('mujoco'));
 
   @override
   late final version = _mujoco.getAttrString('__version__');
 
-  late final _MjModel = _mujoco.getAttr('MjModel');
-  late final _MjModel_from_xml_string = _MjModel.getAttr('from_xml_string');
+  late final _MjModel = ResourceScope.unmanaged(
+    () => _mujoco.getAttr('MjModel'),
+  );
+  late final _MjModel_from_xml_string = ResourceScope.unmanaged(
+    () => _MjModel.getAttr('from_xml_string'),
+  );
   @override
   MjModelPython MjModel_from_xml_string(String xml) {
     final model = _MjModel_from_xml_string.forward([xml]);
     return MjModelPython(model);
   }
 
-  late final _MjModel_from_xml_path = _MjModel.getAttr('from_xml_path');
+  late final _MjModel_from_xml_path = ResourceScope.unmanaged(
+    () => _MjModel.getAttr('from_xml_path'),
+  );
   @override
   MjModelPython MjModel_from_xml_path(String path) {
     final model = _MjModel_from_xml_path.forward([path]);
     return MjModelPython(model);
   }
 
-  late final _MjData = _mujoco.getAttr('MjData');
+  late final _MjData = ResourceScope.unmanaged(() => _mujoco.getAttr('MjData'));
   @override
   MjDataPython MjData_new(covariant MjModelPython model) =>
       MjDataPython(_MjData.forward([model]), model);
 
-  late final _mj_forward = _mujoco.getAttr('mj_forward');
+  late final _mj_forward = ResourceScope.unmanaged(
+    () => _mujoco.getAttr('mj_forward'),
+  );
   @override
   void mj_forward(covariant MjModelPython model, covariant MjDataPython data) {
-    _mj_forward.forward([model, data]).ref.discrement();
+    _mj_forward.forward([model, data]).dispose();
   }
 
-  late final _mj_step = _mujoco.getAttr('mj_step');
+  late final _mj_step = ResourceScope.unmanaged(
+    () => _mujoco.getAttr('mj_step'),
+  );
   @override
   void mj_step(covariant MjModelPython model, covariant MjDataPython data) {
-    _mj_step.forward([model, data]).ref.discrement();
+    _mj_step.forward([model, data]).dispose();
   }
 
-  late final _mj_resetData = _mujoco.getAttr('mj_resetData');
+  late final _mj_resetData = ResourceScope.unmanaged(
+    () => _mujoco.getAttr('mj_resetData'),
+  );
   @override
   void mj_resetData(
     covariant MjModelPython model,
     covariant MjDataPython data,
   ) {
-    _mj_resetData.forward([model, data]).ref.discrement();
+    _mj_resetData.forward([model, data]).dispose();
   }
 }
 
@@ -72,9 +84,9 @@ class const MjModelPython(@override final PyObject handle)
   int get nsensordata => handle.getAttrInt('nsensordata');
 
   @override
-  MjModelSensorViewsPython sensor(String name) => using((scope) {
-    final method = scope(handle.getAttr('sensor'));
-    final view = scope(method.forward([name]));
+  MjModelSensorViewsPython sensor(String name) => ResourceScope.scope(() {
+    final method = handle.getAttr('sensor');
+    final view = method.forward([name]);
     return sensorById(view.getAttrInt('id'));
   });
 
@@ -85,7 +97,7 @@ class const MjModelPython(@override final PyObject handle)
   }
 
   @override
-  void dispose() => handle.ref.discrement();
+  void dispose() => handle.dispose();
 }
 
 class MjDataPython(
@@ -123,13 +135,13 @@ class MjDataPython(
 
   @override
   void dispose() {
-    qpos.handle.ref.discrement();
-    qvel.handle.ref.discrement();
-    qacc.handle.ref.discrement();
-    act.handle.ref.discrement();
-    ctrl.handle.ref.discrement();
-    sensordata.handle.ref.discrement();
-    handle.ref.discrement();
+    qpos.handle.dispose();
+    qvel.handle.dispose();
+    qacc.handle.dispose();
+    act.handle.dispose();
+    ctrl.handle.dispose();
+    sensordata.handle.dispose();
+    handle.dispose();
   }
 }
 
@@ -139,14 +151,14 @@ class const MjDoubleListViewPython(@override final PyObject handle)
   int get length => handle.getAttrInt('size');
 
   @override
-  double operator [](int index) => using((scope) {
-    final item = scope(handle.getItem(scope(PyInt(index))));
+  double operator [](int index) => ResourceScope.scope(() {
+    final item = handle.getItem(PyInt(index));
     return item.asDouble();
   });
 
   @override
-  void operator []=(int index, double value) => using((scope) {
-    handle.setItem(scope(PyInt(index)), scope(PyDouble(value)));
+  void operator []=(int index, double value) => ResourceScope.scope(() {
+    handle.setItem(PyInt(index), PyDouble(value));
   });
 
   @override
@@ -163,15 +175,15 @@ class MjModelSensorViewsPython(
   final MjModelPython model,
   @override final int id,
 ) implements MjModelSensorViews {
-  T _withView<T>(T Function(PyObject) action) => using((scope) {
-    final method = scope(model.handle.getAttr('sensor'));
-    final view = scope(method.forward([id]));
+  T _withView<T>(T Function(PyObject) action) => ResourceScope.scope(() {
+    final method = model.handle.getAttr('sensor');
+    final view = method.forward([id]);
     return action(view);
   });
 
-  int _getInt(String field) => using((scope) {
-    final array = scope(model.handle.getAttr('sensor_$field'));
-    return scope(array.getItem(scope(PyInt(id)))).asInt();
+  int _getInt(String field) => ResourceScope.scope(() {
+    final array = model.handle.getAttr('sensor_$field');
+    return array.getItem(PyInt(id)).asInt();
   });
 
   @override
