@@ -131,6 +131,13 @@ abstract interface class ScriptModule {
   /// Inputs remain owned by the caller; the caller owns the returned tensor.
   Tensor forward(List<Tensor> inputs);
 
+  /// Calls a recurrent TorchScript model returning (output, tuple of states).
+  /// All returned wrappers are caller-owned; input states remain caller-owned.
+  ({Tensor output, List<Tensor> state}) forwardWithState(
+    Tensor input,
+    List<Tensor> state,
+  );
+
   /// Releases this model's resources. Do not use the model afterward.
   void dispose();
 }
@@ -470,6 +477,24 @@ abstract class Module {
     ),
   );
 
+  /// Adopts a source module's backend without installing a Dart forward callback.
+  /// The source wrapper transfers ownership and must not be disposed separately.
+  Module.fromModule(Module source) : _backend = source._backend;
+
+  /// Calls a Python method returning a single tensor.
+  Tensor callMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  }) => _backend.callMethod(name, args, kwargs: kwargs);
+
+  /// Calls a Python method and discards its result (for example reset).
+  void invokeMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  }) => _backend.invokeMethod(name, args, kwargs: kwargs);
+
   @internal
   Module.fromBackend(ModuleBackend backend) : _backend = backend;
 
@@ -608,6 +633,17 @@ final class Conv2d extends Module {
 
 @internal
 abstract interface class ModuleBackend {
+  Tensor callMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  });
+  void invokeMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  });
+
   Tensor registerParameter(String name, Tensor parameter);
   void to(Device device);
   void saveCheckpoint(String path, {Optimizer? optimizer, int iteration = 0});

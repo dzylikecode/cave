@@ -64,6 +64,8 @@ final class GymConverter(final PyObject gymapi) extends PyConverter {
         'density': v.density,
         'angular_damping': v.angular_damping,
         'linear_damping': v.linear_damping,
+        'max_angular_velocity': v.max_angular_velocity,
+        'max_linear_velocity': v.max_linear_velocity,
         'armature': v.armature,
         'thickness': v.thickness,
         'default_dof_drive_mode': v.default_dof_drive_mode,
@@ -109,6 +111,12 @@ final class GymConverter(final PyObject gymapi) extends PyConverter {
       'num_velocity_iterations': v.physx.num_velocity_iterations,
       'num_threads': v.physx.num_threads,
       'use_gpu': v.physx.use_gpu,
+      'contact_offset': v.physx.contact_offset,
+      'rest_offset': v.physx.rest_offset,
+      'bounce_threshold_velocity': v.physx.bounce_threshold_velocity,
+      'max_depenetration_velocity': v.physx.max_depenetration_velocity,
+      'max_gpu_contact_pairs': v.physx.max_gpu_contact_pairs,
+      'default_buffer_size_multiplier': v.physx.default_buffer_size_multiplier,
     });
     fields(result.getAttr('flex'), {
       'shape_collision_margin': v.flex.shape_collision_margin,
@@ -240,6 +248,46 @@ final class GymPython extends PythonHandle implements Gym {
         final values = asarray.forward([efforts], kwargs: {'dtype': 'float32'});
         return invoke('apply_actor_dof_efforts', [env, actor, values]).asBool();
       });
+  @override
+  void set_actor_friction(Env env, int actor, double friction) =>
+      ResourceScope.scope(() {
+        final props = PyList.fromRef(
+          invoke('get_actor_rigid_shape_properties', [env, actor]).ref,
+        );
+        for (var i = 0; i < props.length; i++) {
+          props[i].setAttr('friction', PyDouble(friction));
+        }
+        invoke('set_actor_rigid_shape_properties', [env, actor, props]);
+      });
+
+  @override
+  List<double> get_actor_rigid_body_masses(Env env, int actor) =>
+      ResourceScope.scope(() {
+        final props = PyList.fromRef(
+          invoke('get_actor_rigid_body_properties', [env, actor]).ref,
+        );
+        return [
+          for (var i = 0; i < props.length; i++)
+            props[i].getAttr('mass').asDouble(),
+        ];
+      });
+
+  @override
+  void set_actor_rigid_body_masses(Env env, int actor, List<double> masses) =>
+      ResourceScope.scope(() {
+        final props = PyList.fromRef(
+          invoke('get_actor_rigid_body_properties', [env, actor]).ref,
+        );
+        if (props.length != masses.length ||
+            masses.any((m) => m <= 0 || !m.isFinite)) {
+          throw ArgumentError('Positive mass required for every rigid body');
+        }
+        for (var i = 0; i < props.length; i++) {
+          props[i].setAttr('mass', PyDouble(masses[i]));
+        }
+        invoke('set_actor_rigid_body_properties', [env, actor, props, true]);
+      });
+
   @override
   int find_actor_rigid_body_handle(Env env, int actor, String name) =>
       ResourceScope.scope(

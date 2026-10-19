@@ -40,6 +40,12 @@ Tensor _torch(
   ),
 );
 
+Tensor rand(List<int> shape, {Device? device}) =>
+    _torch('rand', [shape], {if (device != null) 'device': '$device'});
+Tensor minimum(Tensor a, Tensor b) => _torch('minimum', [a, b]);
+Tensor where(Tensor condition, Tensor a, Tensor b) =>
+    _torch('where', [condition, a, b]);
+
 Tensor stack(List<Tensor> tensors, {int dim = 0}) =>
     _torch('stack', [tensors], {'dim': dim});
 Tensor cat(List<Tensor> tensors, {int dim = 0}) =>
@@ -62,6 +68,33 @@ extension TensorOperations on Tensor {
           .detachToParentScope(),
     ),
   );
+  Tensor zero_() {
+    _method('zero_', []).dispose();
+    return this;
+  }
+  Tensor abs() => _method('abs', []);
+  Tensor sqrt() => _method('sqrt', []);
+  Tensor gt(Object value) => _method('gt', [value]);
+  Tensor ge(Object value) => _method('ge', [value]);
+  Tensor lt(Object value) => _method('lt', [value]);
+  Tensor eq(Object value) => _method('eq', [value]);
+  Tensor remainder(int divisor) => _method('remainder', [divisor]);
+  Tensor logicalOr(Tensor other) => _method('logical_or', [other]);
+  Tensor logicalAnd(Tensor other) => _method('logical_and', [other]);
+  Tensor logicalNot() => _method('logical_not', []);
+  Tensor any({int? dim}) => _method('any', [], {'dim': ?dim});
+  Tensor isfinite() => _method('isfinite', []);
+  Tensor nonzero() => _method('nonzero', []);
+  Tensor indexCopy_(int dim, Tensor indices, Tensor source) {
+    _method('index_copy_', [dim, indices, source]).dispose();
+    return this;
+  }
+
+  Tensor indexFill_(int dim, Tensor indices, num value) {
+    _method('index_fill_', [dim, indices, value]).dispose();
+    return this;
+  }
+
   Tensor select(int dim, int index) => _method('select', [dim, index]);
   Tensor narrow(int dim, int start, int length) =>
       _method('narrow', [dim, start, length]);

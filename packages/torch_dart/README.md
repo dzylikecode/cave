@@ -155,3 +155,35 @@ without that option). This file cannot be loaded with `jit.load`.
 
 `save_pt` remains the separate standalone graph export path with example inputs.
 See `example/source_model.dart` for both saving methods.
+
+## Training utilities
+
+`package:torch_dart/functional.dart` adds `stack`, `cat`, `maximum`, `normal`,
+`randperm`, indexing (`select`, `narrow`, `indexSelect`), `clamp`, `std`,
+ELU/SELU/LeakyReLU and `clipGradNorm`. These currently use the Python backend.
+`tensorScope` releases intermediate references; return `keepTensor(result)` to
+promote an output, or use `ownTensor` for persistent state that you explicitly dispose.
+Scopes are synchronous for tensor operations and should not cross awaits.
+
+`Module.registerParameter` returns an owned wrapper for the registered parameter;
+`Module.to(Device)` moves parameters and buffers. Obtain parameter wrappers and
+construct optimizers after moving the model to its target device.
+`Optimizer.learningRate` reads/updates parameter-group learning rates without
+resetting accumulated optimizer state (the getter reads the first group).
+
+`Module.saveCheckpoint(path, optimizer: optimizer, iteration: n)` saves state
+under `model_state_dict`, `optimizer_state_dict` and `iter`.
+`loadCheckpoint(path, optimizer: optimizer, device: device)` restores state and
+returns the saved iteration. Pass no optimizer to load weights only.
+
+`Module.fromModule(source)` lets a typed Dart wrapper adopt a `Module.fromSource`
+backend without installing a Dart forward callback. Ownership transfers; do not
+dispose the original source wrapper separately. `callMethod` calls Python methods
+with one Tensor result; `invokeMethod` discards the result for operations such as
+reset. Both accept positional arguments and keyword arguments.
+
+`functional.dart` also includes uniform `rand`, `minimum`, `where`, boolean
+comparisons/reductions, `nonzero`, indexed copy/fill and `zero_` for vector tasks.
+`ScriptModule.forwardWithState(input, states)` invokes a TorchScript model taking
+`(input, tuple(states))` and returning `(output, tuple(nextStates))`, such as the
+official ANYdrive actuator. The caller owns the returned output/state wrappers.

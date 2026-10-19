@@ -79,10 +79,11 @@ final class PythonApi() implements BaseApi {
       return ResourceScope.scope(() {
         final nn = PyModule('torch.nn');
         final base = nn.getAttr('Module');
-        final modelClass = newType('DartModule', [base], {
-          'forward': callback,
-          '__module__': 'torch_dart',
-        });
+        final modelClass = newType(
+          'DartModule',
+          [base],
+          {'forward': callback, '__module__': 'torch_dart'},
+        );
         return ModulePython(modelClass.call0(), callback).detachToParentScope();
       });
     } catch (_) {
@@ -379,6 +380,29 @@ final class ScriptModulePython(final PyObject handle) implements ScriptModule {
       throw UnsupportedError('Only a single Tensor output is supported');
     }
     return TensorPython(result.detachToParentScope());
+  });
+
+  @override
+  ({Tensor output, List<Tensor> state}) forwardWithState(
+    Tensor input,
+    List<Tensor> state,
+  ) => ResourceScope.scope(() {
+    final packed = PyTuple.fromList([
+      for (final t in state) (t as TensorPython).handle,
+    ]);
+    final result = PyTuple.fromRef(
+      handle.getAttr('forward').forward([input, packed]).ref,
+    );
+    if (result.length != 2) throw StateError('Expected output and state tuple');
+    final output = result.getItem(PyInt(0));
+    final states = PyTuple.fromRef(result.getItem(PyInt(1)).ref);
+    return (
+      output: TensorPython(output.detachToParentScope()),
+      state: [
+        for (var i = 0; i < states.length; i++)
+          TensorPython(states.getItem(PyInt(i)).detachToParentScope()),
+      ],
+    );
   });
 
   @override
@@ -802,6 +826,28 @@ final class ModulePython implements ModuleBackend, ScopedResource {
     }
     ResourceScope.scope(() => _savePt.forward([handle, path, inputs.single]));
   }
+
+  @override
+  TensorPython callMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  }) => ResourceScope.scope(() {
+    final result = handle.getAttr(name).forward(args, kwargs: kwargs);
+    if (!PyModule('torch').getAttr('is_tensor').forward([result]).asBool()) {
+      throw UnsupportedError('Expected a tensor result from $name');
+    }
+    return TensorPython(result.detachToParentScope());
+  });
+
+  @override
+  void invokeMethod(
+    String name,
+    List<Object?> args, {
+    Map<String, Object?> kwargs = const {},
+  }) => ResourceScope.scope(() {
+    handle.getAttr(name).forward(args, kwargs: kwargs);
+  });
 
   @override
   TensorPython call(

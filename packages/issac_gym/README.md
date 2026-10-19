@@ -132,3 +132,9 @@ prefers this frozen file by default; an explicit `--policy` always overrides
 that choice. The export still uses TorchScript and does not require changing the
 Isaac Gym environment's installed PyTorch. Both model files live under the
 Git-ignored assets directory, so repeat the export on a new checkout.
+
+For the Dart ANYmal C flat task, see `robot_engine/apps/legged_gym` in the sibling
+workspace. The bindings also expose per-actor friction and rigid-body masses
+(for task-side domain randomization), extended PhysX contact/buffer settings,
+and asset maximum linear/angular velocities. These remain simulator primitives;
+reward, observation, command and episode logic belongs to the Dart task.

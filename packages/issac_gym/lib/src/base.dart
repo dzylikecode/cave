@@ -48,6 +48,12 @@ class PhysXParams {
   int? solver_type;
   int? num_position_iterations;
   int? num_velocity_iterations;
+  double? contact_offset;
+  double? rest_offset;
+  double? bounce_threshold_velocity;
+  double? max_depenetration_velocity;
+  int? max_gpu_contact_pairs;
+  double? default_buffer_size_multiplier;
   int? num_threads;
   bool? use_gpu;
 }
@@ -76,6 +82,8 @@ class AssetOptions {
   double? density;
   double? angular_damping;
   double? linear_damping;
+  double? max_angular_velocity;
+  double? max_linear_velocity;
   double? armature;
   double? thickness;
   DofDriveMode? default_dof_drive_mode;
@@ -141,6 +149,11 @@ abstract interface class Gym {
   );
   bool set_actor_dof_properties(Env env, int actor, GymArray properties);
   bool apply_actor_dof_efforts(Env env, int actor, List<double> efforts);
+
+  /// Sets each collision shape's friction, preserving its other properties.
+  void set_actor_friction(Env env, int actor, double friction);
+  List<double> get_actor_rigid_body_masses(Env env, int actor);
+  void set_actor_rigid_body_masses(Env env, int actor, List<double> masses);
   int find_actor_rigid_body_handle(Env env, int actor, String name);
   int get_actor_index(Env env, int actor, IndexDomain domain);
   void prepare_sim(Sim sim);
