@@ -2,6 +2,7 @@
 import 'package:py_embed/py_embed.dart';
 
 import '../base.dart';
+import '../scoped_owner.dart';
 
 final class PythonApi() implements BaseApi {
   final _mujoco = ResourceScope.unmanaged(() => PyModule('mujoco'));
@@ -17,7 +18,9 @@ final class PythonApi() implements BaseApi {
   );
   @override
   MjModelPython MjModel_from_xml_string(String xml) {
-    final model = _MjModel_from_xml_string.forward([xml]);
+    final model = ResourceScope.unmanaged(
+      () => _MjModel_from_xml_string.forward([xml]),
+    );
     return MjModelPython(model);
   }
 
@@ -26,14 +29,18 @@ final class PythonApi() implements BaseApi {
   );
   @override
   MjModelPython MjModel_from_xml_path(String path) {
-    final model = _MjModel_from_xml_path.forward([path]);
+    final model = ResourceScope.unmanaged(
+      () => _MjModel_from_xml_path.forward([path]),
+    );
     return MjModelPython(model);
   }
 
   late final _MjData = ResourceScope.unmanaged(() => _mujoco.getAttr('MjData'));
   @override
-  MjDataPython MjData_new(covariant MjModelPython model) =>
-      MjDataPython(_MjData.forward([model]), model);
+  MjDataPython MjData_new(covariant MjModelPython model) => MjDataPython(
+    ResourceScope.unmanaged(() => _MjData.forward([model])),
+    model,
+  );
 
   late final _mj_forward = ResourceScope.unmanaged(
     () => _mujoco.getAttr('mj_forward'),
@@ -43,6 +50,7 @@ final class PythonApi() implements BaseApi {
     _mj_forward.forward([model, data]).dispose();
   }
 
+  // 为了避免高频，而设计为如此
   late final _mj_step = ResourceScope.unmanaged(
     () => _mujoco.getAttr('mj_step'),
   );
@@ -63,8 +71,14 @@ final class PythonApi() implements BaseApi {
   }
 }
 
-class const MjModelPython(@override final PyObject handle)
+class MjModelPython(@override final PyObject handle)
+    with ScopedOwner
     implements MjModel, PyObjectWrapper {
+  this {
+    handle.detachFromScope();
+    ResourceScope.track(this);
+  }
+
   @override
   int get nq => handle.getAttrInt('nq');
 
@@ -97,33 +111,66 @@ class const MjModelPython(@override final PyObject handle)
   }
 
   @override
-  void dispose() => handle.dispose();
+  void dispose() {
+    if (isDisposed) return;
+    super.dispose();
+    handle.dispose();
+  }
 }
 
 class MjDataPython(
   @override final PyObject handle,
   @override final MjModelPython model,
-) implements MjData, PyObjectWrapper {
+) with ScopedOwner implements MjData, PyObjectWrapper {
+  this {
+    handle.detachFromScope();
+    ResourceScope.track(this);
+  }
+
   @override
   double get time => handle.getAttrDouble('time');
 
   @override
-  final MjDoubleListViewPython qpos = .new(handle.getAttr('qpos'));
+  final MjDoubleListViewPython qpos = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('qpos')),
+    ),
+  );
 
   @override
-  final MjDoubleListViewPython qvel = .new(handle.getAttr('qvel'));
+  final MjDoubleListViewPython qvel = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('qvel')),
+    ),
+  );
 
   @override
-  final MjDoubleListViewPython qacc = .new(handle.getAttr('qacc'));
+  final MjDoubleListViewPython qacc = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('qacc')),
+    ),
+  );
 
   @override
-  final MjDoubleListViewPython act = .new(handle.getAttr('act'));
+  final MjDoubleListViewPython act = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('act')),
+    ),
+  );
 
   @override
-  final MjDoubleListViewPython ctrl = .new(handle.getAttr('ctrl'));
+  final MjDoubleListViewPython ctrl = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('ctrl')),
+    ),
+  );
 
   @override
-  final MjDoubleListViewPython sensordata = .new(handle.getAttr('sensordata'));
+  final MjDoubleListViewPython sensordata = .new(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('sensordata')),
+    ),
+  );
 
   @override
   MjDataSensorViewsPython sensor(String name) =>
@@ -135,6 +182,8 @@ class MjDataPython(
 
   @override
   void dispose() {
+    if (isDisposed) return;
+    super.dispose();
     qpos.handle.dispose();
     qvel.handle.dispose();
     qacc.handle.dispose();

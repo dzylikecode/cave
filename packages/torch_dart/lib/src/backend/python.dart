@@ -79,7 +79,10 @@ final class PythonApi() implements BaseApi {
       return ResourceScope.scope(() {
         final nn = PyModule('torch.nn');
         final base = nn.getAttr('Module');
-        final modelClass = newType('DartModule', [base], {'forward': callback});
+        final modelClass = newType('DartModule', [base], {
+          'forward': callback,
+          '__module__': 'torch_dart',
+        });
         return ModulePython(modelClass.call0(), callback).detachToParentScope();
       });
     } catch (_) {
@@ -652,6 +655,18 @@ final class SGDPython(final PyObject handle) implements SGD {
   });
 
   @override
+  double get learningRate => ResourceScope.scope(
+    () => handle
+        .getAttr('param_groups')
+        .getItem(PyInt(0))
+        .getItem(PyString('lr'))
+        .asDouble(),
+  );
+
+  @override
+  set learningRate(double value) => _setLearningRate(handle, value);
+
+  @override
   void step() => ResourceScope.scope(() {
     final method = handle.getAttr('step');
     method.call0();
@@ -667,6 +682,18 @@ final class AdamPython(final PyObject handle) implements Adam {
     final method = handle.getAttr('zero_grad');
     method.forward([], kwargs: {'set_to_none': set_to_none});
   });
+
+  @override
+  double get learningRate => ResourceScope.scope(
+    () => handle
+        .getAttr('param_groups')
+        .getItem(PyInt(0))
+        .getItem(PyString('lr'))
+        .asDouble(),
+  );
+
+  @override
+  set learningRate(double value) => _setLearningRate(handle, value);
 
   @override
   void step() => ResourceScope.scope(() {
@@ -702,6 +729,65 @@ final class ModulePython implements ModuleBackend, ScopedResource {
     ResourceScope.promoteToParent(this);
     return this;
   }
+
+  @override
+  Tensor registerParameter(String name, Tensor parameter) =>
+      ResourceScope.scope(() {
+        final value = PyModule('torch.nn')
+            .getAttr('Parameter')
+            .forward([parameter]);
+        handle.getAttr('register_parameter').forward([name, value]);
+        return TensorPython(value.detachToParentScope());
+      });
+
+  @override
+  void to(Device device) => ResourceScope.scope(() {
+    handle.getAttr('to').forward([device.toString()]);
+  });
+
+  @override
+  void saveCheckpoint(String path, {Optimizer? optimizer, int iteration = 0}) =>
+      ResourceScope.scope(() {
+        final state = handle.getAttr('state_dict').call0();
+        PyModule('torch').getAttr('save').forward([
+          {
+            'model_state_dict': state,
+            if (optimizer != null)
+              'optimizer_state_dict': _optimizerHandle(optimizer)
+                  .getAttr('state_dict')
+                  .call0(),
+            'iter': iteration,
+          },
+          path,
+        ]);
+      });
+
+  @override
+  int loadCheckpoint(String path, {Optimizer? optimizer, Device? device}) =>
+      ResourceScope.scope(() {
+        final state = PyModule('torch')
+            .getAttr('load')
+            .forward(
+              [path],
+              kwargs: {
+                if (!PyModule('torch')
+                    .getAttr('__version__')
+                    .asString()
+                    .startsWith('1.'))
+                  'weights_only': true,
+                if (device != null) 'map_location': device.toString(),
+              },
+            );
+        handle.getAttr('load_state_dict').forward([
+          state.getItem(PyString('model_state_dict')),
+        ]);
+        if (optimizer != null) {
+          _optimizerHandle(optimizer)
+              .getAttr('load_state_dict')
+              .forward([state.getItem(PyString('optimizer_state_dict'))]);
+        }
+        return state.getItem(PyString('iter')).asInt();
+      });
 
   @override
   void save(String path) => ResourceScope.scope(() {
@@ -804,3 +890,19 @@ def _save_pt(model, path, example_input):
         for module, flag in training:
             module.training = flag
 ''';
+
+PyObject _optimizerHandle(Optimizer optimizer) => switch (optimizer) {
+  AdamPython(:final handle) => handle,
+  SGDPython(:final handle) => handle,
+  _ => throw UnsupportedError('Expected a Python optimizer'),
+};
+
+void _setLearningRate(PyObject handle, double value) => ResourceScope.scope(() {
+  if (!value.isFinite || value <= 0) {
+    throw ArgumentError.value(value, 'learningRate');
+  }
+  final groups = PyList.fromRef(handle.getAttr('param_groups').ref);
+  for (var i = 0; i < groups.length; i++) {
+    groups.getItem(PyInt(i)).setItem(PyString('lr'), PyDouble(value));
+  }
+});

@@ -4,6 +4,7 @@ import 'backend/python.dart';
 import 'backend/native.dart';
 
 import 'package:meta/meta.dart';
+import 'package:resource_scope/resource_scope.dart';
 
 @internal
 final nativeApi = const NativeApi();
@@ -40,7 +41,7 @@ abstract interface class BaseApi {
   void mj_resetData(MjModel model, MjData data);
 }
 
-abstract interface class MjData {
+abstract interface class MjData implements ScopedResource {
   factory(MjModel model) => api.MjData_new(model);
 
   MjModel get model;
@@ -79,10 +80,11 @@ abstract interface class MjData {
   /// Looks up a sensor by ID, with the same lifetime as [sensor].
   MjDataSensorViews sensorById(int id);
 
+  @override
   void dispose();
 }
 
-abstract interface class MjModel {
+abstract interface class MjModel implements ScopedResource {
   factory from_xml_string(String xml) => api.MjModel_from_xml_string(xml);
   factory from_xml_path(String path) => api.MjModel_from_xml_path(path);
 
@@ -111,6 +113,7 @@ abstract interface class MjModel {
   /// Looks up a sensor by ID, with the same lifetime as [sensor].
   MjModelSensorViews sensorById(int id);
 
+  @override
   void dispose();
 }
 

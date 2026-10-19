@@ -391,6 +391,10 @@ abstract interface class Optimizer {
   /// Updates parameters using their current gradients.
   void step();
 
+  /// Changes the learning rate without resetting accumulated optimizer state.
+  double get learningRate;
+  set learningRate(double value);
+
   /// Releases this wrapper; dispose once and do not use it afterward.
   void dispose();
 }
@@ -490,6 +494,24 @@ abstract class Module {
 
   /// Returns independently owned parameter wrappers; dispose each once.
   List<Tensor> parameters() => _backend.parameters();
+
+  /// Registers a trainable leaf tensor; the supplied wrapper stays caller-owned.
+  Tensor registerParameter(String name, Tensor parameter) =>
+      _backend.registerParameter(name, parameter);
+
+  /// Moves all parameters and buffers to a device.
+  Module to(Device device) {
+    _backend.to(device);
+    return this;
+  }
+
+  /// Saves model and optional optimizer state using torch.save.
+  void saveCheckpoint(String path, {Optimizer? optimizer, int iteration = 0}) =>
+      _backend.saveCheckpoint(path, optimizer: optimizer, iteration: iteration);
+
+  /// Loads a state-dict checkpoint and returns its iteration.
+  int loadCheckpoint(String path, {Optimizer? optimizer, Device? device}) =>
+      _backend.loadCheckpoint(path, optimizer: optimizer, device: device);
   bool get training => _backend.training;
   Module train([bool mode = true]) {
     _backend.train(mode);
@@ -586,6 +608,10 @@ final class Conv2d extends Module {
 
 @internal
 abstract interface class ModuleBackend {
+  Tensor registerParameter(String name, Tensor parameter);
+  void to(Device device);
+  void saveCheckpoint(String path, {Optimizer? optimizer, int iteration = 0});
+  int loadCheckpoint(String path, {Optimizer? optimizer, Device? device});
   void save(String path);
   void save_pt(String path, {required List<Tensor> inputs});
   Tensor call(List<Tensor> inputs, {Map<String, Tensor> kwargs = const {}});

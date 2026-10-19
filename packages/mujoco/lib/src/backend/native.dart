@@ -7,6 +7,10 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart' as ffi;
 
 import '../base.dart';
+import '../scoped_owner.dart';
+
+import 'package:resource_scope/resource_scope.dart';
+
 import 'native.g.dart' as g;
 
 final class const NativeApi() implements BaseApi {
@@ -95,7 +99,14 @@ class MjVfsNative._(final Pointer<g.mjVFS> ptr) {
   }
 }
 
-class MjModelNative(final Pointer<g.mjModel> ptr) implements MjModel {
+class MjModelNative(final Pointer<g.mjModel> ptr)
+    with ScopedOwner
+    implements MjModel {
+  this {
+    if (ptr == nullptr) throw StateError('Failed to allocate MuJoCo model');
+    ResourceScope.track(this);
+  }
+
   @override
   int get nq => ptr.ref.nq;
 
@@ -133,13 +144,26 @@ class MjModelNative(final Pointer<g.mjModel> ptr) implements MjModel {
   }
 
   @override
-  void dispose() => g.mj_deleteModel(ptr);
+  void dispose() {
+    if (isDisposed) return;
+    super.dispose();
+    g.mj_deleteModel(ptr);
+  }
 }
 
-class MjDataNative(
+class MjDataNative._(
   final Pointer<g.mjData> ptr,
   @override final MjModelNative model,
-) implements MjData {
+) with ScopedOwner implements MjData {
+  this {
+    ResourceScope.track(this);
+  }
+
+  factory MjDataNative(Pointer<g.mjData> ptr, MjModelNative model) {
+    if (ptr == nullptr) throw StateError('Failed to allocate MuJoCo data');
+    return MjDataNative._(ptr, model);
+  }
+
   @override
   double get time => ptr.ref.time;
 
@@ -173,7 +197,11 @@ class MjDataNative(
       MjDataSensorViewsNative(this, model.sensorById(id));
 
   @override
-  void dispose() => g.mj_deleteData(ptr);
+  void dispose() {
+    if (isDisposed) return;
+    super.dispose();
+    g.mj_deleteData(ptr);
+  }
 }
 
 class MjDoubleListViewNative(final Pointer<Double> ptr, final int _length)

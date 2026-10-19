@@ -241,14 +241,11 @@ void main(List<String> arguments) {
     roots = gym.acquire_actor_root_state_tensor(sim);
     gym.refresh_actor_root_state_tensor(sim);
     initialRoots = roots.clone();
-    policy = torch.jit.load(
-      policyPath,
-      map_location: const torch.Device(torch.DeviceType.cpu),
-    )..eval();
+    policy = torch.jit.load(policyPath, map_location: .new(.cpu))..eval();
     if (!headless) {
       viewer = gym.create_viewer(sim, CameraProperties());
-      gym.subscribe_viewer_keyboard_event(viewer, KeyboardInput.escape, 'quit');
-      gym.subscribe_viewer_keyboard_event(viewer, KeyboardInput.r, 'reset');
+      gym.subscribe_viewer_keyboard_event(viewer, .escape, 'quit');
+      gym.subscribe_viewer_keyboard_event(viewer, .r, 'reset');
       gym.viewer_camera_look_at(
         viewer,
         env,

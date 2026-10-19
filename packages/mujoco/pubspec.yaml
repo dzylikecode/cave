@@ -9,6 +9,7 @@ environment:
 resolution: workspace
 
 dependencies:
+  resource_scope: ^0.1.0
   ffi: ^2.2.0
   code_assets: ^2.1.0
   hooks: ^2.2.0
