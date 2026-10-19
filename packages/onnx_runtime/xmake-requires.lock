@@ -1,0 +1,15 @@
+{
+    ["linux|x86_64"] = {
+        ["onnxruntime 1.22.0#a3fedbe8"] = {
+            repo = {
+                branch = "master",
+                commit = "a32d7e4ed13b8bbb8563c5cc4ee415fa333fd040",
+                url = "https://github.com/xmake-io/xmake-repo.git"
+            },
+            version = "1.22.0"
+        }
+    },
+    __meta__ = {
+        version = "1.0"
+    }
+}
