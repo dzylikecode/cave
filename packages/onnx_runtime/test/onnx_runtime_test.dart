@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:onnx_runtime/onnx_runtime.dart';
 import 'package:test/test.dart';
 
@@ -13,6 +14,26 @@ void main() {
     expect(() => OrtTensor([-2], source), throwsArgumentError);
     expect(OrtTensor([], Float32List.fromList([4])).shape, isEmpty);
   });
+  test('async native backend loads bytes and disposes its runtime', () async {
+    final session = await OrtInferenceSession.create(
+      File('test/fixtures/add.onnx').readAsBytesSync(),
+      backend: OrtNativeBackend(),
+    );
+    try {
+      expect(session.inputNames, ['a', 'b']);
+      final result = await session.run({
+        'a': OrtTensor([1, 2], Float32List.fromList([1, 2])),
+        'b': OrtTensor([1, 2], Float32List.fromList([3, 4])),
+      });
+      expect(result['sum']!.data, [4, 6]);
+      await expectLater(session.run({}), throwsArgumentError);
+    } finally {
+      await session.dispose();
+    }
+    await session.dispose();
+    await expectLater(session.run({}), throwsStateError);
+  });
+
   group('native runtime', () {
     late OrtRuntime runtime;
     setUp(() {

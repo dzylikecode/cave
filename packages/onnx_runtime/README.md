@@ -81,3 +81,35 @@ is preserved in `third_party/onnxruntime/LICENSE`. Bindings in
 `lib/src/third_party/` are generated; do not edit them manually. The `minimal`
 xmake target is a small native version probe, matching the MuJoCo package design;
 its shared package dependency is what the Dart hook bundles.
+
+## Portable backend API
+
+The public tensor, backend and asynchronous session interfaces do not import
+`dart:ffi` or `dart:io`. The native implementation is conditionally exported;
+a JavaScript backend can implement `OrtBackend` and `OrtSessionHandler` using
+`onnxruntime-web`. That adapter is not implemented yet.
+
+```dart
+final session = await OrtInferenceSession.create(
+  modelBytes,
+  backend: OrtNativeBackend(),
+  options: const OrtSessionOptions(intraOpNumThreads: 1),
+);
+try {
+  final outputs = await session.run(feeds);
+  print(outputs);
+} finally {
+  await session.dispose();
+}
+```
+
+`OrtNativeBackend()` owns and releases a runtime per session. Pass
+`OrtNativeBackend(runtime: runtime)` to share an externally owned runtime;
+dispose all sessions before releasing that runtime. Await active runs before
+session disposal. The asynchronous native adapter still executes inference on
+the calling isolate. Use the existing `OrtSession.run()` for synchronous native
+inference; `OrtSession.fromBytes()` also accepts model bytes directly.
+
+This first separation retains float32 tensors and all-output inference. Typed
+values, model metadata, selected/preallocated outputs and provider options are
+future additions to the common API.
