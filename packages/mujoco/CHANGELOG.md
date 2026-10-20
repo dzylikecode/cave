@@ -1,3 +1,9 @@
+## Unreleased
+
+- Add backend-independent timestep, joint/actuator metadata and body force views.
+- Keep model factories and physics operations delegated to the api abstraction.
+- Add semantic sensor kinds and use primary constructors for metadata.
+
 ## 0.1.0
 
 - 更新 py_embed 到 0.2.3

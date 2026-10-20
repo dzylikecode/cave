@@ -2,6 +2,7 @@
 import 'package:py_embed/py_embed.dart';
 
 import '../base.dart';
+import '../model_info.dart';
 import '../scoped_owner.dart';
 
 final class PythonApi() implements BaseApi {
@@ -80,6 +81,90 @@ class MjModelPython(@override final PyObject handle)
   }
 
   @override
+  double get timestep => ResourceScope.scope(
+    () => handle.getAttr('opt').getAttrDouble('timestep'),
+  );
+  @override
+  int get njnt => handle.getAttrInt('njnt');
+  @override
+  int get nbody => handle.getAttrInt('nbody');
+
+  PyObject _at(String field, int row, [int? column]) {
+    final key = column == null
+        ? PyInt(row)
+        : PyTuple.fromList([PyInt(row), PyInt(column)]);
+    return handle.getAttr(field).getItem(key);
+  }
+
+  int _intAt(String field, int row, [int? column]) =>
+      _at(field, row, column).asInt();
+  double _doubleAt(String field, int row, [int? column]) =>
+      _at(field, row, column).asDouble();
+  String _name(String kind, int id) =>
+      handle.getAttr(kind).forward([id]).getAttrString('name');
+  @override
+  MjJointInfo jointById(int id) => ResourceScope.scope(() {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', njnt);
+    return .new(
+      id: id,
+      name: _name('joint', id),
+      type: MjJointType.values[_intAt('jnt_type', id)],
+      qposAddress: _intAt('jnt_qposadr', id),
+      dofAddress: _intAt('jnt_dofadr', id),
+    );
+  });
+  @override
+  MjActuatorInfo actuatorById(int id) => ResourceScope.scope(() {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', nu);
+    final jointTransmission = _intAt('actuator_trntype', id) == 0;
+    final joint = jointTransmission
+        ? jointById(_intAt('actuator_trnid', id, 0))
+        : null;
+    final unitGear =
+        _doubleAt('actuator_gear', id, 0) == 1 &&
+        List.generate(
+          5,
+          (i) => _doubleAt('actuator_gear', id, i + 1),
+        ).every((v) => v == 0);
+    return .new(
+      id: id,
+      name: _name('actuator', id),
+      joint: joint,
+      isUnitTorqueMotor:
+          jointTransmission &&
+          unitGear &&
+          _intAt('actuator_dyntype', id) == 0 &&
+          _intAt('actuator_gaintype', id) == 0 &&
+          _intAt('actuator_biastype', id) == 0 &&
+          _doubleAt('actuator_gainprm', id, 0) == 1,
+      controlRange: _at('actuator_ctrllimited', id).asBool()
+          ? (
+              lower: _doubleAt('actuator_ctrlrange', id, 0),
+              upper: _doubleAt('actuator_ctrlrange', id, 1),
+            )
+          : null,
+    );
+  });
+  @override
+  MjBodyInfo body(String name) => ResourceScope.scope(() {
+    if (isDisposed) throw StateError('Model is disposed');
+    try {
+      final view = handle.getAttr('body').forward([name]);
+      return bodyById(view.getAttrInt('id'));
+    } on PyException {
+      throw ArgumentError.value(name, 'name', 'Unknown body');
+    }
+  });
+  @override
+  MjBodyInfo bodyById(int id) => ResourceScope.scope(() {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', nbody);
+    return .new(id, _name('body', id));
+  });
+
+  @override
   int get nq => handle.getAttrInt('nq');
 
   @override
@@ -125,6 +210,37 @@ class MjDataPython(
   this {
     handle.detachFromScope();
     ResourceScope.track(this);
+  }
+
+  MjDoubleListViewPython _flatArray(String name) => MjDoubleListViewPython(
+    ResourceScope.unmanaged(
+      () => ResourceScope.returning(
+        () => handle.getAttr(name).getAttr('reshape').forward([-1]),
+      ),
+    ),
+  );
+  late final MjDoubleListViewPython _bodyPositions = _flatArray('xpos');
+  late final MjDoubleListViewPython _bodyForces = _flatArray('xfrc_applied');
+  // Track initialization without evaluating a lazy array during disposal.
+  bool _bodyArraysCreated = false;
+  void _ensureBodyArrays() {
+    if (!_bodyArraysCreated) {
+      _bodyPositions;
+      _bodyForces;
+      _bodyArraysCreated = true;
+    }
+  }
+
+  @override
+  MjDataBodyViews body(String name) => bodyById(model.body(name).id);
+  @override
+  MjDataBodyViews bodyById(int id) {
+    if (isDisposed || model.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+    final info = model.bodyById(id);
+    _ensureBodyArrays();
+    return MjDataBodyViewsPython(this, info);
   }
 
   @override
@@ -190,6 +306,10 @@ class MjDataPython(
     act.handle.dispose();
     ctrl.handle.dispose();
     sensordata.handle.dispose();
+    if (_bodyArraysCreated) {
+      _bodyPositions.handle.dispose();
+      _bodyForces.handle.dispose();
+    }
     handle.dispose();
   }
 }
@@ -242,6 +362,19 @@ class MjModelSensorViewsPython(
   int get type => _getInt('type');
 
   @override
+  MjSensorKind get kind => ResourceScope.scope(() {
+    final types = PyModule('mujoco').getAttr('mjtSensor');
+    for (final entry in {
+      'mjSENS_ACCELEROMETER': MjSensorKind.accelerometer,
+      'mjSENS_GYRO': MjSensorKind.gyro,
+      'mjSENS_FRAMEQUAT': MjSensorKind.frameQuaternion,
+    }.entries) {
+      if (type == types.getAttr(entry.key).asInt()) return entry.value;
+    }
+    return .other;
+  });
+
+  @override
   int get dim => _getInt('dim');
 
   @override
@@ -285,4 +418,62 @@ class _MjSensorDataSlicePython(
 
   @override
   List<double> toList() => .generate(length, (index) => this[index]);
+}
+
+class MjDataBodyViewsPython(final MjDataPython owner, final MjBodyInfo info)
+    implements MjDataBodyViews {
+  @override
+  int get id => info.id;
+  @override
+  String get name => info.name;
+  @override
+  late final MjDoubleListView position = _MjBodySlicePython(
+    owner,
+    owner._bodyPositions,
+    3 * id,
+    3,
+  );
+  @override
+  late final MjDoubleListView appliedForce = _MjBodySlicePython(
+    owner,
+    owner._bodyForces,
+    6 * id,
+    6,
+  );
+}
+
+class _MjBodySlicePython(
+  final MjDataPython owner,
+  final MjDoubleListViewPython source,
+  final int offset,
+  final int size,
+) implements MjDoubleListView {
+  void _check() {
+    if (owner.isDisposed || owner.model.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+  }
+
+  @override
+  int get length {
+    _check();
+    return size;
+  }
+
+  @override
+  double operator [](int index) {
+    _check();
+    RangeError.checkValidIndex(index, this, 'index', size);
+    return source[offset + index];
+  }
+
+  @override
+  void operator []=(int index, double value) {
+    _check();
+    RangeError.checkValidIndex(index, this, 'index', size);
+    source[offset + index] = value;
+  }
+
+  @override
+  List<double> toList() => List.generate(length, (i) => this[i]);
 }

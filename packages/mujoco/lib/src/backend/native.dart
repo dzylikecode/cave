@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart' as ffi;
 
 import '../base.dart';
+import '../model_info.dart';
 import '../scoped_owner.dart';
 
 import 'package:resource_scope/resource_scope.dart';
@@ -108,6 +109,87 @@ class MjModelNative(final Pointer<g.mjModel> ptr)
   }
 
   @override
+  double get timestep => ptr.ref.opt.timestep;
+  @override
+  int get njnt => ptr.ref.njnt;
+  @override
+  int get nbody => ptr.ref.nbody;
+
+  String _name(g.mjtObj type, int id) {
+    final name = g.mj_id2name(ptr, type.value, id);
+    return name == nullptr ? '' : name.cast<ffi.Utf8>().toDartString();
+  }
+
+  @override
+  MjJointInfo jointById(int id) {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', njnt);
+    return .new(
+      id: id,
+      name: _name(.mjOBJ_JOINT, id),
+      type: MjJointType.values[ptr.ref.jnt_type[id]],
+      qposAddress: ptr.ref.jnt_qposadr[id],
+      dofAddress: ptr.ref.jnt_dofadr[id],
+    );
+  }
+
+  @override
+  MjActuatorInfo actuatorById(int id) {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', nu);
+    final jointTransmission =
+        ptr.ref.actuator_trntype[id] == g.mjtTrn.mjTRN_JOINT.value;
+    final joint = jointTransmission
+        ? jointById(ptr.ref.actuator_trnid[2 * id])
+        : null;
+    final unitGear =
+        ptr.ref.actuator_gear[6 * id] == 1 &&
+        List.generate(
+          5,
+          (i) => ptr.ref.actuator_gear[6 * id + 1 + i],
+        ).every((v) => v == 0);
+    return .new(
+      id: id,
+      name: _name(.mjOBJ_ACTUATOR, id),
+      joint: joint,
+      isUnitTorqueMotor:
+          jointTransmission &&
+          unitGear &&
+          ptr.ref.actuator_dyntype[id] == 0 &&
+          ptr.ref.actuator_gaintype[id] == 0 &&
+          ptr.ref.actuator_biastype[id] == 0 &&
+          ptr.ref.actuator_gainprm[10 * id] == 1,
+      controlRange: ptr.ref.actuator_ctrllimited[id]
+          ? (
+              lower: ptr.ref.actuator_ctrlrange[2 * id],
+              upper: ptr.ref.actuator_ctrlrange[2 * id + 1],
+            )
+          : null,
+    );
+  }
+
+  @override
+  MjBodyInfo body(String name) {
+    if (isDisposed) throw StateError('Model is disposed');
+    final id = ffi.using(
+      (arena) => g.mj_name2id(
+        ptr,
+        g.mjtObj.mjOBJ_BODY.value,
+        name.toNativeUtf8(allocator: arena).cast(),
+      ),
+    );
+    if (id < 0) throw ArgumentError.value(name, 'name', 'Unknown body');
+    return bodyById(id);
+  }
+
+  @override
+  MjBodyInfo bodyById(int id) {
+    if (isDisposed) throw StateError('Model is disposed');
+    RangeError.checkValidIndex(id, this, 'id', nbody);
+    return .new(id, _name(.mjOBJ_BODY, id));
+  }
+
+  @override
   int get nq => ptr.ref.nq;
 
   @override
@@ -162,6 +244,16 @@ class MjDataNative._(
   factory MjDataNative(Pointer<g.mjData> ptr, MjModelNative model) {
     if (ptr == nullptr) throw StateError('Failed to allocate MuJoCo data');
     return MjDataNative._(ptr, model);
+  }
+
+  @override
+  MjDataBodyViews body(String name) => bodyById(model.body(name).id);
+  @override
+  MjDataBodyViews bodyById(int id) {
+    if (isDisposed || model.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+    return MjDataBodyViewsNative(this, model.bodyById(id));
   }
 
   @override
@@ -233,6 +325,20 @@ class MjModelSensorViewsNative(
   int get type => model.ptr.ref.sensor_type[id];
 
   @override
+  MjSensorKind get kind {
+    if (type == g.mjtSensor.mjSENS_ACCELEROMETER.value) {
+      return .accelerometer;
+    }
+    if (type == g.mjtSensor.mjSENS_GYRO.value) {
+      return .gyro;
+    }
+    if (type == g.mjtSensor.mjSENS_FRAMEQUAT.value) {
+      return .frameQuaternion;
+    }
+    return .other;
+  }
+
+  @override
   int get dim => model.ptr.ref.sensor_dim[id];
 
   @override
@@ -254,4 +360,37 @@ class MjDataSensorViewsNative(
     owner.ptr.ref.sensordata + sensor.adr,
     sensor.dim,
   );
+}
+
+class MjDataBodyViewsNative(final MjDataNative owner, final MjBodyInfo info)
+    implements MjDataBodyViews {
+  void _check() {
+    if (owner.isDisposed || owner.model.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+  }
+
+  @override
+  int get id => info.id;
+  @override
+  String get name => info.name;
+  late final MjDoubleListView _position = GuardedDoubleListView(
+    MjDoubleListViewNative(owner.ptr.ref.xpos + 3 * id, 3),
+    _check,
+  );
+  late final MjDoubleListView _force = GuardedDoubleListView(
+    MjDoubleListViewNative(owner.ptr.ref.xfrc_applied + 6 * id, 6),
+    _check,
+  );
+  @override
+  MjDoubleListView get position {
+    _check();
+    return _position;
+  }
+
+  @override
+  MjDoubleListView get appliedForce {
+    _check();
+    return _force;
+  }
 }

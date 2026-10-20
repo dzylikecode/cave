@@ -1,3 +1,10 @@
+## Unreleased
+
+- Preserve covariant Python model/data parameters and let Dart enforce backend types.
+
+- Add public Python interoperability, locked synchronous updates and deterministic viewer disposal.
+- Reject native model/data before launching the Python passive viewer.
+
 ## 0.0.3
 
 - update mujoco: 0.3.0

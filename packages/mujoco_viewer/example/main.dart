@@ -19,16 +19,18 @@ void main() async {
 
   final model = MjModel.from_xml_string(modelXml);
   final data = MjData(model);
-  final viewer = MujocoViewer.launch_passive(model, data);
-
+  MujocoViewer? viewer;
   try {
-    while (viewer.is_running) {
-      mj_step(model, data);
-      viewer.sync();
-      await Future.delayed(const Duration(milliseconds: 2));
+    final display = MujocoViewer.launch_passive(model, data);
+    viewer = display;
+    while (display.is_running) {
+      display.withLock(() => mj_step(model, data));
+      display.sync();
+      await Future<void>.delayed(const Duration(milliseconds: 2));
     }
   } finally {
-    viewer.close();
-    viewer.dispose();
+    viewer?.dispose();
+    data.dispose();
+    model.dispose();
   }
 }

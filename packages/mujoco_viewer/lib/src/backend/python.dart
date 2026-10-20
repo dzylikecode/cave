@@ -1,25 +1,28 @@
-// ignore_for_file: non_constant_identifier_names, implementation_imports
+// ignore_for_file: non_constant_identifier_names
 import 'package:py_embed/py_embed.dart';
-import 'package:mujoco/src/backend/python.dart';
+import 'package:mujoco/python.dart';
 
 import '../base.dart';
 
-final class PythonApi() implements BaseApi {
-  final _mujoco_viewer = ResourceScope.unmanaged(
-    () => PyModule('mujoco.viewer'),
-  );
-
-  late final _MujocoViewer_launch_passive = ResourceScope.unmanaged(
-    () => _mujoco_viewer.getAttr('launch_passive'),
-  );
-
+final class const PythonApi() implements BaseApi {
   @override
   MujocoViewerPython MujocoViewer_launch_passive(
     covariant MjModelPython model,
     covariant MjDataPython data,
   ) {
-    final h = _MujocoViewer_launch_passive.forward([model, data]);
-    return MujocoViewerPython(h, model, data);
+    if (model.isDisposed || data.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+    if (!identical(data.model, model)) {
+      throw ArgumentError('Data belongs to another model');
+    }
+    final handle = ResourceScope.unmanaged(
+      () => ResourceScope.returning(() {
+        final module = PyModule('mujoco.viewer');
+        return module.getAttr('launch_passive').forward([model, data]);
+      }),
+    );
+    return .new(handle, model, data);
   }
 }
 
@@ -28,24 +31,68 @@ class MujocoViewerPython(
   final MjModelPython model,
   final MjDataPython data,
 ) implements MujocoViewer {
+  bool _closed = false;
+  bool _disposed = false;
   @override
-  bool get is_running => ResourceScope.scope(() {
-    final method = handle.getAttr('is_running');
-    return method.call0().asBool();
-  });
+  bool get isDisposed => _disposed;
+  void _ensureAlive() {
+    if (isDisposed || _closed) throw StateError('Viewer is closed');
+    if (model.isDisposed || data.isDisposed) {
+      throw StateError('Model or data is disposed');
+    }
+  }
 
   @override
-  void sync() => ResourceScope.scope(() {
-    final method = handle.getAttr('sync');
-    method.call0();
-  });
+  bool get is_running {
+    if (isDisposed || _closed) return false;
+    _ensureAlive();
+    return ResourceScope.scope(
+      () => handle.getAttr('is_running').call0().asBool(),
+    );
+  }
 
   @override
-  void close() => ResourceScope.scope(() {
-    final method = handle.getAttr('close');
-    method.call0();
-  });
+  T withLock<T>(T Function() action) {
+    _ensureAlive();
+    final lock = ResourceScope.unmanaged(
+      () => ResourceScope.returning(() => handle.getAttr('lock').call0()),
+    );
+    try {
+      ResourceScope.scope(() => lock.getAttr('__enter__').call0());
+      try {
+        final result = action();
+        if (result is Future) {
+          throw ArgumentError('Viewer updates must be synchronous');
+        }
+        return result;
+      } finally {
+        ResourceScope.scope(
+          () => lock.getAttr('__exit__').forward([null, null, null]),
+        );
+      }
+    } finally {
+      lock.dispose();
+    }
+  }
 
   @override
-  void dispose() => handle.dispose();
+  void sync() {
+    _ensureAlive();
+    ResourceScope.scope(() => handle.getAttr('sync').call0());
+  }
+
+  @override
+  void close() {
+    if (isDisposed || _closed) return;
+    ResourceScope.scope(() => handle.getAttr('close').call0());
+    _closed = true;
+  }
+
+  @override
+  void dispose() {
+    if (isDisposed) return;
+    close();
+    handle.dispose();
+    _disposed = true;
+  }
 }
