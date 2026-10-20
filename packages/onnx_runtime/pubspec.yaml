@@ -1,6 +1,6 @@
 name: onnx_runtime
 description: CPU ONNX Runtime inference through generated C API bindings.
-version: 1.0.0
+version: 0.0.1
 # repository: https://github.com/my_org/my_repo
 
 environment:
