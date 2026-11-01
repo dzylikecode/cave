@@ -1,5 +1,8 @@
 {
-    ["linux|x86_64"] = {
+    __meta__ = {
+        version = "1.0"
+    },
+    ["linux|arm64"] = {
         ["onnxruntime 1.22.0#a3fedbe8"] = {
             repo = {
                 branch = "master",
@@ -9,7 +12,12 @@
             version = "1.22.0"
         }
     },
-    __meta__ = {
-        version = "1.0"
+    ["linux|x86_64"] = {
+        ["onnxruntime 1.22.0#6f57803a"] = {
+            repo = {
+                url = "xmake_repo"
+            },
+            version = "1.22.0"
+        }
     }
 }

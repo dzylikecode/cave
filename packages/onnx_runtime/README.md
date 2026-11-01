@@ -10,19 +10,50 @@ Other tensor element types, GPU providers, and zero-copy reusable inference
 buffers are not implemented yet. Each run currently allocates native buffers;
 this API is not yet optimized for a real-time control loop.
 
+## Native asset pruning
+
+The hooks share `XmakeLibrary`'s default `.byPreference` configuration and use
+the dedicated `onnxruntime_dart` export target. The local recipe under
+`xmake_repo/packages/o/onnxruntime/` retains official precompiled binaries for
+development and builds the pinned CPU runtime from source for AOT linking.
+Source builds require Python 3, CMake 3.28, and Ninja; the recipe supplies
+CMake and Ninja. The
+initial source build downloads upstream dependencies and takes substantially
+longer than development builds. Installed packages are reused afterward.
+
+The recipe obtains the exact static link inputs from CMake's File API and merges
+them into one archive. The Dart link hook records `OrtGetApiBase` usage and either
+includes the native code asset or omits it entirely when unused. The C API's
+function-pointer table still retains its referenced implementations; this does
+not provide per-operator pruning. Missing usage recordings conservatively retain
+the library. See [local recipe details](xmake_repo/README.md).
+
+```sh
+dart run example/native_smoke.dart
+dart run tool/verify_native_assets.dart
+```
+
+The smoke example embeds the tiny Add model from `test/fixtures/add.onnx`, so its
+compiled executable runs independently of the source tree. The verification
+script checks inference and a second bundle that uses only `OrtTensor`. Both
+checks pass on Linux x64: the used bundle exports only `OrtGetApiBase`, has no
+dependency on the upstream runtime DSO, and the unused bundle contains no ONNX
+Runtime library.
+
 ## Native library
 
 Install xmake and make it available on `PATH`. On the first `dart run`,
 `dart test`, or native build, `hook/build.dart` uses `native_toolchain_xmake`
-to resolve the pinned CPU shared package, install its runtime library, and
-register it as a bundled code asset. Later runs reuse the build cache.
+to resolve the pinned CPU package, install its selected library, and register
+it as a code asset. Development uses a shared library; AOT routes the merged
+static archive through the link hook. Later runs reuse the build cache.
 Xmake verifies downloads using the package recipe checksums. The repository
 revision is recorded in `xmake-requires.lock`.
 
 No library path, environment variable, or system-wide ONNX Runtime install is
 needed. Package acquisition requires network access on the first build.
-Only the Linux x64 build has been tested in this workspace; other targets
-require an ONNX Runtime binary supported by the xmake package.
+Only Linux x64 has been validated in this workspace. Other platforms need
+separate validation of their shared binaries and static source toolchains.
 
 ```dart
 import 'dart:typed_data';

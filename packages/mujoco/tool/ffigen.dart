@@ -10,9 +10,9 @@ Future<void> main() async {
       dart: DartOutput(
         path: packageRoot.resolve('lib/src/backend/native.g.dart'),
       ),
-      // recordUseMapping: packageRoot.resolve(
-      //   'lib/src/backend/mujoco.record_use_mapping.g.dart',
-      // ),
+      recordUseMapping: packageRoot.resolve(
+        'lib/src/backend/mujoco.record_use_mapping.g.dart',
+      ),
     ),
 
     input: Input(
@@ -29,7 +29,7 @@ Future<void> main() async {
       Visitor(
         func: (node) {
           node.isIncluded = true;
-          // node.recordUse = true;
+          node.recordUse = true;
         },
         struct: (node) {
           node.isIncluded = true;

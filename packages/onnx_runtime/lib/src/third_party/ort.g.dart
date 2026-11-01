@@ -11,9 +11,12 @@ library;
 
 import 'dart:ffi' as ffi;
 
+import 'package:meta/meta.dart' as meta;
+
 /// \brief The Onnxruntime library's entry point to access the C API
 ///
 /// Call this to get the a pointer to an ::OrtApiBase
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<OrtApiBase> Function()>()
 external ffi.Pointer<OrtApiBase> OrtGetApiBase();
 
@@ -7263,12 +7266,11 @@ enum OrtCudnnConvAlgoSearch {
 /// Onnxruntime will throw exception on return value of nullptr or 0, indicating that the function failed to create a thread
 typedef OrtCustomCreateThreadFn =
     ffi.Pointer<ffi.NativeFunction<OrtCustomCreateThreadFnFunction>>;
-typedef OrtCustomCreateThreadFnFunction =
-    OrtCustomThreadHandle Function(
-      ffi.Pointer<ffi.Void> ort_custom_thread_creation_options,
-      OrtThreadWorkerFn ort_thread_worker_fn,
-      ffi.Pointer<ffi.Void> ort_worker_fn_param,
-    );
+typedef OrtCustomCreateThreadFnFunction = OrtCustomThreadHandle Function(
+  ffi.Pointer<ffi.Void> ort_custom_thread_creation_options,
+  OrtThreadWorkerFn ort_thread_worker_fn,
+  ffi.Pointer<ffi.Void> ort_worker_fn_param,
+);
 
 final class OrtCustomHandleType extends ffi.Struct {
   @ffi.Char()
@@ -7286,10 +7288,12 @@ final class OrtCustomHandleType extends ffi.Struct {
 /// Argument ort_custom_thread_handle is the value returned by OrtCustomCreateThreadFn
 typedef OrtCustomJoinThreadFn =
     ffi.Pointer<ffi.NativeFunction<OrtCustomJoinThreadFnFunction>>;
-typedef OrtCustomJoinThreadFnFunction =
-    ffi.Void Function(OrtCustomThreadHandle ort_custom_thread_handle);
-typedef DartOrtCustomJoinThreadFnFunction =
-    void Function(OrtCustomThreadHandle ort_custom_thread_handle);
+typedef OrtCustomJoinThreadFnFunction = ffi.Void Function(
+  OrtCustomThreadHandle ort_custom_thread_handle,
+);
+typedef DartOrtCustomJoinThreadFnFunction = void Function(
+  OrtCustomThreadHandle ort_custom_thread_handle,
+);
 
 final class OrtCustomOp extends ffi.Struct {
   @ffi.Uint32()
@@ -8094,24 +8098,22 @@ final class OrtLogger extends ffi.Opaque {}
 
 typedef OrtLoggingFunction =
     ffi.Pointer<ffi.NativeFunction<OrtLoggingFunctionFunction>>;
-typedef OrtLoggingFunctionFunction =
-    ffi.Void Function(
-      ffi.Pointer<ffi.Void> param,
-      ffi.UnsignedInt severity,
-      ffi.Pointer<ffi.Char> category,
-      ffi.Pointer<ffi.Char> logid,
-      ffi.Pointer<ffi.Char> code_location,
-      ffi.Pointer<ffi.Char> message,
-    );
-typedef DartOrtLoggingFunctionFunction =
-    void Function(
-      ffi.Pointer<ffi.Void> param,
-      OrtLoggingLevel severity,
-      ffi.Pointer<ffi.Char> category,
-      ffi.Pointer<ffi.Char> logid,
-      ffi.Pointer<ffi.Char> code_location,
-      ffi.Pointer<ffi.Char> message,
-    );
+typedef OrtLoggingFunctionFunction = ffi.Void Function(
+  ffi.Pointer<ffi.Void> param,
+  ffi.UnsignedInt severity,
+  ffi.Pointer<ffi.Char> category,
+  ffi.Pointer<ffi.Char> logid,
+  ffi.Pointer<ffi.Char> code_location,
+  ffi.Pointer<ffi.Char> message,
+);
+typedef DartOrtLoggingFunctionFunction = void Function(
+  ffi.Pointer<ffi.Void> param,
+  OrtLoggingLevel severity,
+  ffi.Pointer<ffi.Char> category,
+  ffi.Pointer<ffi.Char> logid,
+  ffi.Pointer<ffi.Char> code_location,
+  ffi.Pointer<ffi.Char> message,
+);
 
 /// \brief Logging severity levels
 ///
@@ -9073,10 +9075,12 @@ final class OrtThreadPoolParams extends ffi.Opaque {}
 /// Argument is an onnxruntime built-in type which will be provided when thread pool calls OrtCustomCreateThreadFn
 typedef OrtThreadWorkerFn =
     ffi.Pointer<ffi.NativeFunction<OrtThreadWorkerFnFunction>>;
-typedef OrtThreadWorkerFnFunction =
-    ffi.Void Function(ffi.Pointer<ffi.Void> ort_worker_fn_param);
-typedef DartOrtThreadWorkerFnFunction =
-    void Function(ffi.Pointer<ffi.Void> ort_worker_fn_param);
+typedef OrtThreadWorkerFnFunction = ffi.Void Function(
+  ffi.Pointer<ffi.Void> ort_worker_fn_param,
+);
+typedef DartOrtThreadWorkerFnFunction = void Function(
+  ffi.Pointer<ffi.Void> ort_worker_fn_param,
+);
 
 final class OrtThreadingOptions extends ffi.Opaque {}
 

@@ -4,9 +4,13 @@
 // ignore_for_file: type=lint, unused_import, unused_element, deprecated_member_use_from_same_package
 import 'dart:ffi' as ffi;
 
+import 'package:meta/meta.dart' as meta;
+
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_Euler(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.Int)
 >()
@@ -16,6 +20,7 @@ external void mj_RungeKutta(
   int N,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjModel>, ffi.Int, ffi.Int)
 >()
@@ -25,6 +30,7 @@ external ffi.Pointer<ffi.Char> mj_actuatorInputName(
   int input,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjVFS>,
@@ -40,6 +46,7 @@ external int mj_addBufferVFS(
   int nbuffer,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjModel>,
@@ -53,6 +60,7 @@ external int mj_addContact(
   ffi.Pointer<mjContact> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjVFS>,
@@ -66,6 +74,7 @@ external int mj_addFileVFS(
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -85,6 +94,7 @@ external void mj_addM(
   ffi.Pointer<ffi.Int> colind,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -100,6 +110,7 @@ external void mj_angmomMat(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -121,33 +132,43 @@ external void mj_applyFT(
   ffi.Pointer<mjtNum> qfrc_target,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_camlight(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_checkAcc(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_checkPos(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_checkVel(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjCache>)>()
 external void mj_clearCache(ffi.Pointer<mjCache> cache);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_collision(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_comPos(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_comVel(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_compareFwdInv(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjModel> Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjVFS>)
 >()
@@ -156,6 +177,7 @@ external ffi.Pointer<mjModel> mj_compile(
   ffi.Pointer<mjVFS> vfs,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -173,6 +195,7 @@ external void mj_constraintUpdate(
   int flg_coneHessian,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -188,12 +211,14 @@ external void mj_contactForce(
   ffi.Pointer<mjtNum> result,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjVFS>, ffi.Pointer<ffi.Char>)>()
 external int mj_containsBufferVFS(
   ffi.Pointer<mjVFS> vfs,
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjVFS>,
@@ -207,9 +232,11 @@ external int mj_containsFileVFS(
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjModel>)>()
 external int mj_copyBack(ffi.Pointer<mjSpec> s, ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjData> Function(
     ffi.Pointer<mjData>,
@@ -223,6 +250,7 @@ external ffi.Pointer<mjData> mj_copyData(
   ffi.Pointer<mjData> src,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjModel> Function(ffi.Pointer<mjModel>, ffi.Pointer<mjModel>)
 >()
@@ -231,9 +259,11 @@ external ffi.Pointer<mjModel> mj_copyModel(
   ffi.Pointer<mjModel> src,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjSpec> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjSpec> mj_copySpec(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -249,45 +279,57 @@ external void mj_copyState(
   int sig,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_crb(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjLROpt>)>()
 external void mj_defaultLROpt(ffi.Pointer<mjLROpt> opt);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjOption>)>()
 external void mj_defaultOption(ffi.Pointer<mjOption> opt);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mj_defaultSolRefImp(
   ffi.Pointer<mjtNum> solref,
   ffi.Pointer<mjtNum> solimp,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjVFS>)>()
 external void mj_defaultVFS(ffi.Pointer<mjVFS> vfs);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjVisual>)>()
 external void mj_defaultVisual(ffi.Pointer<mjVisual> vis);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjData>)>()
 external void mj_deleteData(ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjVFS>, ffi.Pointer<ffi.Char>)>()
 external int mj_deleteFileVFS(
   ffi.Pointer<mjVFS> vfs,
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>)>()
 external void mj_deleteModel(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjSpec>)>()
 external void mj_deleteSpec(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjVFS>)>()
 external void mj_deleteVFS(ffi.Pointer<mjVFS> vfs);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -305,6 +347,7 @@ external void mj_differentiatePos(
   ffi.Pointer<mjtNum> qpos2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtSize Function(
     ffi.Pointer<mjSpec>,
@@ -326,12 +369,15 @@ external int mj_encode(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_energyPos(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_energyVel(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -349,15 +395,19 @@ external void mj_extractState(
   int dstsig,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_factorM(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_flex(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_forward(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.Int, ffi.Int)
 >()
@@ -368,12 +418,15 @@ external void mj_forwardSkip(
   int skipsensor,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function()>()
 external void mj_freeLastXML();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjData>)>()
 external void mj_freeStack(ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -387,24 +440,31 @@ external void mj_fullM(
   ffi.Pointer<mjtNum> dst,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdAcceleration(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdActuation(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdConstraint(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdKinematics(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdPosition(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_fwdVelocity(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -424,15 +484,19 @@ external double mj_geomDistance(
   ffi.Pointer<mjtNum> fromto,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjCache> Function()>()
 external ffi.Pointer<mjCache> mj_getCache();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Size Function(ffi.Pointer<mjCache>)>()
 external int mj_getCacheCapacity(ffi.Pointer<mjCache> cache);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Size Function(ffi.Pointer<mjCache>)>()
 external int mj_getCacheSize(ffi.Pointer<mjCache> cache);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjModel>,
@@ -446,6 +510,7 @@ external ffi.Pointer<ffi.Char> mj_getPluginConfig(
   ffi.Pointer<ffi.Char> attrib,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -461,9 +526,11 @@ external void mj_getState(
   int sig,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjModel>)>()
 external double mj_getTotalmass(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjModel>, ffi.Int, ffi.Int)
 >()
@@ -473,9 +540,11 @@ external ffi.Pointer<ffi.Char> mj_id2name(
   int id,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_implicit(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -493,6 +562,7 @@ external void mj_initCtrlHistory(
   ffi.Pointer<mjtNum> values,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -512,6 +582,7 @@ external void mj_initSensorHistory(
   double phase,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -527,18 +598,23 @@ external void mj_integratePos(
   double dt,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_invConstraint(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_invPosition(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_invVelocity(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_inverse(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.Int, ffi.Int)
 >()
@@ -549,18 +625,23 @@ external void mj_inverseSkip(
   int skipsensor,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjModel>)>()
 external int mj_isDual(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjModel>)>()
 external int mj_isPyramidal(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjModel>)>()
 external int mj_isSparse(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_island(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -580,6 +661,7 @@ external void mj_jac(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -597,6 +679,7 @@ external void mj_jacBody(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -614,6 +697,7 @@ external void mj_jacBodyCom(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -633,6 +717,7 @@ external void mj_jacDot(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -650,6 +735,7 @@ external void mj_jacGeom(
   int geom,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -671,6 +757,7 @@ external void mj_jacPointAxis(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -688,6 +775,7 @@ external void mj_jacSite(
   int site,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -703,9 +791,11 @@ external void mj_jacSubtreeCom(
   int body,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_kinematics(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<ffi.Char>, mjfPluginLibraryLoadCallback)
 >()
@@ -714,6 +804,7 @@ external void mj_loadAllPluginLibraries(
   mjfPluginLibraryLoadCallback callback,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjModel> Function(ffi.Pointer<ffi.Char>, ffi.Pointer<mjVFS>)
 >()
@@ -722,15 +813,18 @@ external ffi.Pointer<mjModel> mj_loadModel(
   ffi.Pointer<mjVFS> vfs,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjModel> Function(ffi.Pointer<ffi.Void>, ffi.Int)>()
 external ffi.Pointer<mjModel> mj_loadModelBuffer(
   ffi.Pointer<ffi.Void> buffer,
   int buffer_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
 external void mj_loadPluginLibrary(ffi.Pointer<ffi.Char> path);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjModel> Function(
     ffi.Pointer<ffi.Char>,
@@ -746,6 +840,7 @@ external ffi.Pointer<mjModel> mj_loadXML(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjData>,
@@ -767,21 +862,27 @@ external void mj_local2Global(
   int sameframe,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_makeConstraint(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjData> Function(ffi.Pointer<mjModel>)>()
 external ffi.Pointer<mjData> mj_makeData(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_makeM(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjSpec> Function()>()
 external ffi.Pointer<mjSpec> mj_makeSpec();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjData>)>()
 external void mj_markStack(ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjModel>, ffi.Int, ffi.Int, ffi.Int)>()
 external int mj_maxContact(
   ffi.Pointer<mjModel> m,
@@ -790,6 +891,7 @@ external int mj_maxContact(
   int has_margin,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjVFS>,
@@ -803,6 +905,7 @@ external int mj_mountVFS(
   ffi.Pointer<mjpResourceProvider> provider,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -818,6 +921,7 @@ external void mj_mulJacTVec(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -833,6 +937,7 @@ external void mj_mulJacVec(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -848,6 +953,7 @@ external void mj_mulM(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -863,6 +969,7 @@ external void mj_mulM2(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -894,6 +1001,7 @@ external void mj_multiRay(
   double cutoff,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<mjModel>, ffi.Int, ffi.Pointer<ffi.Char>)
 >()
@@ -903,12 +1011,14 @@ external int mj_name2id(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjtNum>)>()
 external void mj_normalizeQuat(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<mjtNum> qpos,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -928,6 +1038,7 @@ external void mj_objectAcceleration(
   int flg_local,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -947,6 +1058,7 @@ external void mj_objectVelocity(
   int flg_local,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjSpec> Function(
     ffi.Pointer<ffi.Char>,
@@ -964,6 +1076,7 @@ external ffi.Pointer<mjSpec> mj_parse(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjSpec> Function(
     ffi.Pointer<ffi.Char>,
@@ -979,6 +1092,7 @@ external ffi.Pointer<mjSpec> mj_parseXML(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjSpec> Function(
     ffi.Pointer<ffi.Char>,
@@ -994,9 +1108,11 @@ external ffi.Pointer<mjSpec> mj_parseXMLString(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_passive(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1010,6 +1126,7 @@ external void mj_printData(
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1025,6 +1142,7 @@ external void mj_printFormattedData(
   ffi.Pointer<ffi.Char> float_format,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1038,6 +1156,7 @@ external void mj_printFormattedModel(
   ffi.Pointer<ffi.Char> float_format,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjvScene>,
@@ -1051,18 +1170,21 @@ external void mj_printFormattedScene(
   ffi.Pointer<ffi.Char> float_format,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<ffi.Char>)>()
 external void mj_printModel(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvScene>, ffi.Pointer<ffi.Char>)>()
 external void mj_printScene(
   ffi.Pointer<mjvScene> s,
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<ffi.Char>,
@@ -1080,12 +1202,14 @@ external int mj_printSchema(
   int flg_pad,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_projectConstraint(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<mjData> d,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1111,6 +1235,7 @@ external double mj_ray(
   ffi.Pointer<mjtNum> normal,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1142,6 +1267,7 @@ external double mj_rayFlex(
   ffi.Pointer<mjtNum> normal,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1161,6 +1287,7 @@ external double mj_rayHfield(
   ffi.Pointer<mjtNum> normal,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1180,6 +1307,7 @@ external double mj_rayMesh(
   ffi.Pointer<mjtNum> normal,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1197,6 +1325,7 @@ external double mj_readCtrl(
   int interp,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjtNum> Function(
     ffi.Pointer<mjModel>,
@@ -1216,6 +1345,7 @@ external ffi.Pointer<mjtNum> mj_readSensor(
   int interp,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjSpec>,
@@ -1231,21 +1361,26 @@ external int mj_recompile(
   ffi.Pointer<mjData> d,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_referenceConstraint(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<mjData> d,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function()>()
 external void mj_resetCallbacks();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_resetCtrl(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_resetData(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.UnsignedChar)
 >()
@@ -1255,6 +1390,7 @@ external void mj_resetDataDebug(
   int debug_value,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.Int)
 >()
@@ -1264,6 +1400,7 @@ external void mj_resetDataKeyframe(
   int key,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1279,12 +1416,14 @@ external void mj_rne(
   ffi.Pointer<mjtNum> result,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_rnePostConstraint(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<mjData> d,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<ffi.Char>,
@@ -1300,6 +1439,7 @@ external int mj_saveLastXML(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1315,6 +1455,7 @@ external void mj_saveModel(
   int buffer_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjSpec>,
@@ -1330,6 +1471,7 @@ external int mj_saveXML(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjSpec>,
@@ -1347,21 +1489,27 @@ external int mj_saveXMLString(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_sensorAcc(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_sensorPos(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_sensorVel(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Size Function(ffi.Pointer<mjCache>, ffi.Size)>()
 external int mj_setCacheCapacity(ffi.Pointer<mjCache> cache, int size);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_setConst(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>, ffi.Int)
 >()
@@ -1371,6 +1519,7 @@ external void mj_setKeyframe(
   int k,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjModel>,
@@ -1390,6 +1539,7 @@ external int mj_setLengthRange(
   int error_sz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1405,12 +1555,15 @@ external void mj_setState(
   int sig,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, mjtNum)>()
 external void mj_setTotalmass(ffi.Pointer<mjModel> m, double newmass);
 
+@meta.RecordUse()
 @ffi.Native<mjtSize Function(ffi.Pointer<mjModel>)>()
 external int mj_sizeModel(ffi.Pointer<mjModel> m);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1428,6 +1581,7 @@ external void mj_solveM(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1447,6 +1601,7 @@ external void mj_solveM2(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Void> Function(ffi.Pointer<mjData>, ffi.Size, ffi.Size)
 >()
@@ -1456,48 +1611,62 @@ external ffi.Pointer<ffi.Void> mj_stackAllocByte(
   int alignment,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Int> Function(ffi.Pointer<mjData>, ffi.Size)>()
 external ffi.Pointer<ffi.Int> mj_stackAllocInt(ffi.Pointer<mjData> d, int size);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjtNum> Function(ffi.Pointer<mjData>, ffi.Size)>()
 external ffi.Pointer<mjtNum> mj_stackAllocNum(ffi.Pointer<mjData> d, int size);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjModel>, ffi.Int)>()
 external int mj_stateSize(ffi.Pointer<mjModel> m, int sig);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_step(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_step1(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_step2(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_subtreeVel(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_tendon(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjData>)>()
 external void mj_transmission(ffi.Pointer<mjModel> m, ffi.Pointer<mjData> d);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjVFS>, ffi.Pointer<ffi.Char>)>()
 external int mj_unmountVFS(
   ffi.Pointer<mjVFS> vfs,
   ffi.Pointer<ffi.Char> filename,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function()>()
 external int mj_version();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function()>()
 external ffi.Pointer<ffi.Char> mj_versionString();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjData>, ffi.Int, ffi.Int)>()
 external void mj_warning(ffi.Pointer<mjData> d, int warning, int info);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjModel>,
@@ -1513,9 +1682,11 @@ external double mjc_distance(
   ffi.Pointer<mjtNum> x,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjpPlugin> Function(ffi.Pointer<mjModel>, ffi.Int)>()
 external ffi.Pointer<mjpPlugin> mjc_getSDF(ffi.Pointer<mjModel> m, int id);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1533,6 +1704,7 @@ external void mjc_gradient(
   ffi.Pointer<mjtNum> x,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1562,6 +1734,7 @@ external void mjd_inverseFD(
   ffi.Pointer<mjtNum> DmDq,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -1579,6 +1752,7 @@ external void mjd_quatIntegrate(
   ffi.Pointer<mjtNum> Dscale,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -1594,6 +1768,7 @@ external void mjd_subQuat(
   ffi.Pointer<mjtNum> Db,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -1617,20 +1792,25 @@ external void mjd_transitionFD(
   ffi.Pointer<mjtNum> D,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpDecoder>)>()
 external void mjp_defaultDecoder(ffi.Pointer<mjpDecoder> decoder);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpEncoder>)>()
 external void mjp_defaultEncoder(ffi.Pointer<mjpEncoder> encoder);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpPlugin>)>()
 external void mjp_defaultPlugin(ffi.Pointer<mjpPlugin> plugin);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpResourceProvider>)>()
 external void mjp_defaultResourceProvider(
   ffi.Pointer<mjpResourceProvider> provider,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjpDecoder> Function(
     ffi.Pointer<mjResource>,
@@ -1642,6 +1822,7 @@ external ffi.Pointer<mjpDecoder> mjp_findDecoder(
   ffi.Pointer<ffi.Char> content_type,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjpEncoder> Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)
 >()
@@ -1650,6 +1831,7 @@ external ffi.Pointer<mjpEncoder> mjp_findEncoder(
   ffi.Pointer<ffi.Char> content_type,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjpPlugin> Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Int>)
 >()
@@ -1658,39 +1840,49 @@ external ffi.Pointer<mjpPlugin> mjp_getPlugin(
   ffi.Pointer<ffi.Int> slot,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjpPlugin> Function(ffi.Int)>()
 external ffi.Pointer<mjpPlugin> mjp_getPluginAtSlot(int slot);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjpResourceProvider> Function(ffi.Pointer<ffi.Char>)>()
 external ffi.Pointer<mjpResourceProvider> mjp_getResourceProvider(
   ffi.Pointer<ffi.Char> resource_name,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjpResourceProvider> Function(ffi.Int)>()
 external ffi.Pointer<mjpResourceProvider> mjp_getResourceProviderAtSlot(
   int slot,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function()>()
 external int mjp_pluginCount();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpDecoder>)>()
 external void mjp_registerDecoder(ffi.Pointer<mjpDecoder> decoder);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjpEncoder>)>()
 external void mjp_registerEncoder(ffi.Pointer<mjpEncoder> encoder);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjpPlugin>)>()
 external int mjp_registerPlugin(ffi.Pointer<mjpPlugin> plugin);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjpResourceProvider>)>()
 external int mjp_registerResourceProvider(
   ffi.Pointer<mjpResourceProvider> provider,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function()>()
 external int mjp_resourceProviderCount();
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Int, ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<mjrContext>)
 >()
@@ -1702,6 +1894,7 @@ external void mjr_addAux(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Int, mjrRect, ffi.Int, ffi.Int, ffi.Pointer<mjrContext>)
 >()
@@ -1713,6 +1906,7 @@ external void mjr_blitAux(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(mjrRect, mjrRect, ffi.Int, ffi.Int, ffi.Pointer<mjrContext>)
 >()
@@ -1724,15 +1918,19 @@ external void mjr_blitBuffer(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Int, ffi.Pointer<mjrContext>)>()
 external void mjr_changeFont(int fontscale, ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjrContext>)>()
 external void mjr_defaultContext(ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjrRendererInfo>)>()
 external void mjr_defaultRendererInfo(ffi.Pointer<mjrRendererInfo> info);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<ffi.UnsignedChar>,
@@ -1748,6 +1946,7 @@ external void mjr_drawPixels(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(mjrRect, ffi.Pointer<mjvFigure>, ffi.Pointer<mjrContext>)
 >()
@@ -1757,21 +1956,27 @@ external void mjr_figure(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Pointer<mjrRect>)>()
 external int mjr_findRect(int x, int y, int nrect, ffi.Pointer<mjrRect> rect);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function()>()
 external void mjr_finish();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjrContext>)>()
 external void mjr_freeContext(ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function()>()
 external int mjr_getError();
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjrRendererInfo>)>()
 external void mjr_getRendererInfo(ffi.Pointer<mjrRendererInfo> info);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     mjrRect,
@@ -1801,6 +2006,7 @@ external void mjr_label(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjrContext>, ffi.Int)
 >()
@@ -1810,9 +2016,11 @@ external void mjr_makeContext(
   int fontscale,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjrRect Function(ffi.Pointer<mjrContext>)>()
 external mjrRect mjr_maxViewport(ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Int,
@@ -1832,6 +2040,7 @@ external void mjr_overlay(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<ffi.UnsignedChar>,
@@ -1847,6 +2056,7 @@ external void mjr_readPixels(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(mjrRect, ffi.Float, ffi.Float, ffi.Float, ffi.Float)
 >()
@@ -1858,6 +2068,7 @@ external void mjr_rectangle(
   double a,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(mjrRect, ffi.Pointer<mjvScene>, ffi.Pointer<mjrContext>)
 >()
@@ -1867,6 +2078,7 @@ external void mjr_render(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Int, ffi.Int, ffi.Pointer<mjrContext>)>()
 external void mjr_resizeOffscreen(
   int width,
@@ -1874,15 +2086,19 @@ external void mjr_resizeOffscreen(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjrContext>)>()
 external void mjr_restoreBuffer(ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Int, ffi.Pointer<mjrContext>)>()
 external void mjr_setAux(int index, ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Int, ffi.Pointer<mjrContext>)>()
 external void mjr_setBuffer(int framebuffer, ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Int,
@@ -1906,6 +2122,7 @@ external void mjr_text(
   double b,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjrContext>, ffi.Int)
 >()
@@ -1915,6 +2132,7 @@ external void mjr_uploadHField(
   int hfieldid,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjrContext>, ffi.Int)
 >()
@@ -1924,6 +2142,7 @@ external void mjr_uploadMesh(
   int meshid,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjrContext>, ffi.Int)
 >()
@@ -1933,12 +2152,14 @@ external void mjr_uploadTexture(
   int texid,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>, ffi.Pointer<ffi.Char>)>()
 external int mjs_activatePlugin(
   ffi.Pointer<mjSpec> s,
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsActuator> Function(
     ffi.Pointer<mjSpec>,
@@ -1950,6 +2171,7 @@ external ffi.Pointer<mjsActuator> mjs_addActuator(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsBody> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -1958,6 +2180,7 @@ external ffi.Pointer<mjsBody> mjs_addBody(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsCamera> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -1966,6 +2189,7 @@ external ffi.Pointer<mjsCamera> mjs_addCamera(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsDefault> Function(
     ffi.Pointer<mjSpec>,
@@ -1979,6 +2203,7 @@ external ffi.Pointer<mjsDefault> mjs_addDefault(
   ffi.Pointer<mjsDefault> parent,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsEquality> Function(
     ffi.Pointer<mjSpec>,
@@ -1990,12 +2215,15 @@ external ffi.Pointer<mjsEquality> mjs_addEquality(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsExclude> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsExclude> mjs_addExclude(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsFlex> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsFlex> mjs_addFlex(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsFrame> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsFrame>)
 >()
@@ -2004,9 +2232,11 @@ external ffi.Pointer<mjsFrame> mjs_addFrame(
   ffi.Pointer<mjsFrame> parentframe,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsJoint> Function(ffi.Pointer<mjsBody>)>()
 external ffi.Pointer<mjsJoint> mjs_addFreeJoint(ffi.Pointer<mjsBody> body);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsGeom> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -2015,9 +2245,11 @@ external ffi.Pointer<mjsGeom> mjs_addGeom(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsHField> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsHField> mjs_addHField(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsJoint> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -2026,9 +2258,11 @@ external ffi.Pointer<mjsJoint> mjs_addJoint(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsKey> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsKey> mjs_addKey(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsLight> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -2037,6 +2271,7 @@ external ffi.Pointer<mjsLight> mjs_addLight(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsMaterial> Function(
     ffi.Pointer<mjSpec>,
@@ -2048,6 +2283,7 @@ external ffi.Pointer<mjsMaterial> mjs_addMaterial(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsMesh> Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjsDefault>)
 >()
@@ -2056,9 +2292,11 @@ external ffi.Pointer<mjsMesh> mjs_addMesh(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsNumeric> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsNumeric> mjs_addNumeric(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsPair> Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjsDefault>)
 >()
@@ -2067,12 +2305,15 @@ external ffi.Pointer<mjsPair> mjs_addPair(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsPlugin> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsPlugin> mjs_addPlugin(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSensor> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsSensor> mjs_addSensor(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsSite> Function(ffi.Pointer<mjsBody>, ffi.Pointer<mjsDefault>)
 >()
@@ -2081,9 +2322,11 @@ external ffi.Pointer<mjsSite> mjs_addSite(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSkin> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsSkin> mjs_addSkin(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsTendon> Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjsDefault>)
 >()
@@ -2092,15 +2335,19 @@ external ffi.Pointer<mjsTendon> mjs_addTendon(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsText> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsText> mjs_addText(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsTexture> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsTexture> mjs_addTexture(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsTuple> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsTuple> mjs_addTuple(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjFloatVecVec>, ffi.Pointer<ffi.Float>, ffi.Int)
 >()
@@ -2110,6 +2357,7 @@ external void mjs_appendFloatVec(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjIntVecVec>, ffi.Pointer<ffi.Int>, ffi.Int)
 >()
@@ -2119,6 +2367,7 @@ external void mjs_appendIntVec(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjStringVec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2127,84 +2376,109 @@ external void mjs_appendString(
   ffi.Pointer<ffi.Char> text,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsActuator> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsActuator> mjs_asActuator(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsBody> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsBody> mjs_asBody(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsCamera> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsCamera> mjs_asCamera(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsEquality> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsEquality> mjs_asEquality(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsExclude> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsExclude> mjs_asExclude(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsFlex> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsFlex> mjs_asFlex(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsFrame> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsFrame> mjs_asFrame(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsGeom> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsGeom> mjs_asGeom(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsHField> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsHField> mjs_asHField(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsJoint> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsJoint> mjs_asJoint(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsKey> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsKey> mjs_asKey(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsLight> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsLight> mjs_asLight(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsMaterial> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsMaterial> mjs_asMaterial(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsMesh> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsMesh> mjs_asMesh(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsNumeric> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsNumeric> mjs_asNumeric(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsPair> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsPair> mjs_asPair(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsPlugin> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsPlugin> mjs_asPlugin(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSensor> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsSensor> mjs_asSensor(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSite> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsSite> mjs_asSite(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSkin> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsSkin> mjs_asSkin(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsTendon> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsTendon> mjs_asTendon(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsText> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsText> mjs_asText(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsTexture> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsTexture> mjs_asTexture(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsTuple> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsTuple> mjs_asTuple(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(
     ffi.Pointer<mjsElement>,
@@ -2220,98 +2494,127 @@ external ffi.Pointer<mjsElement> mjs_attach(
   ffi.Pointer<ffi.Char> suffix,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsFrame> Function(ffi.Pointer<ffi.Pointer<mjsBody>>)>()
 external ffi.Pointer<mjsFrame> mjs_bodyToFrame(
   ffi.Pointer<ffi.Pointer<mjsBody>> body,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsActuator>)>()
 external void mjs_defaultActuator(ffi.Pointer<mjsActuator> actuator);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsBody>)>()
 external void mjs_defaultBody(ffi.Pointer<mjsBody> body);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsCamera>)>()
 external void mjs_defaultCamera(ffi.Pointer<mjsCamera> camera);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsEquality>)>()
 external void mjs_defaultEquality(ffi.Pointer<mjsEquality> equality);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsFlex>)>()
 external void mjs_defaultFlex(ffi.Pointer<mjsFlex> flex);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsFrame>)>()
 external void mjs_defaultFrame(ffi.Pointer<mjsFrame> frame);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsGeom>)>()
 external void mjs_defaultGeom(ffi.Pointer<mjsGeom> geom);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsHField>)>()
 external void mjs_defaultHField(ffi.Pointer<mjsHField> hfield);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsJoint>)>()
 external void mjs_defaultJoint(ffi.Pointer<mjsJoint> joint);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsKey>)>()
 external void mjs_defaultKey(ffi.Pointer<mjsKey> key);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsLight>)>()
 external void mjs_defaultLight(ffi.Pointer<mjsLight> light);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsMaterial>)>()
 external void mjs_defaultMaterial(ffi.Pointer<mjsMaterial> material);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsMesh>)>()
 external void mjs_defaultMesh(ffi.Pointer<mjsMesh> mesh);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsNumeric>)>()
 external void mjs_defaultNumeric(ffi.Pointer<mjsNumeric> numeric);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsOrientation>)>()
 external void mjs_defaultOrientation(ffi.Pointer<mjsOrientation> orient);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsPair>)>()
 external void mjs_defaultPair(ffi.Pointer<mjsPair> pair);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsPlugin>)>()
 external void mjs_defaultPlugin(ffi.Pointer<mjsPlugin> plugin);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsSensor>)>()
 external void mjs_defaultSensor(ffi.Pointer<mjsSensor> sensor);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsSite>)>()
 external void mjs_defaultSite(ffi.Pointer<mjsSite> site);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsSkin>)>()
 external void mjs_defaultSkin(ffi.Pointer<mjsSkin> skin);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjSpec>)>()
 external void mjs_defaultSpec(ffi.Pointer<mjSpec> spec);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsTendon>)>()
 external void mjs_defaultTendon(ffi.Pointer<mjsTendon> tendon);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsText>)>()
 external void mjs_defaultText(ffi.Pointer<mjsText> text);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsTexture>)>()
 external void mjs_defaultTexture(ffi.Pointer<mjsTexture> texture);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsTuple>)>()
 external void mjs_defaultTuple(ffi.Pointer<mjsTuple> tuple);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjsElement>)>()
 external int mjs_delete(
   ffi.Pointer<mjSpec> spec,
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsElement>, ffi.Pointer<ffi.Char>)>()
 external void mjs_deleteUserValue(
   ffi.Pointer<mjsElement> element,
   ffi.Pointer<ffi.Char> key,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsBody> Function(ffi.Pointer<mjSpec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2320,6 +2623,7 @@ external ffi.Pointer<mjsBody> mjs_findBody(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsBody> Function(ffi.Pointer<mjsBody>, ffi.Pointer<ffi.Char>)
 >()
@@ -2328,6 +2632,7 @@ external ffi.Pointer<mjsBody> mjs_findChild(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsDefault> Function(ffi.Pointer<mjSpec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2336,6 +2641,7 @@ external ffi.Pointer<mjsDefault> mjs_findDefault(
   ffi.Pointer<ffi.Char> classname,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(
     ffi.Pointer<mjSpec>,
@@ -2357,6 +2663,7 @@ ffi.Pointer<mjsElement> mjs_findElement(
   return _mjs_findElement(s, type.value, name);
 }
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsFrame> Function(ffi.Pointer<mjSpec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2365,6 +2672,7 @@ external ffi.Pointer<mjsFrame> mjs_findFrame(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjSpec> Function(ffi.Pointer<mjSpec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2373,6 +2681,7 @@ external ffi.Pointer<mjSpec> mjs_findSpec(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(
     ffi.Pointer<mjsBody>,
@@ -2394,6 +2703,7 @@ ffi.Pointer<mjsElement> mjs_firstChild(
   return _mjs_firstChild(body, type.value, recurse);
 }
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(ffi.Pointer<mjSpec>, ffi.UnsignedInt)
 >(symbol: 'mjs_firstElement')
@@ -2406,16 +2716,19 @@ ffi.Pointer<mjsElement> mjs_firstElement(ffi.Pointer<mjSpec> s, mjtObj type) {
   return _mjs_firstElement(s, type.value);
 }
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsCompiler> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsCompiler> mjs_getCompiler(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsDefault> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsDefault> mjs_getDefault(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Double> Function(
     ffi.Pointer<mjDoubleVec>,
@@ -2427,41 +2740,53 @@ external ffi.Pointer<ffi.Double> mjs_getDouble(
   ffi.Pointer<ffi.Int> size,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<ffi.Char> mjs_getError(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsFrame> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsFrame> mjs_getFrame(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjsElement>)>()
 external int mjs_getId(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjString> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjString> mjs_getName(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjSpec> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjSpec> mjs_getOriginSpec(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsBody> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjsBody> mjs_getParent(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Void> Function(ffi.Pointer<mjsPlugin>)>()
 external ffi.Pointer<ffi.Void> mjs_getPluginAttributes(
   ffi.Pointer<mjsPlugin> plugin,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjSpec> Function(ffi.Pointer<mjsElement>)>()
 external ffi.Pointer<mjSpec> mjs_getSpec(ffi.Pointer<mjsElement> element);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsDefault> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<mjsDefault> mjs_getSpecDefault(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjString>)>()
 external ffi.Pointer<ffi.Char> mjs_getString(ffi.Pointer<mjString> source);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Double> Function(ffi.Pointer<mjSpec>)>()
 external ffi.Pointer<ffi.Double> mjs_getTimer(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Void> Function(ffi.Pointer<mjsElement>, ffi.Pointer<ffi.Char>)
 >()
@@ -2470,36 +2795,45 @@ external ffi.Pointer<ffi.Void> mjs_getUserValue(
   ffi.Pointer<ffi.Char> key,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjSpec>, ffi.Int)>()
 external ffi.Pointer<ffi.Char> mjs_getWarning(
   ffi.Pointer<mjSpec> spec,
   int index,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsWrap> Function(ffi.Pointer<mjsTendon>, ffi.Int)>()
 external ffi.Pointer<mjsWrap> mjs_getWrap(
   ffi.Pointer<mjsTendon> tendonspec,
   int i,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Double Function(ffi.Pointer<mjsWrap>)>()
 external double mjs_getWrapCoef(ffi.Pointer<mjsWrap> wrap);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Double Function(ffi.Pointer<mjsWrap>)>()
 external double mjs_getWrapDivisor(ffi.Pointer<mjsWrap> wrap);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjsTendon>)>()
 external int mjs_getWrapNum(ffi.Pointer<mjsTendon> tendonspec);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsSite> Function(ffi.Pointer<mjsWrap>)>()
 external ffi.Pointer<mjsSite> mjs_getWrapSideSite(ffi.Pointer<mjsWrap> wrap);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsElement> Function(ffi.Pointer<mjsWrap>)>()
 external ffi.Pointer<mjsElement> mjs_getWrapTarget(ffi.Pointer<mjsWrap> wrap);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>)>()
 external int mjs_isWarning(ffi.Pointer<mjSpec> s);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsFlex> Function(
     ffi.Pointer<mjsBody>,
@@ -2549,6 +2883,7 @@ external ffi.Pointer<mjsFlex> mjs_makeFlex(
   ffi.Pointer<mjVFS> vfs,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjsMesh>,
@@ -2573,6 +2908,7 @@ int mjs_makeMesh(
   return _mjs_makeMesh(mesh, builtin.value, params, nparams);
 }
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(
     ffi.Pointer<mjsBody>,
@@ -2586,6 +2922,7 @@ external ffi.Pointer<mjsElement> mjs_nextChild(
   int recurse,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsElement> Function(ffi.Pointer<mjSpec>, ffi.Pointer<mjsElement>)
 >()
@@ -2594,9 +2931,11 @@ external ffi.Pointer<mjsElement> mjs_nextElement(
   ffi.Pointer<mjsElement> element,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>)>()
 external int mjs_numWarnings(ffi.Pointer<mjSpec> spec);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<ffi.Double>,
@@ -2612,9 +2951,11 @@ external ffi.Pointer<ffi.Char> mjs_resolveOrientation(
   ffi.Pointer<mjsOrientation> orientation,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjsSensor>)>()
 external int mjs_sensorDim(ffi.Pointer<mjsSensor> sensor);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjByteVec>, ffi.Pointer<ffi.Void>, ffi.Int)
 >()
@@ -2624,9 +2965,11 @@ external void mjs_setBuffer(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjSpec>, ffi.Int)>()
 external int mjs_setDeepCopy(ffi.Pointer<mjSpec> s, int deepcopy);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjsElement>, ffi.Pointer<mjsDefault>)
 >()
@@ -2635,6 +2978,7 @@ external void mjs_setDefault(
   ffi.Pointer<mjsDefault> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjDoubleVec>, ffi.Pointer<ffi.Double>, ffi.Int)
 >()
@@ -2644,6 +2988,7 @@ external void mjs_setDouble(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjFloatVec>, ffi.Pointer<ffi.Float>, ffi.Int)
 >()
@@ -2653,12 +2998,14 @@ external void mjs_setFloat(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjsElement>, ffi.Pointer<mjsFrame>)>()
 external int mjs_setFrame(
   ffi.Pointer<mjsElement> dest,
   ffi.Pointer<mjsFrame> frame,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Bool Function(ffi.Pointer<mjStringVec>, ffi.Int, ffi.Pointer<ffi.Char>)
 >()
@@ -2668,6 +3015,7 @@ external bool mjs_setInStringVec(
   ffi.Pointer<ffi.Char> text,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjIntVec>, ffi.Pointer<ffi.Int>, ffi.Int)
 >()
@@ -2677,24 +3025,28 @@ external void mjs_setInt(
   int size,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjsElement>, ffi.Pointer<ffi.Char>)>()
 external int mjs_setName(
   ffi.Pointer<mjsElement> element,
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjsPlugin>, ffi.Pointer<ffi.Void>)>()
 external void mjs_setPluginAttributes(
   ffi.Pointer<mjsPlugin> plugin,
   ffi.Pointer<ffi.Void> attributes,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjString>, ffi.Pointer<ffi.Char>)>()
 external void mjs_setString(
   ffi.Pointer<mjString> dest,
   ffi.Pointer<ffi.Char> text,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjStringVec>, ffi.Pointer<ffi.Char>)
 >()
@@ -2703,6 +3055,7 @@ external void mjs_setStringVec(
   ffi.Pointer<ffi.Char> text,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjsActuator>, ffi.Double)
 >()
@@ -2711,6 +3064,7 @@ external ffi.Pointer<ffi.Char> mjs_setToAdhesion(
   double gain,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2728,6 +3082,7 @@ external ffi.Pointer<ffi.Char> mjs_setToCylinder(
   double diameter,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2757,6 +3112,7 @@ external ffi.Pointer<ffi.Char> mjs_setToDCMotor(
   int ctrlspec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjsActuator>, ffi.Double)
 >()
@@ -2765,6 +3121,7 @@ external ffi.Pointer<ffi.Char> mjs_setToDamper(
   double kv,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2784,11 +3141,13 @@ external ffi.Pointer<ffi.Char> mjs_setToIntVelocity(
   double inheritrange,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjsActuator>)>()
 external ffi.Pointer<ffi.Char> mjs_setToMotor(
   ffi.Pointer<mjsActuator> actuator,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2818,6 +3177,7 @@ external ffi.Pointer<ffi.Char> mjs_setToMuscle(
   double fvmax,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2835,6 +3195,7 @@ external ffi.Pointer<ffi.Char> mjs_setToOrientation(
   int ctrlspec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2860,6 +3221,7 @@ external ffi.Pointer<ffi.Char> mjs_setToPID(
   int ctrlspec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<mjsActuator>,
@@ -2879,6 +3241,7 @@ external ffi.Pointer<ffi.Char> mjs_setToPosition(
   double inheritrange,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(ffi.Pointer<mjsActuator>, ffi.Double)
 >()
@@ -2887,6 +3250,7 @@ external ffi.Pointer<ffi.Char> mjs_setToVelocity(
   double kv,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjsElement>,
@@ -2900,6 +3264,7 @@ external void mjs_setUserValue(
   ffi.Pointer<ffi.Void> data,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjsElement>,
@@ -2916,6 +3281,7 @@ external void mjs_setUserValueWithCleanup(
   cleanup,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsWrap> Function(
     ffi.Pointer<mjsTendon>,
@@ -2929,6 +3295,7 @@ external ffi.Pointer<mjsWrap> mjs_wrapGeom(
   ffi.Pointer<ffi.Char> sidesite,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsWrap> Function(
     ffi.Pointer<mjsTendon>,
@@ -2942,12 +3309,14 @@ external ffi.Pointer<mjsWrap> mjs_wrapJoint(
   double coef,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<mjsWrap> Function(ffi.Pointer<mjsTendon>, ffi.Double)>()
 external ffi.Pointer<mjsWrap> mjs_wrapPulley(
   ffi.Pointer<mjsTendon> tendon,
   double divisor,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjsWrap> Function(ffi.Pointer<mjsTendon>, ffi.Pointer<ffi.Char>)
 >()
@@ -2956,12 +3325,15 @@ external ffi.Pointer<mjsWrap> mjs_wrapSite(
   ffi.Pointer<ffi.Char> name,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Int, ffi.Int)>()
 external double mju_Halton(int index, int base);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external double mju_L1(ffi.Pointer<mjtNum> vec, int n);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -2977,6 +3349,7 @@ external void mju_add(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -2990,6 +3363,7 @@ external void mju_add3(
   ffi.Pointer<mjtNum> vec2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3007,6 +3381,7 @@ external void mju_addScl(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3022,6 +3397,7 @@ external void mju_addScl3(
   double scl,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -3031,9 +3407,11 @@ external void mju_addTo(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_addTo3(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum, ffi.Int)
 >()
@@ -3044,6 +3422,7 @@ external void mju_addToScl(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum)
 >()
@@ -3053,6 +3432,7 @@ external void mju_addToScl3(
   double scl,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum)
 >()
@@ -3062,6 +3442,7 @@ external void mju_axisAngle2Quat(
   double angle,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3081,9 +3462,11 @@ external void mju_band2Dense(
   bool flg_sym,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Int, ffi.Int, ffi.Int, ffi.Int)>()
 external int mju_bandDiag(int i, int ntotal, int nband, int ndense);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3107,6 +3490,7 @@ external void mju_bandMulMatVec(
   bool flg_sym,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjtNum>,
@@ -3130,6 +3514,7 @@ external int mju_boxQP(
   ffi.Pointer<mjtNum> upper,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<ffi.Pointer<mjtNum>>,
@@ -3153,9 +3538,11 @@ external void mju_boxQPmalloc(
   ffi.Pointer<ffi.Pointer<mjtNum>> upper,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjtNum>, ffi.Int, mjtNum)>()
 external int mju_cholFactor(ffi.Pointer<mjtNum> mat, int n, double mindiag);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjtNum>,
@@ -3175,6 +3562,7 @@ external double mju_cholFactorBand(
   double diagmul,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3190,6 +3578,7 @@ external void mju_cholSolve(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3209,6 +3598,7 @@ external void mju_cholSolveBand(
   int ndense,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int, ffi.Int)
 >()
@@ -3219,26 +3609,33 @@ external int mju_cholUpdate(
   int flg_plus,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function()>()
 external void mju_clearHandlers();
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum, mjtNum, mjtNum)>()
 external double mju_clip(double x, double min, double max);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjResource>)>()
 external void mju_closeResource(ffi.Pointer<mjResource> resource);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
 external void mju_copy(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> vec, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_copy3(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> data);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_copy4(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> data);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3252,6 +3649,7 @@ external void mju_cross(
   ffi.Pointer<mjtNum> b,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<ffi.Double>, ffi.Int)
 >()
@@ -3261,6 +3659,7 @@ external void mju_d2n(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3276,6 +3675,7 @@ external void mju_decodePyramid(
   int dim,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjSpec> Function(
     ffi.Pointer<mjResource>,
@@ -3289,6 +3689,7 @@ external ffi.Pointer<mjSpec> mju_decodeResource(
   ffi.Pointer<mjVFS> vfs,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3306,6 +3707,7 @@ external void mju_dense2Band(
   int ndense,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjtNum>,
@@ -3329,6 +3731,7 @@ external int mju_dense2sparse(
   int nnz,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3342,9 +3745,11 @@ external void mju_derivQuat(
   ffi.Pointer<mjtNum> vel,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external double mju_dist3(ffi.Pointer<mjtNum> pos1, ffi.Pointer<mjtNum> pos2);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -3354,9 +3759,11 @@ external double mju_dot(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external double mju_dot3(ffi.Pointer<mjtNum> vec1, ffi.Pointer<mjtNum> vec2);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjtNum>,
@@ -3372,6 +3779,7 @@ external int mju_eig3(
   ffi.Pointer<mjtNum> mat,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3387,9 +3795,11 @@ external void mju_encodePyramid(
   int dim,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
 external void mju_error(ffi.Pointer<ffi.Char> msg);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3403,9 +3813,11 @@ external void mju_euler2Quat(
   ffi.Pointer<ffi.Char> seq,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external void mju_eye(ffi.Pointer<mjtNum> mat, int n);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<ffi.Float>, ffi.Int)
 >()
@@ -3415,15 +3827,19 @@ external void mju_f2n(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, mjtNum, ffi.Int)>()
 external void mju_fill(ffi.Pointer<mjtNum> res, double val, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Void>)>()
 external void mju_free(ffi.Pointer<ffi.Void> ptr);
 
+@meta.RecordUse()
 @ffi.Native<mjLogConfig Function()>()
 external mjLogConfig mju_getLogConfig();
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjResource>,
@@ -3437,6 +3853,7 @@ external void mju_getResourceDir(
   ffi.Pointer<ffi.Int> ndir,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<ffi.Char>, ffi.Pointer<mjStringVec>)
 >()
@@ -3445,45 +3862,58 @@ external void mju_getXMLDependencies(
   ffi.Pointer<mjStringVec> dependencies,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Int, ffi.Pointer<ffi.Char>)>()
 external void mju_info(int topic, ffi.Pointer<ffi.Char> msg);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external void mju_insertionSort(ffi.Pointer<mjtNum> list, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Int>, ffi.Int)>()
 external void mju_insertionSortInt(ffi.Pointer<ffi.Int> list, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(mjtNum)>()
 external int mju_isBad(double x);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjResource>, ffi.Pointer<ffi.Char>)>()
 external int mju_isModifiedResource(
   ffi.Pointer<mjResource> resource,
   ffi.Pointer<ffi.Char> timestamp,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external int mju_isZero(ffi.Pointer<mjtNum> vec, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Void> Function(ffi.Size)>()
 external ffi.Pointer<ffi.Void> mju_malloc(int size);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_mat2Quat(ffi.Pointer<mjtNum> quat, ffi.Pointer<mjtNum> mat);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external int mju_mat2Rot(ffi.Pointer<mjtNum> quat, ffi.Pointer<mjtNum> mat);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum, mjtNum)>()
 external double mju_max(double a, double b);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjLogMessage>)>()
 external void mju_message(ffi.Pointer<mjLogMessage> msg);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum, mjtNum)>()
 external double mju_min(double a, double b);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3503,6 +3933,7 @@ external void mju_mulMatMat(
   int c2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3522,6 +3953,7 @@ external void mju_mulMatMatT(
   int r2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3541,6 +3973,7 @@ external void mju_mulMatTMat(
   int c2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3558,6 +3991,7 @@ external void mju_mulMatTVec(
   int nc,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3571,6 +4005,7 @@ external void mju_mulMatTVec3(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3588,6 +4023,7 @@ external void mju_mulMatVec(
   int nc,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3601,6 +4037,7 @@ external void mju_mulMatVec3(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3620,6 +4057,7 @@ external void mju_mulPose(
   ffi.Pointer<mjtNum> quat2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3633,6 +4071,7 @@ external void mju_mulQuat(
   ffi.Pointer<mjtNum> quat2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3646,6 +4085,7 @@ external void mju_mulQuatAxis(
   ffi.Pointer<mjtNum> axis,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjtNum>,
@@ -3661,6 +4101,7 @@ external double mju_mulVecMatVec(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(mjtNum, ffi.Pointer<mjtNum>, mjtNum, ffi.Pointer<mjtNum>)
 >()
@@ -3671,6 +4112,7 @@ external double mju_muscleBias(
   ffi.Pointer<mjtNum> prm,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum, mjtNum, ffi.Pointer<mjtNum>)>()
 external double mju_muscleDynamics(
   double ctrl,
@@ -3678,6 +4120,7 @@ external double mju_muscleDynamics(
   ffi.Pointer<mjtNum> prm,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     mjtNum,
@@ -3695,6 +4138,7 @@ external double mju_muscleGain(
   ffi.Pointer<mjtNum> prm,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<ffi.Double>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -3704,6 +4148,7 @@ external void mju_n2d(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<ffi.Float>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -3713,6 +4158,7 @@ external void mju_n2f(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3728,24 +4174,31 @@ external void mju_negPose(
   ffi.Pointer<mjtNum> quat,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_negQuat(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> quat);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external double mju_norm(ffi.Pointer<mjtNum> res, int n);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>)>()
 external double mju_norm3(ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external double mju_normalize(ffi.Pointer<mjtNum> res, int n);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>)>()
 external double mju_normalize3(ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>)>()
 external double mju_normalize4(ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjResource> Function(
     ffi.Pointer<ffi.Char>,
@@ -3763,9 +4216,11 @@ external ffi.Pointer<mjResource> mju_openResource(
   int nerror,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Int, ffi.Int)>()
 external void mju_printMat(ffi.Pointer<mjtNum> mat, int nr, int nc);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3783,9 +4238,11 @@ external void mju_printMatSparse(
   ffi.Pointer<ffi.Int> colind,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_quat2Mat(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> quat);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum)
 >()
@@ -3795,6 +4252,7 @@ external void mju_quat2Vel(
   double dt,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum)
 >()
@@ -3804,9 +4262,11 @@ external void mju_quatIntegrate(
   double scale,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_quatZ2Vec(ffi.Pointer<mjtNum> quat, ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Pointer<mjtNum>,
@@ -3828,6 +4288,7 @@ external double mju_rayGeom(
   ffi.Pointer<mjtNum> normal,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjtNum Function(
     ffi.Int,
@@ -3849,6 +4310,7 @@ external double mju_raySkin(
   ffi.Pointer<ffi.Int> vertid,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(ffi.Pointer<mjResource>, ffi.Pointer<ffi.Pointer<ffi.Void>>)
 >()
@@ -3857,6 +4319,7 @@ external int mju_readResource(
   ffi.Pointer<ffi.Pointer<ffi.Void>> buffer,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3870,9 +4333,11 @@ external void mju_rotVecQuat(
   ffi.Pointer<mjtNum> quat,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(mjtNum)>()
 external int mju_round(double x);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum, ffi.Int)
 >()
@@ -3883,6 +4348,7 @@ external void mju_scl(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, mjtNum)
 >()
@@ -3892,18 +4358,23 @@ external void mju_scl3(
   double scl,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(mjLogConfig)>()
 external void mju_setLogConfig(mjLogConfig config);
 
+@meta.RecordUse()
 @ffi.Native<mjfLogHandler Function(mjfLogHandler)>()
 external mjfLogHandler mju_setLogHandler(mjfLogHandler handler);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum)>()
 external double mju_sigmoid(double x);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum)>()
 external double mju_sign(double x);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3925,6 +4396,7 @@ external void mju_sparse2dense(
   ffi.Pointer<ffi.Int> colind,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(mjtNum, mjtNum, mjtNum, mjtNum, mjtNum)>()
 external double mju_springDamper(
   double pos0,
@@ -3934,6 +4406,7 @@ external double mju_springDamper(
   double dt,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3951,12 +4424,15 @@ external void mju_sqrMatTD(
   int nc,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>)>()
 external double mju_standardNormal(ffi.Pointer<mjtNum> num2);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Int Function(ffi.Pointer<ffi.Char>)>()
 external int mju_str2Type(ffi.Pointer<ffi.Char> str);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<ffi.Char> Function(
     ffi.Pointer<ffi.Char>,
@@ -3970,6 +4446,7 @@ external ffi.Pointer<ffi.Char> mju_strncpy(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3985,6 +4462,7 @@ external void mju_sub(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -3998,6 +4476,7 @@ external void mju_sub3(
   ffi.Pointer<mjtNum> vec2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -4007,9 +4486,11 @@ external void mju_subFrom(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>)>()
 external void mju_subFrom3(ffi.Pointer<mjtNum> res, ffi.Pointer<mjtNum> vec);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4023,9 +4504,11 @@ external void mju_subQuat(
   ffi.Pointer<mjtNum> qb,
 );
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external double mju_sum(ffi.Pointer<mjtNum> vec, int n);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4045,6 +4528,7 @@ external void mju_sym2dense(
   ffi.Pointer<ffi.Int> colind,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int)
 >()
@@ -4054,9 +4538,11 @@ external void mju_symmetrize(
   int n,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjData>, ffi.Int)>()
 external void mju_threadpool(ffi.Pointer<mjData> d, int nthread);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4076,6 +4562,7 @@ external void mju_transformSpatial(
   ffi.Pointer<mjtNum> rotnew2old,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Pointer<mjtNum>, ffi.Int, ffi.Int)
 >()
@@ -4086,6 +4573,7 @@ external void mju_transpose(
   int nc,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4101,27 +4589,34 @@ external void mju_trnVecPose(
   ffi.Pointer<mjtNum> vec,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Int)>()
 external ffi.Pointer<ffi.Char> mju_type2Str(int type);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>)>()
 external void mju_unit4(ffi.Pointer<mjtNum> res);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
 external void mju_warning(ffi.Pointer<ffi.Char> msg);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Int, ffi.Size)>()
 external ffi.Pointer<ffi.Char> mju_warningText(int warning, int info);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>)>()
 external void mju_writeLog(
   ffi.Pointer<ffi.Char> type,
   ffi.Pointer<ffi.Char> msg,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Pointer<ffi.Char> Function(ffi.Size)>()
 external ffi.Pointer<ffi.Char> mju_writeNumBytes(int nbytes);
 
+@meta.RecordUse()
 @ffi.Native<
   mjtSize Function(
     ffi.Pointer<ffi.Char>,
@@ -4141,18 +4636,23 @@ external int mju_writeResource(
   int nerror,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>, ffi.Int)>()
 external void mju_zero(ffi.Pointer<mjtNum> res, int n);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>)>()
 external void mju_zero3(ffi.Pointer<mjtNum> res);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjtNum>)>()
 external void mju_zero4(ffi.Pointer<mjtNum> res);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjUI>, ffi.Pointer<mjuiDef>)>()
 external void mjui_add(ffi.Pointer<mjUI> ui, ffi.Pointer<mjuiDef> def);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjUI>, ffi.Int, ffi.Pointer<mjuiDef>)
 >()
@@ -4162,6 +4662,7 @@ external void mjui_addToSection(
   ffi.Pointer<mjuiDef> def,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjuiItem> Function(
     ffi.Pointer<mjUI>,
@@ -4175,6 +4676,7 @@ external ffi.Pointer<mjuiItem> mjui_event(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjUI>,
@@ -4188,15 +4690,19 @@ external void mjui_render(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjUI>, ffi.Pointer<mjrContext>)>()
 external void mjui_resize(ffi.Pointer<mjUI> ui, ffi.Pointer<mjrContext> con);
 
+@meta.RecordUse()
 @ffi.Native<mjuiThemeColor Function(ffi.Int)>()
 external mjuiThemeColor mjui_themeColor(int ind);
 
+@meta.RecordUse()
 @ffi.Native<mjuiThemeSpacing Function(ffi.Int)>()
 external mjuiThemeSpacing mjui_themeSpacing(int ind);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Int,
@@ -4214,6 +4720,7 @@ external void mjui_update(
   ffi.Pointer<mjrContext> con,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4233,6 +4740,7 @@ external void mjv_addGeoms(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4246,6 +4754,7 @@ external void mjv_alignToCamera(
   ffi.Pointer<mjtNum> forward,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4259,6 +4768,7 @@ external void mjv_applyPerturbForce(
   ffi.Pointer<mjvPerturb> pert,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4274,6 +4784,7 @@ external void mjv_applyPerturbPose(
   int flg_paused,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjvGLCamera Function(ffi.Pointer<mjvGLCamera>, ffi.Pointer<mjvGLCamera>)
 >()
@@ -4282,6 +4793,7 @@ external mjvGLCamera mjv_averageCamera(
   ffi.Pointer<mjvGLCamera> cam2,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   mjvGLCamera Function(
     ffi.Pointer<mjModel>,
@@ -4295,6 +4807,7 @@ external mjvGLCamera mjv_camera2GLCamera(
   ffi.Pointer<mjvCamera> mjv_camera,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4314,6 +4827,7 @@ external void mjv_cameraFrame(
   ffi.Pointer<mjvCamera> cam,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<ffi.Float>,
@@ -4331,6 +4845,7 @@ external void mjv_cameraFrustum(
   ffi.Pointer<mjvCamera> cam,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4346,6 +4861,7 @@ external void mjv_cameraInModel(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4361,6 +4877,7 @@ external void mjv_cameraInRoom(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjvGeom>,
@@ -4378,6 +4895,7 @@ external void mjv_connector(
   ffi.Pointer<mjtNum> to,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Pointer<mjData> Function(
     ffi.Pointer<mjData>,
@@ -4391,39 +4909,49 @@ external ffi.Pointer<mjData> mjv_copyData(
   ffi.Pointer<mjData> src,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjModel>)>()
 external void mjv_copyModel(
   ffi.Pointer<mjModel> dest,
   ffi.Pointer<mjModel> src,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvCamera>)>()
 external void mjv_defaultCamera(ffi.Pointer<mjvCamera> cam);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvFigure>)>()
 external void mjv_defaultFigure(ffi.Pointer<mjvFigure> fig);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjvCamera>)>()
 external void mjv_defaultFreeCamera(
   ffi.Pointer<mjModel> m,
   ffi.Pointer<mjvCamera> cam,
 );
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvOption>)>()
 external void mjv_defaultOption(ffi.Pointer<mjvOption> opt);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvPerturb>)>()
 external void mjv_defaultPerturb(ffi.Pointer<mjvPerturb> pert);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvScene>)>()
 external void mjv_defaultScene(ffi.Pointer<mjvScene> scn);
 
+@meta.RecordUse()
 @ffi.Native<ffi.Void Function(ffi.Pointer<mjvScene>)>()
 external void mjv_freeScene(ffi.Pointer<mjvScene> scn);
 
+@meta.RecordUse()
 @ffi.Native<mjtNum Function(ffi.Pointer<mjvScene>)>()
 external double mjv_frustumHeight(ffi.Pointer<mjvScene> scn);
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjvGeom>,
@@ -4443,6 +4971,7 @@ external void mjv_initGeom(
   ffi.Pointer<ffi.Float> rgba,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4458,6 +4987,7 @@ external void mjv_initPerturb(
   ffi.Pointer<mjvPerturb> pert,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4471,6 +5001,7 @@ external void mjv_makeLights(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(ffi.Pointer<mjModel>, ffi.Pointer<mjvScene>, ffi.Int)
 >()
@@ -4480,6 +5011,7 @@ external void mjv_makeScene(
   int maxgeom,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4497,6 +5029,7 @@ external void mjv_model2room(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4514,6 +5047,7 @@ external void mjv_moveCamera(
   ffi.Pointer<mjvCamera> cam,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4533,6 +5067,7 @@ external void mjv_moveModel(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4554,6 +5089,7 @@ external void mjv_movePerturb(
   ffi.Pointer<mjvPerturb> pert,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjtNum>,
@@ -4571,6 +5107,7 @@ external void mjv_room2model(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Int Function(
     ffi.Pointer<mjModel>,
@@ -4600,6 +5137,7 @@ external int mjv_select(
   ffi.Pointer<ffi.Int> skinid,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4615,6 +5153,7 @@ external void mjv_updateCamera(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
@@ -4636,6 +5175,7 @@ external void mjv_updateScene(
   ffi.Pointer<mjvScene> scn,
 );
 
+@meta.RecordUse()
 @ffi.Native<
   ffi.Void Function(
     ffi.Pointer<mjModel>,
