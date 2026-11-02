@@ -177,6 +177,31 @@ package("onnxruntime")
                 "-Donnxruntime_USE_MIMALLOC=OFF",
                 "-DPython_EXECUTABLE=" .. python.program
             }
+            -- Zig's driver treats -march as a CPU name rather than an ARM ISA
+            -- revision. Preserve MLAS feature selection with Zig CPU features.
+            local cxx = package:tool("cxx")
+            if package:is_arch("arm64") and cxx and cxx:find("zigcc", 1, true) then
+                local mlas = "cmake/onnxruntime_mlas.cmake"
+                for clang_feature, zig_feature in pairs({
+                    dotprod = "dotprod", fp16 = "fullfp16", i8mm = "i8mm", bf16 = "bf16"
+                }) do
+                    io.replace(mlas, "-march=armv8.2-a+" .. clang_feature,
+                        "-mcpu=generic+v8_2a+" .. zig_feature, {plain = true})
+                end
+                -- Zig does not forward -mcpu feature switches to its integrated
+                -- assembler for .S inputs. Select the ISA inside each kernel.
+                for kernel, feature in pairs({
+                    HalfGemmKernelNeon = "fp16", QgemmS8S8KernelSmmla = "i8mm",
+                    QgemmU8X8KernelUmmla = "i8mm", SbgemmKernelNeon = "bf16"
+                }) do
+                    local file = "onnxruntime/core/mlas/lib/aarch64/" .. kernel .. ".S"
+                    local content = io.readfile(file)
+                    local directive = ".arch armv8.2-a+" .. feature .. "\n"
+                    if not content:find(directive, 1, true) then
+                        io.writefile(file, directive .. content)
+                    end
+                end
+            end
             os.cd("cmake")
             -- Limit concurrent compiler processes: CPU provider TUs are large.
             local options = {builddir = builddir, jobs = 4, cmake_generator = "Ninja"}

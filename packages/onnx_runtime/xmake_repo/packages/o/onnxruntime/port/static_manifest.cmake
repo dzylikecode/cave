@@ -13,6 +13,13 @@ target_link_libraries(onnxruntime_dart_link_manifest PRIVATE
   ${ONNXRUNTIME_MLAS_LIBS} onnxruntime_common onnxruntime_flatbuffers
   ${onnxruntime_EXTERNAL_LIBRARIES})
 
+
+# ARM common/platform objects reference cpuinfo even when upstream's exported
+# dependency list omits it. Keep its actual archive in the merged link inputs.
+if(TARGET cpuinfo)
+  target_link_libraries(onnxruntime_dart_link_manifest PRIVATE cpuinfo)
+endif()
+
 # Static ORT builds do not link a top-level executable, so some external
 # archives (for example re2) are excluded from the default upstream build.
 # Build those resolved dependencies without linking the manifest DSO.
